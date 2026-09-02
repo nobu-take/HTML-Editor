@@ -1,7 +1,7 @@
 {
   "name": "html-editor-standalone",
   "version": "1.0.0",
-  "description": "HTMLメールとお知らせページのエディタ。サーバー不要の1枚もの。",
+  "description": "HTML Editor for Email — HTMLメールをコードなしで作る。サーバー不要の1枚もの。",
   "private": true,
   "scripts": {
     "build": "node tools/build.js",

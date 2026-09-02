@@ -16,7 +16,7 @@
 
     <base target="_top" />
     <meta charset="utf-8" />
-    <title>HTML Editor</title>
+    <title>HTML Editor for Email</title>
 
     <link
       rel="stylesheet"
@@ -333,7 +333,24 @@
 
   header .row + .row { gap: 16px; }
 
-  .brand { font-weight: 700; white-space: nowrap; }
+  .brand {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  /*
+     用途を添える一言。太い本体より一段落として、
+     名前の一部でありながら読み下せるようにする。
+  */
+  .brand-for {
+    color: var(--faint);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .04em;
+  }
 
   .spacer { flex: 1 1 auto; }
 
@@ -1797,7 +1814,7 @@
     <header>
       <!-- 左＝この原稿は何か／右＝何をするか。対象ごとにまとめている -->
       <div class="row">
-        <span class="brand">HTML Editor</span>
+        <span class="brand">HTML Editor<span class="brand-for">for Email</span></span>
         <input id="title" type="text" placeholder="ファイル名" autocomplete="off"
                title="保存するときのファイル名です。メールの件名はプレビュー上部の「件名」に入力してください。" />
         <input id="tags" type="text" autocomplete="off"
