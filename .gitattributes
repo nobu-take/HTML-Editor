@@ -1,0 +1,8 @@
+# 改行はリポジトリ内ではLFに統一する。手元はそのままで構わない
+* text=auto
+
+# 画像は変換させない
+*.png binary
+*.jpg binary
+*.gif binary
+*.webp binary

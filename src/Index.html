@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<?!= '<script>document.documentElement.style.zoom = ' + uiScale + ';' + 'window.SCALE_HINT_DONE = ' + scaleHintDone + ';</script>' ?>
+<html lang="ja">
+  <head>
+    <base target="_top" />
+    <meta charset="utf-8" />
+    <title>HTML Editor</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css"
+    />
+    <?!= include('Stylesheet'); ?>
+  </head>
+
+  <body>
+    <header>
+      <!-- 左＝この原稿は何か／右＝何をするか。対象ごとにまとめている -->
+      <div class="row">
+        <span class="brand">HTML Editor</span>
+        <input id="title" type="text" placeholder="ファイル名" autocomplete="off"
+               title="保存するときのファイル名です。メールの件名はプレビュー上部の「件名」に入力してください。" />
+        <input id="tags" type="text" autocomplete="off"
+               placeholder="タグ（例: キャンペーン, 定期便）"
+               title="用途や配信先で分類しておくと、左の一覧をタグで絞り込めます。カンマ区切りで複数指定できます。" />
+        <button id="btn-save" class="primary">保存</button>
+        <span id="status"></span>
+
+        <span class="spacer"></span>
+
+        <span class="seg">
+          <button id="btn-new"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2H4.5a.5.5 0 00-.5.5v11a.5.5 0 00.5.5h7a.5.5 0 00.5-.5V5z"/><path d="M9 2v3h3M6.5 9.5h3M8 8v3"/></svg>新規</button>
+          <button id="btn-template"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="3" width="11" height="10" rx="1"/><path d="M2.5 6.5h11M6.5 6.5v6.5"/></svg>テンプレート</button>
+          <button id="btn-ai"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 2.5l1.1 2.7 2.7 1.1-2.7 1.1-1.1 2.7-1.1-2.7L2.7 6.3l2.7-1.1z"/><path d="M11.8 9.6l.6 1.5 1.5.6-1.5.6-.6 1.5-.6-1.5-1.5-.6 1.5-.6z"/></svg>AIに聞く</button>
+        </span>
+
+          <span class="pop-wrap">
+            <button id="btn-export" aria-haspopup="true" aria-expanded="false" title="作った原稿を取り出す"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M2 8h12"/><path d="M8 2c1.7 1.8 2.5 3.8 2.5 6S9.7 12.2 8 14c-1.7-1.8-2.5-3.8-2.5-6S6.3 3.8 8 2z"/></svg>書き出す</button>
+
+            <div id="export-pop" class="pop menu-pop" hidden>
+              <h3>書き出す</h3>
+                <button id="btn-gmail" class="menu-item"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3.5" width="12" height="9" rx="1"/><path d="M2.4 4.4L8 8.8l5.6-4.4"/></svg><span class="mi"><b class="label">Gmailの下書きにする</b><span>送信はされません</span></span></button>
+                <button id="btn-copy" class="menu-item"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5L3 8l3 3M10 5l3 3-3 3"/></svg><span class="mi"><b class="label">HTMLをコピーする</b><span>配信システムやCMSに貼る</span></span></button>
+                <button id="btn-copy-text" class="menu-item"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h10M3 7h10M3 10h6"/></svg><span class="mi"><b class="label">テキスト版をコピーする</b><span>HTMLを貼れない場所へ</span></span></button>
+                <button id="btn-web" class="menu-item"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M2 8h12"/><path d="M8 2c1.7 1.8 2.5 3.8 2.5 6S9.7 12.2 8 14c-1.7-1.8-2.5-3.8-2.5-6S6.3 3.8 8 2z"/></svg><span class="mi"><b class="label">Webページ用に書き出す</b><span>メール用のHTMLから変換します</span></span></button>
+                <button id="btn-open" class="menu-item" disabled><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2.5h4v4M13.5 2.5l-6 6"/><path d="M12 9.5v3.5a.5.5 0 01-.5.5H3a.5.5 0 01-.5-.5V4.5A.5.5 0 013 4h3.5"/></svg><span class="mi"><b class="label">ブラウザで開く</b><span>保存した状態を確かめる</span></span></button>
+            </div>
+          </span>
+
+          <span class="pop-wrap">
+            <button id="btn-more" class="icon-only" aria-haspopup="true" aria-expanded="false" title="この原稿の扱い" aria-label="この原稿の扱い"><svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><circle cx="3.2" cy="8" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="12.8" cy="8" r="1.3"/></svg></button>
+
+            <div id="more-pop" class="pop menu-pop" hidden>
+              <h3>この原稿の扱い</h3>
+                <button id="btn-history" class="menu-item" disabled><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4.5V8l2.5 1.5"/><path d="M2.7 6.6A5.5 5.5 0 118 13.5"/><path d="M2 3v3.6h3.6"/></svg><span class="mi"><b class="label">履歴から戻す</b><span>保存した過去の状態へ</span></span></button>
+                <button id="btn-duplicate" class="menu-item" disabled><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="5.5" width="8" height="8" rx="1"/><path d="M10.5 5.5V3a.5.5 0 00-.5-.5H3a.5.5 0 00-.5.5v7a.5.5 0 00.5.5h2.5"/></svg><span class="mi"><b class="label">複製する</b><span>同じ内容で新しく作る</span></span></button>
+                <button id="btn-copy-to" class="menu-item" disabled><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h7.5M7 5.5L9.5 8 7 10.5"/><path d="M11.5 3.5h2v9h-2"/></svg><span class="mi"><b class="label">もう一方へコピー</b><span>原稿を別の保存場所へ複製</span></span></button>
+                <button id="btn-move-to" class="menu-item" disabled><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 8h7.5M7.5 5.5L10 8l-2.5 2.5"/><path d="M13.5 3v10"/></svg><span class="mi"><b class="label">もう一方へ移動</b><span>原稿を別の保存場所へ移す</span></span></button>
+                <button id="btn-delete" class="menu-item danger" disabled><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.8 4.5l.5 8.6h5.4l.5-8.6"/></svg><span class="mi"><b class="label">削除する</b><span>ゴミ箱へ移します</span></span></button>
+            </div>
+          </span>
+
+        <span class="pop-wrap">
+          <button id="btn-scale" class="icon-only" title="アプリ全体の表示サイズ" aria-label="アプリ全体の表示サイズ" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 13.5L5.5 5.5l3 8M3.5 11h4"/><path d="M11 13.5l2.2-6 2.2 6M11.8 11.6h2.8"/></svg></button>
+
+          <div id="scale-pop" class="pop" hidden>
+            <h3>アプリ全体の表示サイズ</h3>
+            <p class="pop-why">小さくすると、一度に見える範囲が広がります。</p>
+
+            <button class="scale-opt" data-scale="1.1">
+              <span class="mark"></span>
+              <span><b>大きめ</b><span>文字が読みやすい。大きなモニター向け</span></span>
+            </button>
+            <button class="scale-opt" data-scale="1">
+              <span class="mark"></span>
+              <span><b>標準</b><span>そのままの大きさ</span></span>
+            </button>
+            <button class="scale-opt" data-scale="0.85">
+              <span class="mark"></span>
+              <span><b>小さめ</b><span>ノートPCなど、狭いモニター向け</span></span>
+            </button>
+
+            <p class="pop-note"><b>メールの見た目は変わりません。</b>アプリの表示だけが変わります。</p>
+          </div>
+        </span>
+
+        <button id="btn-manual" class="icon-only" title="使い方のマニュアルを開く" aria-label="使い方のマニュアルを開く" hidden><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M6.3 6.2a1.75 1.75 0 113.1 1.2c-.6.6-1.4.9-1.4 1.8"/><path d="M8 11.6h.01"/></svg></button>
+      </div>
+    </header>
+
+    <!-- 縦が足りない環境で初回だけ出す。閉じたら二度と出さない -->
+    <div id="scale-hint" class="scale-hint" hidden>
+      <div>
+        <b>作業スペースが狭いようです</b>
+        <p>表示を「小さめ」にすると、一度に見える範囲が広がります。</p>
+      </div>
+      <span class="scale-hint-actions">
+        <button id="scale-hint-apply" class="primary">小さめにする</button>
+        <button id="scale-hint-close">閉じる</button>
+      </span>
+    </div>
+
+    <main>
+      <aside class="sidebar">
+        <div class="aside-head">
+          <div class="location-row">
+            <button id="loc-my" class="loc-tab active">マイドライブ</button>
+            <button id="loc-shared" class="loc-tab">共有の場所</button>
+          </div>
+          <div class="location-row">
+            <span id="loc-badge" class="loc-badge" hidden></span>
+            <span class="spacer"></span>
+            <button id="btn-open-folder" class="icon-only" title="保存先フォルダをドライブで開く" aria-label="保存先フォルダを開く"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12.5v-9h4l1.5 2h6.5v7z"/></svg></button>
+            <button id="btn-loc-settings" class="icon-only" title="共有の保存場所を設定" aria-label="共有の保存場所を設定"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="2"/><path d="M8 1.8v1.6M8 12.6v1.6M2.8 8H1.2M14.8 8h-1.6M4.3 4.3L3.2 3.2M12.8 12.8l-1.1-1.1M4.3 11.7l-1.1 1.1M12.8 3.2l-1.1 1.1"/></svg></button>
+            <button id="sidebar-hide" class="icon-only" title="一覧を隠してプレビューを広げる" aria-label="一覧を隠す"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4L4.5 8 8 12M12.5 4L9 8l3.5 4"/></svg></button>
+          </div>
+          <input id="search" type="search" placeholder="ファイル名で絞り込み" autocomplete="off" />
+          <div id="tag-filter" class="tag-filter"></div>
+        </div>
+        <div id="list"></div>
+      </aside>
+
+      <button id="sidebar-show" class="rail" title="一覧を表示" aria-label="一覧を表示" hidden>›</button>
+
+      <section class="workspace">
+        <div class="tabbar">
+          <span class="tabs">
+            <button id="tab-wys" class="tab active">プレビュー</button>
+            <button id="tab-code" class="tab">コード</button>
+            <button id="tab-split" class="tab">プレビュー ＋ コード</button>
+          </span>
+          <span class="spacer"></span>
+          <button id="btn-fit-view" title="縮小して、原稿全体を1画面に収めます。画面キャプチャで1枚に収めたいときにも使えます"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="2.5" width="11" height="11" rx="1"/><path d="M5.5 6.5h5M5.5 9.5h5"/></svg>1画面に収める</button>
+          <button id="btn-zen" title="ヘッダーや一覧を隠して、プレビューだけを大きく表示"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.5H2.5V6M10 2.5h3.5V6M6 13.5H2.5V10M10 13.5h3.5V10"/></svg>全画面</button>
+          <span class="pop-wrap">
+            <button id="btn-canvas" aria-haspopup="true" aria-expanded="false" title="確認するときの紙面の幅"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="3" width="11" height="10" rx="1"/><path d="M5.5 3v10M10.5 3v10"/></svg>キャンバスサイズ<b id="canvas-now">600px</b></button>
+
+            <div id="canvas-pop" class="pop canvas-pop" hidden>
+              <h3>キャンバスサイズ</h3>
+              <p class="pop-why">原稿を確かめるための紙面の幅です。</p>
+
+              <div class="canvas-size">
+                <button class="chip active" data-width="600">パソコン<span>600px</span></button>
+                <button class="chip" data-width="375">スマートフォン<span>375px</span></button>
+                <button class="chip" data-width="0">全幅<span>ウィンドウに合わせる</span></button>
+              </div>
+
+              <div class="canvas-custom">
+                <input id="width-input" type="number" min="200" max="2400" step="10"
+                       placeholder="数値で指定" title="幅を数値で指定します" />
+                <span class="unit">px</span>
+                <button id="width-apply" class="chip">適用</button>
+              </div>
+
+              <p class="pop-note"><b>メールの幅は変わりません。</b>確かめるための窓の幅だけが変わります。</p>
+            </div>
+          </span>
+        </div>
+
+        <div id="panes" class="panes">
+
+        <!-- プレビュー（編集可能） -->
+        <div id="pane-wys" class="pane">
+          <button id="toolbar-show" class="toolbar-show" hidden>▾ ツールバーを表示</button>
+          <div id="wys-toolbar" class="wys-toolbar">
+            <button id="toolbar-hide" class="toolbar-hide" title="ツールバーを隠す" aria-label="ツールバーを隠す">▴</button>
+
+            <div class="tool-row">
+              <span class="seg"><select id="wys-font" title="フォント（メールで崩れにくいものだけ）"></select><select id="wys-size" title="文字サイズ">
+                    <option value="">サイズ</option>
+                    <option value="12px">12px</option>
+                    <option value="13px">13px</option>
+                    <option value="14px">14px</option>
+                    <option value="15px">15px</option>
+                    <option value="16px">16px</option>
+                    <option value="18px">18px</option>
+                    <option value="20px">20px</option>
+                    <option value="24px">24px</option>
+                    <option value="28px">28px</option>
+                  </select></span>
+              <span class="seg"><button id="wys-bold" class="icon-only" title="太字" aria-label="太字" style="font-weight:700; width:30px; justify-content:center;">B</button><button id="wys-italic" class="icon-only" title="斜体" aria-label="斜体" style="font-style:italic; font-family:Georgia,serif; width:30px; justify-content:center;">I</button><button id="wys-underline" class="icon-only" title="下線" aria-label="下線" style="text-decoration:underline; width:30px; justify-content:center;">U</button><button id="wys-strike" class="icon-only" title="取り消し線" aria-label="取り消し線" style="text-decoration:line-through; width:30px; justify-content:center;">S</button><span class="color-field" title="文字色">
+                    <input id="wys-color" type="color" value="#1f2328" />
+                    <input id="wys-color-hex" type="text" class="hex" maxlength="7" value="#1f2328" />
+                    <button id="wys-color-apply" title="選択範囲にこの色を適用">適用</button>
+                  </span><button id="wys-clear" class="icon-only" title="書式クリア（選択範囲の装飾をすべて外す）" aria-label="書式クリア"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l3.6-8 2.2 5"/><path d="M4 9.6h4"/><path d="M10.5 10.5l3.5 3.5M14 10.5l-3.5 3.5"/></svg></button></span>
+              <span class="seg"><button id="wys-ul" class="icon-only" title="箇条書きにする" aria-label="箇条書き"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4.5h7.5M6 8h7.5M6 11.5h7.5"/><circle cx="3" cy="4.5" r=".9" fill="currentColor" stroke="none"/><circle cx="3" cy="8" r=".9" fill="currentColor" stroke="none"/><circle cx="3" cy="11.5" r=".9" fill="currentColor" stroke="none"/></svg></button><button id="wys-ol" class="icon-only" title="番号付きリストにする" aria-label="番号付きリスト"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4.5h7.5M6 8h7.5M6 11.5h7.5"/><path d="M2.4 3.4l.9-.5v2.8M2.2 7.3a.9.9 0 011.5.7c0 .6-1.5 1.2-1.5 1.7h1.7M2.2 10.8h1.6l-.9 1.1a.85.85 0 11-.7 1.3"/></svg></button><button id="wys-quote" class="icon-only" title="引用として囲む" aria-label="引用"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3.2v9.6"/><path d="M6.5 5h7M6.5 8h7M6.5 11h4.5"/></svg></button><button id="wys-outdent" class="icon-only" title="インデントを減らす" aria-label="インデントを減らす"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 4.5h7M6.5 8h7M6.5 11.5h7"/><path d="M4.5 6.2L2.6 8l1.9 1.8"/></svg></button><button id="wys-indent" class="icon-only" title="インデントを増やす" aria-label="インデントを増やす"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 4.5h7M6.5 8h7M6.5 11.5h7"/><path d="M2.6 6.2L4.5 8l-1.9 1.8"/></svg></button></span>
+              <span class="tool-group">
+                <span class="tool-label">本文の幅</span>
+                <span class="seg"><button id="width-fluid" title="キャンバスの幅に合わせて縮む（最大幅まで）">追従</button><button id="width-fixed" title="常に指定した幅を保つ">固定</button></span>
+                <label class="mini" id="min-field">
+                    最小
+                    <input id="body-min-width" type="number" min="0" max="1200" step="10"
+                           title="これ以上は縮まない幅。0で指定なし" />
+                  </label>
+                <label class="mini">
+                    <span id="max-label">最大</span>
+                    <input id="body-width" type="number" min="200" max="1200" step="10"
+                           title="追従のときは最大幅、固定のときは本文の幅" />
+                  </label>
+              </span>
+              <span class="seg"><button id="wys-up" class="icon-only" title="ひとつ上へ移動" aria-label="ひとつ上へ移動"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12.5V4M4.6 7.4L8 4l3.4 3.4"/></svg></button><button id="wys-down" class="icon-only" title="ひとつ下へ移動" aria-label="ひとつ下へ移動"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3.5V12M4.6 8.6L8 12l3.4-3.4"/></svg></button></span>
+
+            </div>
+
+          </div>
+
+
+          <div class="wys-body">
+
+            <!--
+              部品はここに全部並べる。ふだんは44pxでアイコンだけ、
+              カーソルを寄せると名前が見える幅まで開く。開いても紙面は動かさない。
+            -->
+            <div class="tool-rail">
+              <div class="rail-inner">
+                <p class="rail-head">部品を入れる</p>
+
+                <div class="rail-modes">
+                  <button id="target-row" class="rail-item active" title="本文の新しい行として入れる">
+                    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4h11M2.5 8h11M2.5 12h11"/></svg><span>新しい行として</span></button>
+                  <button id="target-cell" class="rail-item" title="選択中のセルや枠の中に入れる">
+                    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="3.5" width="11" height="9" rx="1"/><rect x="5" y="6" width="6" height="4" rx="1"/></svg><span>選んだ枠の中に</span></button>
+                </div>
+
+                <div id="part-buttons" class="rail-list"></div>
+              </div>
+            </div>
+            <!-- 件名も本文も原稿の中身。右パネルとは列を分ける -->
+            <div class="canvas-col">
+              <div class="subject-bar">
+              <label for="subject">件名</label>
+              <input id="subject" type="text" autocomplete="off"
+              placeholder="メールの件名（Gmailの下書きにそのまま使われます）" />
+              <span id="overflow-warn" class="warn" hidden>
+              本文がキャンバスより <b id="overflow-size"></b> 広く、右端が隠れています
+              <button id="fit-canvas">キャンバスを合わせる</button>
+              </span>
+              </div>
+
+              <div class="preview-body">
+                <iframe id="preview" sandbox="allow-same-origin"></iframe>
+              </div>
+            </div>
+            <aside id="inspector" class="inspector">
+              <div class="inspector-head">
+                <span class="inspector-title">選択中の要素</span>
+                <button id="inspector-kill" class="icon-only kill" title="選択中の要素を削除" aria-label="選択中の要素を削除" disabled><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.8 4.5l.5 8.6h5.4l.5-8.6"/></svg></button>
+                <button id="inspector-hide" class="icon-only" title="パネルを隠す" aria-label="パネルを隠す"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4l3.5 4L8 12M3.5 4L7 8l-3.5 4"/></svg></button>
+              </div>
+              <div id="inspector-body" class="inspector-body"></div>
+            </aside>
+
+            <button id="inspector-show" class="rail" title="要素パネルを表示" aria-label="要素パネルを表示" hidden>‹</button>
+          </div>
+        </div>
+
+        <!-- 左右分割のときだけ現れる仕切り。ドラッグで幅を変えられる -->
+        <div id="splitter" class="splitter" title="ドラッグで幅を調整"></div>
+
+        <!-- コード -->
+        <div id="pane-code" class="pane" hidden>
+          <div class="pane-head">
+            <span>コード</span>
+            <span>Ctrl + S で保存</span>
+          </div>
+          <div class="editor-body">
+            <textarea id="code"></textarea>
+          </div>
+        </div>
+
+        </div>
+      </section>
+    </main>
+
+    <!-- AIに聞く（プロンプトを組み立てるだけで、AIは実行しません） -->
+    <div id="ai-modal" class="backdrop" hidden>
+      <div class="dialog dialog-wide ai-dialog" role="dialog" aria-modal="true" aria-labelledby="ai-title">
+
+        <!-- 1: これが何かを伝える -->
+        <div class="ai-card">
+          <h2 id="ai-title">AIに聞く</h2>
+          <p class="ai-explain">
+            <b>このツールはAIを動かしません。</b>
+            Geminiに貼り付けるための<b>文面（プロンプト）を組み立てるだけ</b>です。
+            実際のやりとりはGeminiの画面で、あなた自身が行います。
+          </p>
+          <ol class="ai-steps">
+            <li><b>依頼を選ぶ</b><span>下で目的と質問を入力します</span></li>
+            <li><b>コピーしてGeminiへ</b><span>貼り付けて実行します</span></li>
+            <li><b>回答を取り込む</b><span>返ってきたHTMLをここに貼ります</span></li>
+          </ol>
+        </div>
+
+        <div class="ai-body">
+          <!-- 2: 何を頼むか -->
+          <div class="ai-card ai-col">
+            <div class="field">
+              <label>依頼の種類</label>
+              <div id="ai-presets" class="ai-presets"></div>
+            </div>
+
+            <div class="field">
+              <label for="ai-question">補足・質問（任意）</label>
+              <textarea id="ai-question" rows="3" placeholder="例: 受講生向けに、もう少しやわらかい言い回しにしてください"></textarea>
+            </div>
+
+            <label class="check">
+              <input id="ai-include" type="checkbox" checked />
+              いま編集中のHTMLを含める
+            </label>
+
+            <p id="ai-privacy" class="note warn">
+              <b>渡す内容にご注意ください</b>
+              右の文面がそのままGeminiに渡ります。顧客名・メールアドレスなどが含まれていないか、
+              コピーする前にご確認ください。文面の相談だけなら、上のチェックを外せばHTMLは含まれません。
+            </p>
+          </div>
+
+          <!-- 3: 受け渡しする文面 -->
+          <div class="ai-card ai-col">
+            <div class="field field-grow">
+              <label for="ai-prompt">Geminiに渡す文面<span class="field-note">そのままコピーされます</span></label>
+              <textarea id="ai-prompt" spellcheck="false" readonly></textarea>
+            </div>
+
+            <div class="field field-grow">
+              <label for="ai-answer">AIの回答を取り込む<span class="field-note">HTMLを貼り付けてください</span></label>
+              <textarea id="ai-answer" spellcheck="false" placeholder="Geminiが返したHTMLをここに貼り付けます。```html の囲みは付いたままで構いません"></textarea>
+            </div>
+
+            <p id="ai-status" class="note" hidden></p>
+          </div>
+        </div>
+
+        <!-- 4: 操作 -->
+        <div class="ai-card ai-actions">
+          <span class="ai-actions__group">
+            <span class="tool-label">Geminiへ渡す</span>
+            <span class="seg">
+              <button id="ai-copy" class="primary">プロンプトをコピー</button>
+              <button id="ai-open">Geminiを開く</button>
+              <button id="ai-manage">依頼を登録・編集</button>
+            </span>
+          </span>
+
+          <span class="ai-actions__group">
+            <span class="tool-label">回答を反映する</span>
+            <span class="seg">
+              <button id="ai-check">内容を確認</button>
+              <button id="ai-replace">全体を置き換える</button>
+              <button id="ai-insert">選択位置に挿入</button>
+            </span>
+          </span>
+
+          <span class="spacer"></span>
+          <button id="ai-close">閉じる</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI依頼の登録・編集 -->
+    <div id="prompt-modal" class="backdrop" hidden>
+      <div class="dialog dialog-wide" role="dialog" aria-modal="true" aria-labelledby="prompt-title">
+        <h2 id="prompt-title">依頼を登録する</h2>
+        <p>よく使う依頼を登録しておくと、「AIに聞く」の種類として選べるようになります。登録内容はご自身のドライブに保存されます。</p>
+
+        <div class="signature-body">
+          <div id="prompt-list" class="signature-list"></div>
+
+          <div class="signature-form">
+            <div class="field">
+              <label for="prompt-name">依頼の名前</label>
+              <input id="prompt-name" type="text" placeholder="例: 若い層向けに書き直す" autocomplete="off" />
+            </div>
+            <div class="field field-grow">
+              <label for="prompt-body">AIへの指示</label>
+              <textarea id="prompt-body" spellcheck="false" placeholder="例: 20代の受講生に向けて、堅すぎない言い回しに書き直してください。敬語は保ってください。"></textarea>
+            </div>
+            <div class="field-row">
+              <button id="prompt-save" class="primary">この内容で登録</button>
+              <button id="prompt-reset">新規として書く</button>
+              <span id="prompt-editing" class="hint"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="dialog-actions">
+          <button id="prompt-close">閉じる</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 全画面のときだけ出る操作バー -->
+    <div id="zen-bar" class="zen-bar" hidden>
+      <span id="zen-title" class="zen-title"></span>
+      <button id="zen-save" class="primary">保存</button>
+      <button id="zen-exit">全画面を終了</button>
+    </div>
+
+    <!-- 削除の確認 -->
+    <div id="confirm" class="backdrop" hidden>
+      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+        <h2 id="confirm-title">削除の確認</h2>
+        <p id="confirm-body"></p>
+        <div class="dialog-actions">
+          <button id="confirm-cancel">キャンセル</button>
+          <button id="confirm-ok" class="danger">ゴミ箱へ移動</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- テンプレート選択 -->
+    <div id="template-modal" class="backdrop" hidden>
+      <div class="dialog dialog-wide" role="dialog" aria-modal="true" aria-labelledby="template-title">
+        <h2 id="template-title">テンプレートから作成</h2>
+        <p>HTMLメール向けに、table組み・インラインstyle・本文幅600pxで用意しています。</p>
+        <div id="template-list" class="template-list"></div>
+
+        <!-- いま開いている原稿を、自分のテンプレートとして登録する -->
+        <div class="tpl-save" hidden id="tpl-save">
+          <div class="field">
+            <label for="tpl-save-name">テンプレートの名前</label>
+            <input id="tpl-save-name" type="text" autocomplete="off" maxlength="80"
+                   placeholder="例: 月例のお知らせ" />
+            <span class="field-note">
+              いま開いている内容が、そのまま自分のテンプレートになります。
+              保存先はご自身のドライブで、他の方には見えません。
+              同じ名前で登録すると中身が入れ替わります。
+            </span>
+          </div>
+          <div class="field-row">
+            <button id="tpl-save-apply" class="primary">この内容で登録</button>
+            <button id="tpl-save-cancel">やめる</button>
+          </div>
+          <p id="tpl-save-msg" class="tpl-save-msg" hidden></p>
+        </div>
+
+        <div class="dialog-actions">
+          <button id="tpl-save-open">いまの内容を登録</button>
+          <span class="spacer"></span>
+          <button id="template-cancel">キャンセル</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gmailの下書き作成 -->
+    <div id="gmail-modal" class="backdrop" hidden>
+      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="gmail-title">
+        <h2 id="gmail-title">Gmailの下書きを作成</h2>
+        <p>編集中のHTMLを本文として、ご自身のGmailに下書きを作ります。送信は行いません。</p>
+
+        <div class="field">
+          <label for="gmail-subject">件名</label>
+          <input id="gmail-subject" type="text" autocomplete="off" />
+          <span class="field-note">プレビュー上部の「件名」と連動します。ここで直すと本文側にも反映されます。</span>
+        </div>
+        <div class="field">
+          <label for="gmail-to">宛先（空欄のままでも作成できます）</label>
+          <input id="gmail-to" type="text" placeholder="taro@example.com, hanako@example.com" autocomplete="off" />
+        </div>
+
+        <p id="gmail-note" class="note" hidden></p>
+
+        <div class="dialog-actions">
+          <button id="gmail-cancel">閉じる</button>
+          <button id="gmail-create" class="primary">下書きを作成</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Webページ用の書き出し -->
+    <div id="web-modal" class="backdrop" hidden>
+      <div class="dialog dialog-wide" role="dialog" aria-modal="true" aria-labelledby="web-title">
+        <h2 id="web-title">Webページとして書き出す</h2>
+        <p>
+          メール用に使っている廃止属性（<code>bgcolor</code> <code>align</code> <code>cellpadding</code> など）を
+          同じ意味のCSSへ置き換え、HTML5として妥当な形にします。元のファイルは変更しません。
+        </p>
+
+        <div class="field-row">
+          <label class="check">
+            <input id="web-headings" type="checkbox" checked />
+            大きな太字を見出し（h1〜h3）に変換する
+          </label>
+          <label class="check">
+            <input id="web-responsive" type="checkbox" checked />
+            レスポンシブ用のCSSを追加する
+          </label>
+        </div>
+
+        <p id="web-report" class="note"></p>
+
+        <div class="field field-grow">
+          <label for="web-output">変換後のHTML</label>
+          <textarea id="web-output" spellcheck="false" readonly></textarea>
+        </div>
+
+        <div class="dialog-actions">
+          <button id="web-close">閉じる</button>
+          <button id="web-copy">クリップボードにコピー</button>
+          <button id="web-save" class="primary">別ファイルとして保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 保存場所の設定 -->
+    <div id="loc-modal" class="backdrop" hidden>
+      <div class="dialog dialog-wide" role="dialog" aria-modal="true" aria-labelledby="loc-title">
+        <h2 id="loc-title">共有の保存場所</h2>
+        <p>
+          チームで原稿を共有するための保存先です。<b>共有ドライブでも、共有されたフォルダでもかまいません</b>
+          — 開ける場所ならどこでも指定できます。編集権限が無い場所は、閲覧のみとして扱います。
+        </p>
+        <p class="dialog-sub">
+          設定はご自身のアカウントにのみ保存され、他の方には影響しません。
+          マイドライブ側の保存先はこれまでどおり使えます。
+        </p>
+
+        <div id="loc-current" class="note" hidden></div>
+
+        <div class="loc-picker">
+          <div class="loc-browse">
+            <div class="field">
+              <label for="loc-drive">共有ドライブから選ぶ（参加しているもの）</label>
+              <select id="loc-drive"></select>
+            </div>
+            <div id="loc-breadcrumb" class="breadcrumb"></div>
+            <div id="loc-folders" class="loc-folders"></div>
+          </div>
+
+          <div class="loc-manual">
+            <div class="field">
+              <label for="loc-input">フォルダのURL または ID を貼り付ける</label>
+              <input id="loc-input" type="text" autocomplete="off"
+                     placeholder="https://drive.google.com/drive/folders/..." />
+              <span class="field-note">
+                ドライブでフォルダを開き、アドレスバーのURLをそのまま貼り付けてください。
+                共有ドライブのほか、マイドライブの共有フォルダや、他の方から共有されたフォルダも指定できます。
+              </span>
+            </div>
+            <div class="field-row">
+              <button id="loc-apply" class="primary">この場所に設定</button>
+              <button id="loc-clear">設定を解除</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="dialog-actions">
+          <button id="loc-close">閉じる</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 署名 -->
+    <div id="signature-modal" class="backdrop" hidden>
+      <div class="dialog dialog-wide" role="dialog" aria-modal="true" aria-labelledby="signature-title">
+        <h2 id="signature-title">署名</h2>
+        <p>よく使う署名を登録しておくと、ここから選んで本文の末尾に挿入できます。登録内容はご自身のドライブに保存されます。</p>
+
+        <div class="signature-body">
+          <div id="signature-list" class="signature-list"></div>
+
+          <div class="signature-form">
+            <div class="field">
+              <label for="signature-name">署名の名前</label>
+              <input id="signature-name" type="text" placeholder="例: 営業部・標準" autocomplete="off" />
+            </div>
+            <div class="field field-grow">
+              <label for="signature-html">内容（HTML）</label>
+              <textarea id="signature-html" spellcheck="false"></textarea>
+            </div>
+            <div class="field-row">
+              <button id="signature-save" class="primary">この内容で登録</button>
+              <button id="signature-reset">新規として書く</button>
+              <span id="signature-editing" class="hint"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="dialog-actions">
+          <button id="signature-close">閉じる</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 版の履歴 -->
+    <div id="history-modal" class="backdrop" hidden>
+      <div class="dialog dialog-wide" role="dialog" aria-modal="true" aria-labelledby="history-title">
+        <h2 id="history-title">版の履歴</h2>
+        <p>保存で内容が変わるたびに1版を残します（最大30版）。復元しても直前の内容は履歴に残るため、取り消せます。</p>
+        <div class="history-body">
+          <div id="history-list" class="history-list"></div>
+          <iframe id="history-preview" class="history-preview" sandbox=""></iframe>
+        </div>
+        <div class="dialog-actions">
+          <button id="history-close">閉じる</button>
+          <button id="history-restore" class="primary" disabled>この版を復元</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closetag.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+    <?!= include('JavaScript'); ?>
+  </body>
+</html>

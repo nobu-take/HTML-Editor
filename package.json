@@ -1,0 +1,13 @@
+{
+  "name": "html-editor-standalone",
+  "version": "1.0.0",
+  "description": "HTMLメールとお知らせページのエディタ。サーバー不要の1枚もの。",
+  "private": true,
+  "scripts": {
+    "build": "node tools/build.js",
+    "serve": "node tools/serve.js",
+    "check": "node tools/check-api.js",
+    "images": "node tools/make-images.js"
+  },
+  "license": "UNLICENSED"
+}

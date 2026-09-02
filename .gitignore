@@ -1,0 +1,7 @@
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
+
+# dist/ は意図して除外していません。
+# ビルド済みを置いておくと、Cloudflare Pages 側でビルドが要らなくなります。
