@@ -1,0 +1,15 @@
+{
+  "default": "ja",
+  "languages": {
+    "ja": {
+      "name": "日本語",
+      "switchLabel": "表示言語",
+      "font": "'Hiragino Sans','Yu Gothic',Meiryo,sans-serif"
+    },
+    "en": {
+      "name": "English",
+      "switchLabel": "Language",
+      "font": "-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif"
+    }
+  }
+}

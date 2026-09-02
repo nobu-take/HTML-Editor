@@ -1071,18 +1071,18 @@
     style.setAttribute('data-wys-injected', '');
     style.textContent = [
       '[data-wys-hot]{outline:1px dashed rgba(26,115,232,.6) !important; outline-offset:-1px; cursor:pointer;}',
-      '[data-wys-hot="背景"]{outline-color:rgba(124,92,191,.75) !important;}',
-      '[data-wys-hot="段"]{outline-color:rgba(26,115,232,.75) !important;}',
-      '[data-wys-hot="枠"]{outline-color:rgba(15,138,106,.75) !important;}',
-      '[data-wys-hot="部品"]{outline-color:rgba(194,97,12,.75) !important;}',
+      '[data-wys-hot="backdrop"]{outline-color:rgba(124,92,191,.75) !important;}',
+      '[data-wys-hot="section"]{outline-color:rgba(26,115,232,.75) !important;}',
+      '[data-wys-hot="panel"]{outline-color:rgba(15,138,106,.75) !important;}',
+      '[data-wys-hot="part"]{outline-color:rgba(194,97,12,.75) !important;}',
 
       '[data-wys-sel]{outline:2px solid #1a73e8 !important; outline-offset:-2px;}',
 
       /* 名前の付いた単位。色と名前を一対一にする */
-      '[data-wys-lv="背景"]{outline:2px solid #7c5cbf !important; outline-offset:-2px;}',
-      '[data-wys-lv="段"]{outline:2px solid #1a73e8 !important; outline-offset:-2px;}',
-      '[data-wys-lv="枠"]{outline:2px solid #0f8a6a !important; outline-offset:-2px;}',
-      '[data-wys-lv="部品"]{outline:2px solid #c2610c !important; outline-offset:-2px;}',
+      '[data-wys-lv="backdrop"]{outline:2px solid #7c5cbf !important; outline-offset:-2px;}',
+      '[data-wys-lv="section"]{outline:2px solid #1a73e8 !important; outline-offset:-2px;}',
+      '[data-wys-lv="panel"]{outline:2px solid #0f8a6a !important; outline-offset:-2px;}',
+      '[data-wys-lv="part"]{outline:2px solid #c2610c !important; outline-offset:-2px;}',
 
       /*
          選んだものの名札。ボタンと同じ帯に並べたいので、擬似要素ではなく
@@ -1397,9 +1397,23 @@
      それに、プレビューを見ている人の視界にパネルの下部は入っていない。
      いま見ている場所に、そこでできることを書く。
   */
+  /*
+     階層の鍵。内部ではこの4語だけを使う。
+
+     画面に出す文字は LEVEL_NAMES にまとめてある。ここを日本語のままに
+     しておくと、訳した瞬間に CSS の選択子と合わなくなり、枠線が黙って
+     出なくなる。表示と識別子は分けておく。
+  */
   var LEVEL_COLORS = {
-    '背景': '#7c5cbf', '段': '#1a73e8', '枠': '#0f8a6a', '部品': '#c2610c'
+    backdrop: '#7c5cbf', section: '#1a73e8', panel: '#0f8a6a', part: '#c2610c'
   };
+
+  /** 画面に出す階層の名前。訳すのはここだけ */
+  var LEVEL_NAMES = {
+    backdrop: '背景', section: '段', panel: '枠', part: '部品'
+  };
+
+  function levelName(lv) { return LEVEL_NAMES[lv] || ''; }
 
   function nameTip(elem) {
     if (wys.editing === elem) return 'Esc で選び直す';
@@ -1416,7 +1430,7 @@
     wys.name.style.background = editing ? '#1e8e3e' : (LEVEL_COLORS[lv] || '#5f6672');
 
     var head = wys.doc.createElement('span');
-    head.textContent = editing ? '編集中' : (lv || elementLabel(elem));
+    head.textContent = editing ? '編集中' : (levelName(lv) || elementLabel(elem));
     wys.name.appendChild(head);
 
     var tip = nameTip(elem);
@@ -2178,22 +2192,22 @@
     if (!section) {
       var back = backdropUnit();
       return (back && (back === elem || back.contains(elem)))
-        ? { el: back, lv: '背景' }
+        ? { el: back, lv: 'backdrop' }
         : null;
     }
 
     var part = partOf(elem, section);
-    if (part) return { el: part, lv: '部品' };
+    if (part) return { el: part, lv: 'part' };
 
     // 文字のない場所。面を持つ、いちばん内側の箱を選ぶ
     var node = elem;
 
     while (node && node !== section) {
-      if (hasSurface(node)) return { el: node, lv: '枠' };
+      if (hasSurface(node)) return { el: node, lv: 'panel' };
       node = node.parentElement;
     }
 
-    return { el: section, lv: '段' };
+    return { el: section, lv: 'section' };
   }
 
   /** すでに選んでいる要素が、どの単位にあたるか */
@@ -2216,21 +2230,21 @@
     var unit = unitOf(elem);
     if (!unit) return path;
 
-    if (unit.lv === '背景') return [unit];
+    if (unit.lv === 'backdrop') return [unit];
 
     var section = sectionUnit(unit.el) || sectionUnit(elem);
     if (!section) return [unit];
 
     var back = backdropUnit();
-    if (back) path.push({ el: back, lv: '背景' });
-    path.push({ el: section, lv: '段' });
+    if (back) path.push({ el: back, lv: 'backdrop' });
+    path.push({ el: section, lv: 'section' });
 
     // 段と、選んだものの間にある枠を、外側から順に
     var boxes = [];
     var node = unit.el.parentElement;
 
     while (node && node !== section) {
-      if (hasSurface(node)) boxes.unshift({ el: node, lv: '枠' });
+      if (hasSurface(node)) boxes.unshift({ el: node, lv: 'panel' });
       node = node.parentElement;
     }
 
@@ -2248,16 +2262,15 @@
    * 中の文字を少し添えて、どちらの箱なのかを分かるようにする。
    */
   function unitName(elem, lv) {
-    if (lv === '背景') return '背景';
-    if (lv === '段') return '段';
+    if (lv === 'backdrop' || lv === 'section') return levelName(lv);
 
     var text = (elem.textContent || '').replace(/\s+/g, ' ').trim();
     if (!text && elem.querySelector && elem.querySelector('img')) return '画像';
-    if (!text) return lv === '枠' ? '枠' : elementLabel(elem);
+    if (!text) return lv === 'panel' ? levelName(lv) : elementLabel(elem);
 
     var short = text.length > 16 ? text.slice(0, 16) + '…' : text;
 
-    return lv === '枠' ? '枠：' + short : short;
+    return lv === 'panel' ? levelName(lv) + '：' + short : short;
   }
 
   /**
@@ -3350,7 +3363,7 @@
       var button = document.createElement('button');
       button.className = 'unit' + (unit.el === elem ? ' active' : '');
       button.dataset.lv = unit.lv;
-      button.textContent = unit.lv;
+      button.textContent = levelName(unit.lv);
       button.title = unitName(unit.el, unit.lv);
       button.addEventListener('click', function () { selectElement(unit.el); });
 
