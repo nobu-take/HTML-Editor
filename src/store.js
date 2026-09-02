@@ -27,7 +27,74 @@
     try { return JSON.parse(localStorage.getItem(KEY)) || { my: {}, shared: {} }; }
     catch (e) { return { my: {}, shared: {} }; }
   }
-  function persist(store) { localStorage.setItem(KEY, JSON.stringify(store)); }
+  /*
+     書き込みは、いっぱいになると例外になる。
+
+     そのまま投げると「保存できませんでした」としか出ず、何が起きたのか
+     分からない。しかも原因はたいてい版履歴で、原稿の数ではない。
+     1原稿につき最大30版まで残るので、上書き保存を繰り返した原稿が
+     数件あるだけで、原稿100件ぶんより重くなることがある。
+
+     まず版履歴を削って、それでも入らなければ理由を添えて伝える。
+  */
+  function persist(store) {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(store));
+      return;
+    } catch (err) {
+      if (!isFull(err)) throw err;
+    }
+
+    var freed = dropOldestVersions(store);
+
+    if (freed) {
+      try {
+        localStorage.setItem(KEY, JSON.stringify(store));
+        return;
+      } catch (err2) {
+        if (!isFull(err2)) throw err2;
+      }
+    }
+
+    throw new Error('保存先がいっぱいです。'
+      + '使わない原稿を消すか、「書き出す」でHTMLとして手元に保存してから消してください。'
+      + '（保存先はこのブラウザの中で、容量に上限があります）');
+  }
+
+  function isFull(err) {
+    return err && (err.name === 'QuotaExceededError'
+      || err.name === 'NS_ERROR_DOM_QUOTA_REACHED'
+      || err.code === 22);
+  }
+
+  /**
+   * いちばん古い版から順に捨てて、場所を空ける。
+   *
+   * 消すのは版だけで、原稿そのものには手を触れない。
+   * 黙って原稿が消えるのがいちばん困るため。
+   *
+   * @return {boolean} 1件でも捨てられたか
+   */
+  function dropOldestVersions(store) {
+    var all = [];
+
+    Object.keys(store).forEach(function (loc) {
+      Object.keys(store[loc] || {}).forEach(function (id) {
+        var doc = store[loc][id];
+        if (doc && doc.versions && doc.versions.length) all.push(doc);
+      });
+    });
+
+    if (!all.length) return false;
+
+    // 版をいちばん多く抱えているものから削る
+    all.sort(function (a, b) { return b.versions.length - a.versions.length; });
+
+    var half = Math.max(1, Math.ceil(all[0].versions.length / 2));
+    all[0].versions = all[0].versions.slice(0, all[0].versions.length - half);
+
+    return true;
+  }
   function settings() {
     try { return JSON.parse(localStorage.getItem(SET_KEY)) || {}; } catch (e) { return {}; }
   }
@@ -294,11 +361,7 @@
     // --- 自分のテンプレート ---
 
     getCustomTemplates: function () {
-      // 共有はこの版に無いので、空で返す。画面はこの形を期待している
-      return {
-        shared: { items: [], url: '', error: '' },
-        mine: { items: myTemplates(), error: '' }
-      };
+      return { mine: { items: myTemplates(), error: '' } };
     },
 
     saveMyTemplate: function (payload) {

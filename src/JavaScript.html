@@ -126,8 +126,7 @@
     templates: [],
     categories: [],
     loadFailed: false,      // テンプレートの取得に失敗したか
-    custom: {               // ドライブから読んだテンプレート
-      shared: { items: [], error: '' },
+    custom: {               // 自分で登録したテンプレート
       mine: { items: [], error: '' }
     },
     customLoaded: false,    // 一度でも読めたか（読み込み中の表示に使う）
@@ -248,7 +247,7 @@
       'web-modal', 'web-headings', 'web-responsive', 'web-report', 'web-output',
       'web-copy', 'web-save', 'web-close',
       'ai-modal', 'ai-presets', 'ai-question', 'ai-include', 'ai-prompt', 'ai-answer',
-      'ai-status', 'ai-copy', 'ai-open', 'ai-manage', 'ai-check', 'ai-replace',
+      'ai-status', 'ai-copy', 'ai-manage', 'ai-check', 'ai-replace',
       'ai-insert', 'ai-close',
       'prompt-modal', 'prompt-list', 'prompt-name', 'prompt-body',
       'prompt-save', 'prompt-reset', 'prompt-close', 'prompt-editing',
@@ -369,7 +368,6 @@
 
     el['ai-close'].addEventListener('click', function () { hide(el['ai-modal']); });
     el['ai-copy'].addEventListener('click', copyPrompt);
-    el['ai-open'].addEventListener('click', openGemini);
     el['ai-manage'].addEventListener('click', openPrompts);
     el['ai-check'].addEventListener('click', checkAnswer);
     el['ai-replace'].addEventListener('click', function () { applyAnswer('replace'); });
@@ -5037,18 +5035,16 @@
   // -------------------------------------------------------------------------
   // AIに聞く
   //
-  // このアプリはAIを実行しない。Geminiに貼り付けるための文面を組み立て、
+  // このアプリはAIを実行しない。AIに貼り付けるための文面を組み立て、
   // 返ってきたHTMLを取り込むところまでを受け持つ。
   //
-  // Gemini は URL でプロンプトを受け取る仕組みを公式に持たないため、
-  // クリップボード経由で渡す。HTML本文はURLの長さ上限にも収まらない。
+  // 相手は選ばない。ChatGPT でも Claude でも Gemini でも、使い慣れたもので
+  // かまわない。だからクリップボード経由で渡す。特定のサービスのURLに
+  // 寄せると、そこが変わったときに使えなくなる。
   // -------------------------------------------------------------------------
 
-  /** カスタムテンプレートの分類名。Templates.gs と同じ文字列にする */
-  var SHARED_CATEGORY = '共有カスタムテンプレート';
+  /** カスタムテンプレートの分類名。store.js と同じ文字列にする */
   var MY_CATEGORY = '自分のテンプレート';
-
-  var GEMINI_URL = 'https://gemini.google.com/app';
 
   /** 依頼の種類（あらかじめ用意したもの） */
   var AI_PRESETS = [
@@ -5188,11 +5184,6 @@
     copyText(el['ai-prompt'].value);
   }
 
-  function openGemini() {
-    window.open(GEMINI_URL, '_blank');
-    showAiStatus('Geminiを開きました。貼り付けて実行し、返ってきたHTMLを下の欄に貼ってください。');
-  }
-
   // --- 回答の取り込み -------------------------------------------------------
 
   /** ```html … ``` の囲みを外し、HTMLだけを取り出す */
@@ -5205,7 +5196,7 @@
     var html = extractHtml(el['ai-answer'].value);
 
     if (!html) {
-      showAiStatus('取り込む内容がありません。Geminiの回答を貼り付けてください。', true);
+      showAiStatus('取り込む内容がありません。AIの回答を貼り付けてください。', true);
       return null;
     }
     if (!/<[a-z][\s\S]*>/i.test(html)) {
@@ -6478,19 +6469,18 @@
       thumbWatcher = null;
     }
 
-    var shared = customItems('shared');
     var mine = customItems('mine');
-    var all = shared.concat(mine, state.templates);
+    var all = mine.concat(state.templates);
 
     // 読み込みの途中に開かれることがある。取れ次第ここが呼び直される。
-    if (!all.length && !customError('shared') && !customError('mine')) {
+    if (!all.length && !customError('mine')) {
       list.appendChild(emptyNode(state.loadFailed
         ? 'テンプレートを取得できませんでした。'
         : 'テンプレートを読み込んでいます…'));
       return;
     }
 
-    var categories = [SHARED_CATEGORY, MY_CATEGORY];
+    var categories = [MY_CATEGORY];
     state.categories.forEach(function (category) {
       if (categories.indexOf(category) === -1) categories.push(category);
     });
@@ -6518,19 +6508,6 @@
         var box = document.createElement('div');
         box.className = 'tpl-note';
         box.textContent = note;
-
-        // 共有ぶんは、置き場そのものを開けるようにしておく
-        var url = category === SHARED_CATEGORY ? (state.custom.shared || {}).url : '';
-        if (url) {
-          var link = document.createElement('a');
-          link.href = url;
-          link.target = '_blank';
-          link.rel = 'noopener';
-          link.textContent = '置き場を開く';
-          box.appendChild(document.createTextNode(' '));
-          box.appendChild(link);
-        }
-
         group.appendChild(box);
       }
 
@@ -6563,16 +6540,8 @@
    * 空欄のまま出すと「壊れている」と読まれるので、なぜ空なのかを書く。
    */
   function categoryNote(category, count) {
-    var isCustom = category === SHARED_CATEGORY || category === MY_CATEGORY;
-
     // 読み終わる前に「まだありません」と出すと、無いのか読んでいるのか分からない
-    if (isCustom && !state.customLoaded) return '読み込んでいます…';
-
-    if (category === SHARED_CATEGORY) {
-      if (customError('shared')) return customError('shared');
-      if (!count) return '共有のテンプレートはまだありません。'
-        + '置き場のフォルダにHTMLファイルを入れると、全員のこの欄に並びます。';
-    }
+    if (category === MY_CATEGORY && !state.customLoaded) return '読み込んでいます…';
 
     if (category === MY_CATEGORY) {
       if (customError('mine')) return customError('mine');

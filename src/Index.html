@@ -281,12 +281,12 @@
           <h2 id="ai-title">AIに聞く</h2>
           <p class="ai-explain">
             <b>このツールはAIを動かしません。</b>
-            Geminiに貼り付けるための<b>文面（プロンプト）を組み立てるだけ</b>です。
-            実際のやりとりはGeminiの画面で、あなた自身が行います。
+            AIに貼り付けるための<b>文面（プロンプト）を組み立てるだけ</b>です。
+            実際のやりとりは、お使いのAIの画面で、あなた自身が行います。
           </p>
           <ol class="ai-steps">
             <li><b>依頼を選ぶ</b><span>下で目的と質問を入力します</span></li>
-            <li><b>コピーしてGeminiへ</b><span>貼り付けて実行します</span></li>
+            <li><b>コピーしてAIへ</b><span>貼り付けて実行します</span></li>
             <li><b>回答を取り込む</b><span>返ってきたHTMLをここに貼ります</span></li>
           </ol>
         </div>
@@ -311,7 +311,7 @@
 
             <p id="ai-privacy" class="note warn">
               <b>渡す内容にご注意ください</b>
-              右の文面がそのままGeminiに渡ります。顧客名・メールアドレスなどが含まれていないか、
+              右の文面がそのままAIに渡ります。個人名・メールアドレスなどが含まれていないか、
               コピーする前にご確認ください。文面の相談だけなら、上のチェックを外せばHTMLは含まれません。
             </p>
           </div>
@@ -319,13 +319,13 @@
           <!-- 3: 受け渡しする文面 -->
           <div class="ai-card ai-col">
             <div class="field field-grow">
-              <label for="ai-prompt">Geminiに渡す文面<span class="field-note">そのままコピーされます</span></label>
+              <label for="ai-prompt">AIに渡す文面<span class="field-note">そのままコピーされます</span></label>
               <textarea id="ai-prompt" spellcheck="false" readonly></textarea>
             </div>
 
             <div class="field field-grow">
               <label for="ai-answer">AIの回答を取り込む<span class="field-note">HTMLを貼り付けてください</span></label>
-              <textarea id="ai-answer" spellcheck="false" placeholder="Geminiが返したHTMLをここに貼り付けます。```html の囲みは付いたままで構いません"></textarea>
+              <textarea id="ai-answer" spellcheck="false" placeholder="AIが返したHTMLをここに貼り付けます。```html の囲みは付いたままで構いません"></textarea>
             </div>
 
             <p id="ai-status" class="note" hidden></p>
@@ -335,10 +335,9 @@
         <!-- 4: 操作 -->
         <div class="ai-card ai-actions">
           <span class="ai-actions__group">
-            <span class="tool-label">Geminiへ渡す</span>
+            <span class="tool-label">AIへ渡す</span>
             <span class="seg">
               <button id="ai-copy" class="primary">プロンプトをコピー</button>
-              <button id="ai-open">Geminiを開く</button>
               <button id="ai-manage">依頼を登録・編集</button>
             </span>
           </span>

@@ -31,28 +31,57 @@
    * 枠線と区切り線は使わない。パネル同士は 5px の隙間を空け、
    * 下地の色をそのまま継ぎ目にする。まとまりは間隔の差で示す
    * （群と群のあいだ 18px / 群の中 2px）。
+   *
+   * 暗い下地にしてある。理由は2つ。
+   *
+   *   ・作るものが白い。原稿は白い紙のようなもので、画面の中でいちばん
+   *     明るい。まわりを暗くすると、そこだけが浮き上がって見える。
+   *     編集の道具は、道具そのものではなく作りかけを見せるためにある。
+   *   ・長く見る画面だから。テンプレートを直し、文面を練り、色を合わせる。
+   *     白い面を広く出し続けるのは、その使い方には向かない。
+   *
+   * 明度は 3 段に絞ってある。段を増やすほど、どれが手前なのか読みにくくなる。
    */
   :root {
-    --bg: #e9ecf1;          /* 下地。パネルの隙間から見える */
-    --panel: #ffffff;       /* ヘッダー・一覧・ツールバーなど */
-    --sunken: #f1f3f7;      /* 入力欄 */
-    --hover: #e2e7ef;       /* ボタンのホバー */
-    --canvas: #dfe3ea;      /* プレビューの地 */
+    --bg: #0e1013;          /* 下地。パネルの隙間から見える */
+    --panel: #191c21;       /* ヘッダー・一覧・ツールバーなど */
+    --sunken: #23272e;      /* 入力欄 */
+    --hover: #2d323a;       /* ボタンのホバー */
+    --canvas: #08090b;      /* プレビューの地。原稿の白がいちばん映える */
 
-    --text: #1f2328;
-    --body: #3c4149;        /* ボタンの文字 */
-    --muted: #6b7280;
-    --faint: #a7aebb;       /* ラベル・無効 */
+    --text: #e9ecf1;
+    --body: #c3c9d4;        /* ボタンの文字 */
+    --muted: #a2aab7;
+    /*
+       ラベルと無効。暗い下地では、明るいときと同じ濃さでは沈む。
+       ここは実測で決めた。パネルの上で 5.3、入力欄の上で 4.65。
+       いずれも本文として読める下限（4.5）を超える。
+    */
+    --faint: #87909e;
 
-    --accent: #1a73e8;
-    --accent-weak: #dbe7fb;
-    --accent-ink: #14539c;
-    --danger: #b3261e;
-    --danger-weak: #fbe9e7;
-    --ok: #1e8e3e;
-    --ok-weak: #e4f4ec;   /* 編集中の案内など、緑の下地 */
-    --warn: #8a5b00;
-    --warn-weak: #fdf3e0;
+    /*
+       強調の色。暗い下地では、明るい配色のままだと沈んで読めない。
+       彩度を落とし、明度を上げてある。
+    */
+    --accent: #5b9cf8;
+    --accent-weak: #1e2c42;   /* 選択中の下地。青の気配だけ残す */
+    --accent-ink: #a8c9ff;    /* その上に乗る文字 */
+    --danger: #f2837a;
+    --danger-weak: #3a211f;
+    --ok: #62c98b;
+    --ok-weak: #172b20;
+    --warn: #e0b25f;
+    --warn-weak: #302617;
+
+    /*
+       浮いていることの示し方。
+
+       暗い下地では黒い影が見えない。落ち影ではなく、上の縁に淡い光を
+       入れて、面が手前にあることを示す。
+    */
+    --lift: inset 0 1px 0 rgba(255, 255, 255, .06);
+    --lift-strong: inset 0 1px 0 rgba(255, 255, 255, .09),
+                   0 18px 44px rgba(0, 0, 0, .55);
 
     --radius: 6px;
     --radius-panel: 10px;
@@ -111,13 +140,14 @@
   button.primary {
     padding: 6px 14px;
     background: var(--accent);
-    color: #fff;
+    /* 明るい青の上は、白より暗い文字のほうが読める */
+    color: #0e1013;
     font-weight: 600;
   }
 
-  button.primary svg { color: #fff; }
-  button.primary:hover:not(:disabled) { background: #1765cc; color: #fff; }
-  button.primary:disabled { background: #b9c6dc; color: #fff; }
+  button.primary svg { color: #0e1013; }
+  button.primary:hover:not(:disabled) { background: #78b0ff; color: #0e1013; }
+  button.primary:disabled { background: #34404f; color: #7b8492; }
 
   /* 破壊的な操作は、色を文字とアイコンだけに乗せる */
   button.danger { color: var(--danger); }
@@ -160,7 +190,7 @@
     padding: 14px 16px 12px;
     border-radius: 10px;
     background: var(--panel);
-    box-shadow: 0 2px 4px rgba(31, 35, 40, .06), 0 14px 32px -10px rgba(31, 35, 40, .28);
+    box-shadow: var(--lift-strong);
   }
 
   .pop[hidden] { display: none; }
@@ -720,7 +750,7 @@
   .tool-rail:hover .rail-inner,
   .tool-rail:focus-within .rail-inner {
     width: 176px;
-    box-shadow: 0 2px 4px rgba(31, 35, 40, .06), 0 12px 30px -10px rgba(31, 35, 40, .3);
+    box-shadow: var(--lift-strong);
   }
 
   .rail-head {
@@ -1066,7 +1096,7 @@
     width: 18px;
     height: 18px;
     border-radius: 4px;
-    box-shadow: inset 0 0 0 1px rgba(31, 35, 40, .12);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14);
   }
 
   .used-swatch:hover { outline: 2px solid var(--accent); outline-offset: 1px; }
@@ -1325,7 +1355,7 @@
     padding: 6px 10px;
     border-radius: 999px;
     background: var(--panel);
-    box-shadow: 0 4px 18px rgba(20, 30, 50, .18);
+    box-shadow: var(--lift), 0 4px 18px rgba(0, 0, 0, .45);
   }
 
   .zen-bar[hidden] { display: none; }
@@ -1363,7 +1393,7 @@
     padding: 22px;
     border-radius: 12px;
     background: var(--panel);
-    box-shadow: 0 16px 40px rgba(20, 30, 50, .24);
+    box-shadow: var(--lift-strong);
   }
 
   .dialog-wide { width: min(880px, 100%); }
@@ -2031,12 +2061,12 @@
           <h2 id="ai-title">AIに聞く</h2>
           <p class="ai-explain">
             <b>このツールはAIを動かしません。</b>
-            Geminiに貼り付けるための<b>文面（プロンプト）を組み立てるだけ</b>です。
-            実際のやりとりはGeminiの画面で、あなた自身が行います。
+            AIに貼り付けるための<b>文面（プロンプト）を組み立てるだけ</b>です。
+            実際のやりとりは、お使いのAIの画面で、あなた自身が行います。
           </p>
           <ol class="ai-steps">
             <li><b>依頼を選ぶ</b><span>下で目的と質問を入力します</span></li>
-            <li><b>コピーしてGeminiへ</b><span>貼り付けて実行します</span></li>
+            <li><b>コピーしてAIへ</b><span>貼り付けて実行します</span></li>
             <li><b>回答を取り込む</b><span>返ってきたHTMLをここに貼ります</span></li>
           </ol>
         </div>
@@ -2061,7 +2091,7 @@
 
             <p id="ai-privacy" class="note warn">
               <b>渡す内容にご注意ください</b>
-              右の文面がそのままGeminiに渡ります。顧客名・メールアドレスなどが含まれていないか、
+              右の文面がそのままAIに渡ります。個人名・メールアドレスなどが含まれていないか、
               コピーする前にご確認ください。文面の相談だけなら、上のチェックを外せばHTMLは含まれません。
             </p>
           </div>
@@ -2069,13 +2099,13 @@
           <!-- 3: 受け渡しする文面 -->
           <div class="ai-card ai-col">
             <div class="field field-grow">
-              <label for="ai-prompt">Geminiに渡す文面<span class="field-note">そのままコピーされます</span></label>
+              <label for="ai-prompt">AIに渡す文面<span class="field-note">そのままコピーされます</span></label>
               <textarea id="ai-prompt" spellcheck="false" readonly></textarea>
             </div>
 
             <div class="field field-grow">
               <label for="ai-answer">AIの回答を取り込む<span class="field-note">HTMLを貼り付けてください</span></label>
-              <textarea id="ai-answer" spellcheck="false" placeholder="Geminiが返したHTMLをここに貼り付けます。```html の囲みは付いたままで構いません"></textarea>
+              <textarea id="ai-answer" spellcheck="false" placeholder="AIが返したHTMLをここに貼り付けます。```html の囲みは付いたままで構いません"></textarea>
             </div>
 
             <p id="ai-status" class="note" hidden></p>
@@ -2085,10 +2115,9 @@
         <!-- 4: 操作 -->
         <div class="ai-card ai-actions">
           <span class="ai-actions__group">
-            <span class="tool-label">Geminiへ渡す</span>
+            <span class="tool-label">AIへ渡す</span>
             <span class="seg">
               <button id="ai-copy" class="primary">プロンプトをコピー</button>
-              <button id="ai-open">Geminiを開く</button>
               <button id="ai-manage">依頼を登録・編集</button>
             </span>
           </span>
@@ -2386,7 +2415,74 @@
     try { return JSON.parse(localStorage.getItem(KEY)) || { my: {}, shared: {} }; }
     catch (e) { return { my: {}, shared: {} }; }
   }
-  function persist(store) { localStorage.setItem(KEY, JSON.stringify(store)); }
+  /*
+     書き込みは、いっぱいになると例外になる。
+
+     そのまま投げると「保存できませんでした」としか出ず、何が起きたのか
+     分からない。しかも原因はたいてい版履歴で、原稿の数ではない。
+     1原稿につき最大30版まで残るので、上書き保存を繰り返した原稿が
+     数件あるだけで、原稿100件ぶんより重くなることがある。
+
+     まず版履歴を削って、それでも入らなければ理由を添えて伝える。
+  */
+  function persist(store) {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(store));
+      return;
+    } catch (err) {
+      if (!isFull(err)) throw err;
+    }
+
+    var freed = dropOldestVersions(store);
+
+    if (freed) {
+      try {
+        localStorage.setItem(KEY, JSON.stringify(store));
+        return;
+      } catch (err2) {
+        if (!isFull(err2)) throw err2;
+      }
+    }
+
+    throw new Error('保存先がいっぱいです。'
+      + '使わない原稿を消すか、「書き出す」でHTMLとして手元に保存してから消してください。'
+      + '（保存先はこのブラウザの中で、容量に上限があります）');
+  }
+
+  function isFull(err) {
+    return err && (err.name === 'QuotaExceededError'
+      || err.name === 'NS_ERROR_DOM_QUOTA_REACHED'
+      || err.code === 22);
+  }
+
+  /**
+   * いちばん古い版から順に捨てて、場所を空ける。
+   *
+   * 消すのは版だけで、原稿そのものには手を触れない。
+   * 黙って原稿が消えるのがいちばん困るため。
+   *
+   * @return {boolean} 1件でも捨てられたか
+   */
+  function dropOldestVersions(store) {
+    var all = [];
+
+    Object.keys(store).forEach(function (loc) {
+      Object.keys(store[loc] || {}).forEach(function (id) {
+        var doc = store[loc][id];
+        if (doc && doc.versions && doc.versions.length) all.push(doc);
+      });
+    });
+
+    if (!all.length) return false;
+
+    // 版をいちばん多く抱えているものから削る
+    all.sort(function (a, b) { return b.versions.length - a.versions.length; });
+
+    var half = Math.max(1, Math.ceil(all[0].versions.length / 2));
+    all[0].versions = all[0].versions.slice(0, all[0].versions.length - half);
+
+    return true;
+  }
   function settings() {
     try { return JSON.parse(localStorage.getItem(SET_KEY)) || {}; } catch (e) { return {}; }
   }
@@ -2653,11 +2749,7 @@
     // --- 自分のテンプレート ---
 
     getCustomTemplates: function () {
-      // 共有はこの版に無いので、空で返す。画面はこの形を期待している
-      return {
-        shared: { items: [], url: '', error: '' },
-        mine: { items: myTemplates(), error: '' }
-      };
+      return { mine: { items: myTemplates(), error: '' } };
     },
 
     saveMyTemplate: function (payload) {
@@ -2940,8 +3032,7 @@
     templates: [],
     categories: [],
     loadFailed: false,      // テンプレートの取得に失敗したか
-    custom: {               // ドライブから読んだテンプレート
-      shared: { items: [], error: '' },
+    custom: {               // 自分で登録したテンプレート
       mine: { items: [], error: '' }
     },
     customLoaded: false,    // 一度でも読めたか（読み込み中の表示に使う）
@@ -3062,7 +3153,7 @@
       'web-modal', 'web-headings', 'web-responsive', 'web-report', 'web-output',
       'web-copy', 'web-save', 'web-close',
       'ai-modal', 'ai-presets', 'ai-question', 'ai-include', 'ai-prompt', 'ai-answer',
-      'ai-status', 'ai-copy', 'ai-open', 'ai-manage', 'ai-check', 'ai-replace',
+      'ai-status', 'ai-copy', 'ai-manage', 'ai-check', 'ai-replace',
       'ai-insert', 'ai-close',
       'prompt-modal', 'prompt-list', 'prompt-name', 'prompt-body',
       'prompt-save', 'prompt-reset', 'prompt-close', 'prompt-editing',
@@ -3183,7 +3274,6 @@
 
     el['ai-close'].addEventListener('click', function () { hide(el['ai-modal']); });
     el['ai-copy'].addEventListener('click', copyPrompt);
-    el['ai-open'].addEventListener('click', openGemini);
     el['ai-manage'].addEventListener('click', openPrompts);
     el['ai-check'].addEventListener('click', checkAnswer);
     el['ai-replace'].addEventListener('click', function () { applyAnswer('replace'); });
@@ -7851,18 +7941,16 @@
   // -------------------------------------------------------------------------
   // AIに聞く
   //
-  // このアプリはAIを実行しない。Geminiに貼り付けるための文面を組み立て、
+  // このアプリはAIを実行しない。AIに貼り付けるための文面を組み立て、
   // 返ってきたHTMLを取り込むところまでを受け持つ。
   //
-  // Gemini は URL でプロンプトを受け取る仕組みを公式に持たないため、
-  // クリップボード経由で渡す。HTML本文はURLの長さ上限にも収まらない。
+  // 相手は選ばない。ChatGPT でも Claude でも Gemini でも、使い慣れたもので
+  // かまわない。だからクリップボード経由で渡す。特定のサービスのURLに
+  // 寄せると、そこが変わったときに使えなくなる。
   // -------------------------------------------------------------------------
 
-  /** カスタムテンプレートの分類名。Templates.gs と同じ文字列にする */
-  var SHARED_CATEGORY = '共有カスタムテンプレート';
+  /** カスタムテンプレートの分類名。store.js と同じ文字列にする */
   var MY_CATEGORY = '自分のテンプレート';
-
-  var GEMINI_URL = 'https://gemini.google.com/app';
 
   /** 依頼の種類（あらかじめ用意したもの） */
   var AI_PRESETS = [
@@ -8002,11 +8090,6 @@
     copyText(el['ai-prompt'].value);
   }
 
-  function openGemini() {
-    window.open(GEMINI_URL, '_blank');
-    showAiStatus('Geminiを開きました。貼り付けて実行し、返ってきたHTMLを下の欄に貼ってください。');
-  }
-
   // --- 回答の取り込み -------------------------------------------------------
 
   /** ```html … ``` の囲みを外し、HTMLだけを取り出す */
@@ -8019,7 +8102,7 @@
     var html = extractHtml(el['ai-answer'].value);
 
     if (!html) {
-      showAiStatus('取り込む内容がありません。Geminiの回答を貼り付けてください。', true);
+      showAiStatus('取り込む内容がありません。AIの回答を貼り付けてください。', true);
       return null;
     }
     if (!/<[a-z][\s\S]*>/i.test(html)) {
@@ -9292,19 +9375,18 @@
       thumbWatcher = null;
     }
 
-    var shared = customItems('shared');
     var mine = customItems('mine');
-    var all = shared.concat(mine, state.templates);
+    var all = mine.concat(state.templates);
 
     // 読み込みの途中に開かれることがある。取れ次第ここが呼び直される。
-    if (!all.length && !customError('shared') && !customError('mine')) {
+    if (!all.length && !customError('mine')) {
       list.appendChild(emptyNode(state.loadFailed
         ? 'テンプレートを取得できませんでした。'
         : 'テンプレートを読み込んでいます…'));
       return;
     }
 
-    var categories = [SHARED_CATEGORY, MY_CATEGORY];
+    var categories = [MY_CATEGORY];
     state.categories.forEach(function (category) {
       if (categories.indexOf(category) === -1) categories.push(category);
     });
@@ -9332,19 +9414,6 @@
         var box = document.createElement('div');
         box.className = 'tpl-note';
         box.textContent = note;
-
-        // 共有ぶんは、置き場そのものを開けるようにしておく
-        var url = category === SHARED_CATEGORY ? (state.custom.shared || {}).url : '';
-        if (url) {
-          var link = document.createElement('a');
-          link.href = url;
-          link.target = '_blank';
-          link.rel = 'noopener';
-          link.textContent = '置き場を開く';
-          box.appendChild(document.createTextNode(' '));
-          box.appendChild(link);
-        }
-
         group.appendChild(box);
       }
 
@@ -9377,16 +9446,8 @@
    * 空欄のまま出すと「壊れている」と読まれるので、なぜ空なのかを書く。
    */
   function categoryNote(category, count) {
-    var isCustom = category === SHARED_CATEGORY || category === MY_CATEGORY;
-
     // 読み終わる前に「まだありません」と出すと、無いのか読んでいるのか分からない
-    if (isCustom && !state.customLoaded) return '読み込んでいます…';
-
-    if (category === SHARED_CATEGORY) {
-      if (customError('shared')) return customError('shared');
-      if (!count) return '共有のテンプレートはまだありません。'
-        + '置き場のフォルダにHTMLファイルを入れると、全員のこの欄に並びます。';
-    }
+    if (category === MY_CATEGORY && !state.customLoaded) return '読み込んでいます…';
 
     if (category === MY_CATEGORY) {
       if (customError('mine')) return customError('mine');
