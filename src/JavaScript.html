@@ -38,15 +38,6 @@
   ];
 
   /** 新しく署名を登録するときの下書き */
-  var SIGNATURE_DRAFT = [
-    '<div style="font-family:\'Hiragino Sans\',\'Yu Gothic\',Meiryo,sans-serif; font-size:13px; line-height:1.8; color:#6b7280;">',
-    '  ────────────────────<br />',
-    '  株式会社サンプル　営業部<br />',
-    '  山田 太郎<br />',
-    '  TEL: 00-0000-0000 / MAIL: sample@example.com<br />',
-    '  〒000-0000 東京都〇〇区〇〇 0-0-0',
-    '</div>'
-  ].join('\n');
 
   /** 引用の見た目。解除の判定にも使う */
   var QUOTE_BORDER = '3px solid #dfe3e8';
@@ -137,6 +128,7 @@
     customLoading: false,
     parts: [],
     signatures: [],
+    signatureRaw: false,   // 組み立てで扱えない署名は、HTMLのまま編集する
     editingSignatureId: null,
     activeTag: '',
     versions: [],
@@ -272,6 +264,9 @@
       'gmail-modal', 'gmail-subject', 'gmail-to', 'gmail-note', 'gmail-cancel',
       'gmail-gmail', 'gmail-outlook', 'gmail-eml', 'gmail-copy',
       'signature-modal', 'signature-list', 'signature-name', 'signature-html',
+      'signature-form', 'signature-simple', 'signature-text', 'signature-size',
+      'signature-height', 'signature-color', 'signature-color-value',
+      'signature-preview', 'signature-raw-note',
       'signature-save', 'signature-reset', 'signature-close', 'signature-editing',
       'confirm', 'confirm-body', 'confirm-ok', 'confirm-cancel',
       'template-modal', 'template-list', 'template-cancel',
@@ -556,6 +551,19 @@
     el['signature-close'].addEventListener('click', function () { hide(el['signature-modal']); });
     el['signature-save'].addEventListener('click', storeSignature);
     el['signature-reset'].addEventListener('click', function () { editSignature(null); });
+
+    // 文章を打つたび、見た目を変えるたびに、プレビューを描き直す
+    el['signature-text'].addEventListener('input', refreshSignaturePreview);
+    el['signature-color'].addEventListener('input', refreshSignaturePreview);
+
+    el['signature-form'].addEventListener('click', function (event) {
+      var choice = event.target.closest ? event.target.closest('.choice[data-for]') : null;
+      if (!choice) return;
+
+      var target = choice.getAttribute('data-for');
+      el['signature-' + target].value = choice.getAttribute('data-value');
+      refreshSignaturePreview();
+    });
     el['history-close'].addEventListener('click', function () { hide(el['history-modal']); });
     el['history-restore'].addEventListener('click', restoreSelectedVersion);
 
@@ -6288,13 +6296,184 @@
     return button;
   }
 
+  /** 署名で使う書体。テンプレートの既定と揃える */
+  var SIGNATURE_FONT = "'Hiragino Sans','Yu Gothic',Meiryo,sans-serif";
+
+  /*
+     署名の中身は「文章」と「見た目」に分けて持つ。
+
+     以前はHTMLをそのまま書かせていた。だが署名で変えたいのは、文面と、
+     文字の大きさ・行間・色くらいで、そのためにタグを書かせる理由がない。
+     プレビューに入れるだけの機能なので、なおさら。
+
+     とはいえ、これまでに登録したものはHTMLで入っている。読み戻せない形の
+     ものを黙って作り変えると、書いたものが失われる。**読み戻せたものだけ
+     組み立てで扱い、読み戻せなかったものはHTMLのまま編集させる。**
+  */
+
+  var SIGNATURE_LOOK = {
+    size: '13px',
+    height: '1.8',
+    color: '#6b7280'
+  };
+
+  var SIGNATURE_TEXT = [
+    '────────────────────',
+    '株式会社サンプル　営業部',
+    '山田 太郎',
+    'TEL: 00-0000-0000 / MAIL: sample@example.com',
+    '〒000-0000 東京都〇〇区〇〇 0-0-0'
+  ].join('\n');
+
+  /** 文章と見た目から、署名のHTMLを組み立てる */
+  function signatureHtml(text, look) {
+    var lines = String(text).split(/\r?\n/).map(escapeText);
+
+    return '<div style="font-family:' + SIGNATURE_FONT
+      + '; font-size:' + look.size
+      + '; line-height:' + look.height
+      + '; color:' + look.color + ';">\n'
+      + lines.map(function (line, i) {
+        return '  ' + line + (i < lines.length - 1 ? '<br />' : '');
+      }).join('\n')
+      + '\n</div>';
+  }
+
+  /**
+   * 署名のHTMLを、文章と見た目に読み戻す。
+   *
+   * 組み立てたときと同じ形（div ひとつに、<br> で区切った文字だけ）の
+   * ときだけ返す。表や画像やリンクが入っていたら null を返し、
+   * HTMLのまま編集させる。**読めない形を無理に読むと、中身が消える。**
+   */
+  function signatureParts(html) {
+    var box = document.createElement('div');
+    box.innerHTML = String(html || '').trim();
+
+    var root = box.firstElementChild;
+    if (!root || box.children.length !== 1) return null;
+    if (root.tagName !== 'DIV') return null;
+
+    // 中身が <br> と文字だけであること
+    var ok = Array.prototype.every.call(root.childNodes, function (node) {
+      return node.nodeType === 3 || (node.nodeType === 1 && node.tagName === 'BR');
+    });
+    if (!ok) return null;
+
+    var style = root.style;
+
+    /*
+       <br> で切って、切れ端ごとに文字を取り出す。
+
+       組み立てたHTMLは読みやすさのために行ごとに改行を入れてある。
+       <br> をそのまま改行に置き換えると、そのあとの文字ノードが持つ
+       改行と字下げも数えて、区切りが2行になる。
+    */
+    var text = root.innerHTML
+      .split(/<br\s*\/?>/i)
+      .map(function (part) {
+        var piece = document.createElement('div');
+        piece.innerHTML = part;
+        return (piece.textContent || '').trim();
+      })
+      .join('\n');
+
+    return {
+      text: text,
+      look: {
+        size: style.fontSize || SIGNATURE_LOOK.size,
+        height: style.lineHeight || SIGNATURE_LOOK.height,
+        color: toHex(style.color) || SIGNATURE_LOOK.color
+      }
+    };
+  }
+
+
+  /** いま画面に入っている見た目 */
+  function signatureLook() {
+    return {
+      size: el['signature-size'].value || SIGNATURE_LOOK.size,
+      height: el['signature-height'].value || SIGNATURE_LOOK.height,
+      color: el['signature-color'].value || SIGNATURE_LOOK.color
+    };
+  }
+
+  /** 選ばれている値に印を付け直す */
+  function markSignatureChoices() {
+    var look = signatureLook();
+
+    Array.prototype.forEach.call(
+      el['signature-form'].querySelectorAll('.choice[data-for]'),
+      function (button) {
+        var target = button.getAttribute('data-for');
+        var mine = button.getAttribute('data-value');
+        var now = target === 'size' ? look.size : look.height;
+        button.classList.toggle('active', mine === now);
+      }
+    );
+  }
+
+  /** 見た目を変えたら、プレビューに反映する */
+  function refreshSignaturePreview() {
+    markSignatureChoices();
+
+    var look = signatureLook();
+    var view = el['signature-preview'];
+
+    view.style.fontFamily = SIGNATURE_FONT;
+    view.style.fontSize = look.size;
+    view.style.lineHeight = look.height;
+    view.style.color = look.color;
+    view.textContent = '';
+
+    String(el['signature-text'].value).split(/\r?\n/).forEach(function (line, i) {
+      if (i) view.appendChild(document.createElement('br'));
+      view.appendChild(document.createTextNode(line));
+    });
+
+    el['signature-color-value'].textContent = look.color;
+  }
+
+  /** HTMLのまま編集する側に切り替える */
+  function setSignatureRaw(on, html) {
+    state.signatureRaw = !!on;
+
+    el['signature-form'].classList.toggle('is-raw', state.signatureRaw);
+    el['signature-html'].hidden = !state.signatureRaw;
+    el['signature-simple'].hidden = state.signatureRaw;
+    el['signature-raw-note'].hidden = !state.signatureRaw;
+
+    if (state.signatureRaw && typeof html === 'string') {
+      el['signature-html'].value = html;
+    }
+  }
+
+  /**
+   * 編集する署名を画面に載せる。
+   *
+   * 読み戻せた署名は組み立てで、読み戻せなかったものはHTMLのまま扱う。
+   */
   function editSignature(signature) {
     state.editingSignatureId = signature ? signature.id : null;
     el['signature-name'].value = signature ? signature.name : '';
-    el['signature-html'].value = signature ? signature.html : SIGNATURE_DRAFT;
+
+    var parts = signature ? signatureParts(signature.html) : { text: SIGNATURE_TEXT, look: SIGNATURE_LOOK };
+
+    if (parts) {
+      setSignatureRaw(false);
+      el['signature-text'].value = parts.text;
+      el['signature-size'].value = parts.look.size;
+      el['signature-height'].value = parts.look.height;
+      el['signature-color'].value = parts.look.color;
+      refreshSignaturePreview();
+    } else {
+      setSignatureRaw(true, signature.html);
+    }
+
     el['signature-editing'].textContent = signature
       ? '「' + signature.name + '」を編集中'
       : '新しい署名として登録します';
+
     renderSignatures();
   }
 
@@ -6302,7 +6481,9 @@
     var payload = {
       id: state.editingSignatureId,
       name: el['signature-name'].value,
-      html: el['signature-html'].value
+      html: state.signatureRaw
+        ? el['signature-html'].value
+        : signatureHtml(el['signature-text'].value, signatureLook())
     };
 
     el['signature-save'].disabled = true;

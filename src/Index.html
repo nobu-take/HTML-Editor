@@ -576,21 +576,72 @@
         <div class="signature-body">
           <div id="signature-list" class="signature-list"></div>
 
-          <div class="signature-form">
+          <div id="signature-form" class="signature-form">
             <div class="field">
-              <label for="signature-name">署名の名前</label>
+              <label for="signature-name">署名の保存名</label>
               <input id="signature-name" type="text" placeholder="例: 営業部・標準" autocomplete="off" />
             </div>
-            <div class="field field-grow">
-              <label for="signature-html">内容（HTML）</label>
-              <textarea id="signature-html" spellcheck="false"></textarea>
+
+            <div id="signature-simple" class="sig-simple">
+              <div class="field field-grow">
+                <label for="signature-text">本文</label>
+                <textarea id="signature-text" spellcheck="false"></textarea>
+                <span class="field-note">改行がそのまま改行になります。タグを書く必要はありません。</span>
+              </div>
+
+              <div class="sig-look">
+                <div class="sig-look-row">
+                  <span class="sig-look-label">文字サイズ</span>
+                  <span class="seg">
+                    <button type="button" class="choice" data-for="size" data-value="12px">小</button>
+                    <button type="button" class="choice" data-for="size" data-value="13px">標準</button>
+                    <button type="button" class="choice" data-for="size" data-value="15px">大</button>
+                  </span>
+                </div>
+
+                <div class="sig-look-row">
+                  <span class="sig-look-label">行間</span>
+                  <span class="seg">
+                    <button type="button" class="choice" data-for="height" data-value="1.5">狭い</button>
+                    <button type="button" class="choice" data-for="height" data-value="1.8">標準</button>
+                    <button type="button" class="choice" data-for="height" data-value="2.1">広い</button>
+                  </span>
+                </div>
+
+                <div class="sig-look-row">
+                  <span class="sig-look-label">文字色</span>
+                  <input id="signature-color" type="color" value="#6b7280" />
+                  <span id="signature-color-value" class="sig-color-value">#6b7280</span>
+                </div>
+              </div>
+
+              <div class="field">
+                <label>プレビュー</label>
+                <div id="signature-preview" class="sig-preview"></div>
+              </div>
             </div>
+
+            <div class="field field-grow" id="signature-raw-note" hidden>
+              <span class="field-note">
+                この署名は、組み立てで扱えない形（表や画像など）で登録されています。
+                中身を保つため、HTMLのまま編集します。
+              </span>
+            </div>
+
+            <textarea id="signature-html" spellcheck="false" hidden></textarea>
+
+            <input id="signature-size" type="hidden" value="13px" />
+            <input id="signature-height" type="hidden" value="1.8" />
+
             <div class="field-row">
               <button id="signature-save" class="primary">この内容で登録</button>
               <button id="signature-reset">新規として書く</button>
               <span id="signature-editing" class="hint"></span>
             </div>
           </div>
+
+        </div>
+
         </div>
 
       </div>
