@@ -278,7 +278,10 @@
 
         <!-- 1: これが何かを伝える -->
         <div class="ai-card">
-          <h2 id="ai-title">AIに聞く</h2>
+          <div class="dialog-head">
+            <h2 id="ai-title">AIに聞く</h2>
+            <button id="ai-close" class="icon-only" title="閉じる" aria-label="閉じる"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6"/></svg></button>
+          </div>
           <p class="ai-explain">
             <b>このツールはAIを動かしません。</b>
             AIに貼り付けるための<b>文面（プロンプト）を組み立てるだけ</b>です。
@@ -352,7 +355,6 @@
           </span>
 
           <span class="spacer"></span>
-          <button id="ai-close">閉じる</button>
         </div>
       </div>
     </div>
@@ -360,7 +362,10 @@
     <!-- AI依頼の登録・編集 -->
     <div id="prompt-modal" class="backdrop" hidden>
       <div class="dialog dialog-wide" role="dialog" aria-modal="true" aria-labelledby="prompt-title">
-        <h2 id="prompt-title">依頼を登録する</h2>
+        <div class="dialog-head">
+          <h2 id="prompt-title">依頼を登録する</h2>
+          <button id="prompt-close" class="icon-only" title="閉じる" aria-label="閉じる"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6"/></svg></button>
+        </div>
         <p>よく使う依頼を登録しておくと、「AIに聞く」の種類として選べるようになります。登録内容はご自身のドライブに保存されます。</p>
 
         <div class="signature-body">
@@ -383,9 +388,6 @@
           </div>
         </div>
 
-        <div class="dialog-actions">
-          <button id="prompt-close">閉じる</button>
-        </div>
       </div>
     </div>
 
@@ -411,7 +413,10 @@
     <!-- テンプレート選択 -->
     <div id="template-modal" class="backdrop" hidden>
       <div class="dialog dialog-wide" role="dialog" aria-modal="true" aria-labelledby="template-title">
-        <h2 id="template-title">テンプレートから作成</h2>
+        <div class="dialog-head">
+          <h2 id="template-title">テンプレートから作成</h2>
+          <button id="template-cancel" class="icon-only" title="閉じる" aria-label="閉じる"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6"/></svg></button>
+        </div>
         <p>HTMLメール向けに、table組み・インラインstyle・本文幅600pxで用意しています。</p>
         <div id="template-list" class="template-list"></div>
 
@@ -437,7 +442,6 @@
         <div class="dialog-actions">
           <button id="tpl-save-open">いまの内容を登録</button>
           <span class="spacer"></span>
-          <button id="template-cancel">キャンセル</button>
         </div>
       </div>
     </div>
@@ -486,7 +490,10 @@
     <!-- Webページ用の書き出し -->
     <div id="web-modal" class="backdrop" hidden>
       <div class="dialog dialog-wide" role="dialog" aria-modal="true" aria-labelledby="web-title">
-        <h2 id="web-title">Webページとして書き出す</h2>
+        <div class="dialog-head">
+          <h2 id="web-title">Webページとして書き出す</h2>
+          <button id="web-close" class="icon-only" title="閉じる" aria-label="閉じる"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6"/></svg></button>
+        </div>
         <p>
           メール用に使っている廃止属性（<code>bgcolor</code> <code>align</code> <code>cellpadding</code> など）を
           同じ意味のCSSへ置き換え、HTML5として妥当な形にします。元のファイルは変更しません。
@@ -511,7 +518,6 @@
         </div>
 
         <div class="dialog-actions">
-          <button id="web-close">閉じる</button>
           <button id="web-copy">クリップボードにコピー</button>
           <button id="web-save" class="primary">別ファイルとして保存</button>
         </div>
@@ -521,7 +527,10 @@
     <!-- 保存場所の設定 -->
     <div id="loc-modal" class="backdrop" hidden>
       <div class="dialog dialog-wide" role="dialog" aria-modal="true" aria-labelledby="loc-title">
-        <h2 id="loc-title">共有の保存場所</h2>
+        <div class="dialog-head">
+          <h2 id="loc-title">共有の保存場所</h2>
+          <button id="loc-close" class="icon-only" title="閉じる" aria-label="閉じる"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6"/></svg></button>
+        </div>
         <p>
           チームで原稿を共有するための保存先です。<b>共有ドライブでも、共有されたフォルダでもかまいません</b>
           — 開ける場所ならどこでも指定できます。編集権限が無い場所は、閲覧のみとして扱います。
@@ -560,16 +569,16 @@
           </div>
         </div>
 
-        <div class="dialog-actions">
-          <button id="loc-close">閉じる</button>
-        </div>
       </div>
     </div>
 
     <!-- 署名 -->
     <div id="signature-modal" class="backdrop" hidden>
       <div class="dialog dialog-wide" role="dialog" aria-modal="true" aria-labelledby="signature-title">
-        <h2 id="signature-title">署名</h2>
+        <div class="dialog-head">
+          <h2 id="signature-title">署名</h2>
+          <button id="signature-close" class="icon-only" title="閉じる" aria-label="閉じる"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6"/></svg></button>
+        </div>
         <p>よく使う署名を登録しておくと、ここから選んで本文の末尾に挿入できます。登録内容はご自身のドライブに保存されます。</p>
 
         <div class="signature-body">
@@ -592,23 +601,22 @@
           </div>
         </div>
 
-        <div class="dialog-actions">
-          <button id="signature-close">閉じる</button>
-        </div>
       </div>
     </div>
 
     <!-- 版の履歴 -->
     <div id="history-modal" class="backdrop" hidden>
       <div class="dialog dialog-wide" role="dialog" aria-modal="true" aria-labelledby="history-title">
-        <h2 id="history-title">版の履歴</h2>
+        <div class="dialog-head">
+          <h2 id="history-title">版の履歴</h2>
+          <button id="history-close" class="icon-only" title="閉じる" aria-label="閉じる"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6"/></svg></button>
+        </div>
         <p>保存で内容が変わるたびに1版を残します（最大30版）。復元しても直前の内容は履歴に残るため、取り消せます。</p>
         <div class="history-body">
           <div id="history-list" class="history-list"></div>
           <iframe id="history-preview" class="history-preview" sandbox=""></iframe>
         </div>
         <div class="dialog-actions">
-          <button id="history-close">閉じる</button>
           <button id="history-restore" class="primary" disabled>この版を復元</button>
         </div>
       </div>

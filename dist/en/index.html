@@ -2274,7 +2274,10 @@ window.addEventListener('DOMContentLoaded', function () {
 
         <!-- 1: これが何かを伝える -->
         <div class="ai-card">
-          <h2 id="ai-title">Ask AI</h2>
+          <div class="dialog-head">
+            <h2 id="ai-title">Ask AI</h2>
+            <button id="ai-close" class="icon-only" title="Close" aria-label="Close"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6"/></svg></button>
+          </div>
           <p class="ai-explain">
             <b>This tool does not run an AI.</b>
             This tool does not run an AI. It only <b>builds the text (the prompt) for you to paste into an AI</b>. You do the actual conversation yourself, in whichever AI you use.
@@ -2346,7 +2349,6 @@ window.addEventListener('DOMContentLoaded', function () {
           </span>
 
           <span class="spacer"></span>
-          <button id="ai-close">Close</button>
         </div>
       </div>
     </div>
@@ -2354,7 +2356,10 @@ window.addEventListener('DOMContentLoaded', function () {
     <!-- AI依頼の登録・編集 -->
     <div id="prompt-modal" class="backdrop" hidden>
       <div class="dialog dialog-wide" role="dialog" aria-modal="true" aria-labelledby="prompt-title">
-        <h2 id="prompt-title">Save this request</h2>
+        <div class="dialog-head">
+          <h2 id="prompt-title">Save this request</h2>
+          <button id="prompt-close" class="icon-only" title="Close" aria-label="Close"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6"/></svg></button>
+        </div>
         <p>Save the requests you use often and they appear as choices under Ask AI. They are stored in this browser.</p>
 
         <div class="signature-body">
@@ -2377,9 +2382,6 @@ window.addEventListener('DOMContentLoaded', function () {
           </div>
         </div>
 
-        <div class="dialog-actions">
-          <button id="prompt-close">Close</button>
-        </div>
       </div>
     </div>
 
@@ -2405,7 +2407,10 @@ window.addEventListener('DOMContentLoaded', function () {
     <!-- テンプレート選択 -->
     <div id="template-modal" class="backdrop" hidden>
       <div class="dialog dialog-wide" role="dialog" aria-modal="true" aria-labelledby="template-title">
-        <h2 id="template-title">Start from a template</h2>
+        <div class="dialog-head">
+          <h2 id="template-title">Start from a template</h2>
+          <button id="template-cancel" class="icon-only" title="Close" aria-label="Close"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6"/></svg></button>
+        </div>
         <p>This is built for HTML email: table layout, inline styles, 600px body width.</p>
         <div id="template-list" class="template-list"></div>
 
@@ -2429,7 +2434,6 @@ window.addEventListener('DOMContentLoaded', function () {
         <div class="dialog-actions">
           <button id="tpl-save-open">Save the current document</button>
           <span class="spacer"></span>
-          <button id="template-cancel">Cancel</button>
         </div>
       </div>
     </div>
@@ -2477,7 +2481,10 @@ window.addEventListener('DOMContentLoaded', function () {
     <!-- Webページ用の書き出し -->
     <div id="web-modal" class="backdrop" hidden>
       <div class="dialog dialog-wide" role="dialog" aria-modal="true" aria-labelledby="web-title">
-        <h2 id="web-title">Export as a web page</h2>
+        <div class="dialog-head">
+          <h2 id="web-title">Export as a web page</h2>
+          <button id="web-close" class="icon-only" title="Close" aria-label="Close"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6"/></svg></button>
+        </div>
         <p>
           The legacy attributes used for email (<code>bgcolor</code> <code>align</code> <code>cellpadding</code>  and so on) are replaced with equivalent CSS, producing valid HTML5. Your original file is left alone.
         </p>
@@ -2501,7 +2508,6 @@ window.addEventListener('DOMContentLoaded', function () {
         </div>
 
         <div class="dialog-actions">
-          <button id="web-close">Close</button>
           <button id="web-copy">Copy to clipboard</button>
           <button id="web-save" class="primary">Save as a separate file</button>
         </div>
@@ -2511,7 +2517,10 @@ window.addEventListener('DOMContentLoaded', function () {
     <!-- 保存場所の設定 -->
     <div id="loc-modal" class="backdrop" hidden>
       <div class="dialog dialog-wide" role="dialog" aria-modal="true" aria-labelledby="loc-title">
-        <h2 id="loc-title">Shared location</h2>
+        <div class="dialog-head">
+          <h2 id="loc-title">Shared location</h2>
+          <button id="loc-close" class="icon-only" title="Close" aria-label="Close"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6"/></svg></button>
+        </div>
         <p>
           A location for sharing documents with your team.<b>A shared drive or a shared folder both work</b>
            — anywhere you can open. Places you cannot edit are treated as read-only.
@@ -2548,16 +2557,16 @@ window.addEventListener('DOMContentLoaded', function () {
           </div>
         </div>
 
-        <div class="dialog-actions">
-          <button id="loc-close">Close</button>
-        </div>
       </div>
     </div>
 
     <!-- 署名 -->
     <div id="signature-modal" class="backdrop" hidden>
       <div class="dialog dialog-wide" role="dialog" aria-modal="true" aria-labelledby="signature-title">
-        <h2 id="signature-title">Signature</h2>
+        <div class="dialog-head">
+          <h2 id="signature-title">Signature</h2>
+          <button id="signature-close" class="icon-only" title="Close" aria-label="Close"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6"/></svg></button>
+        </div>
         <p>Save the signatures you use often and insert them at the end of the body from here. They are stored in this browser.</p>
 
         <div class="signature-body">
@@ -2580,23 +2589,22 @@ window.addEventListener('DOMContentLoaded', function () {
           </div>
         </div>
 
-        <div class="dialog-actions">
-          <button id="signature-close">Close</button>
-        </div>
       </div>
     </div>
 
     <!-- 版の履歴 -->
     <div id="history-modal" class="backdrop" hidden>
       <div class="dialog dialog-wide" role="dialog" aria-modal="true" aria-labelledby="history-title">
-        <h2 id="history-title">Version history</h2>
+        <div class="dialog-head">
+          <h2 id="history-title">Version history</h2>
+          <button id="history-close" class="icon-only" title="Close" aria-label="Close"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6"/></svg></button>
+        </div>
         <p>Every save that changes the content keeps a version (up to 30). Restoring keeps the previous content in the history, so you can undo it.</p>
         <div class="history-body">
           <div id="history-list" class="history-list"></div>
           <iframe id="history-preview" class="history-preview" sandbox=""></iframe>
         </div>
         <div class="dialog-actions">
-          <button id="history-close">Close</button>
           <button id="history-restore" class="primary" disabled>Restore this version</button>
         </div>
       </div>
