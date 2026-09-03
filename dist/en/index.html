@@ -1501,6 +1501,14 @@ window.addEventListener('DOMContentLoaded', function () {
   .backdrop[hidden] { display: none; }
 
   .dialog {
+    /*
+       余白を変数で持つ。貼り付ける題や操作列が、この値ぶんだけ
+       外へはみ出して幅いっぱいを覆う。直接22pxと書くと、余白の違う
+       入れ物（.ai-card は20px）で2pxずれ、横スクロールが出る。
+    */
+    --pad-x: 22px;
+    --pad-y: 22px;
+
     display: flex;
     flex-direction: column;
     gap: 14px;
@@ -1543,13 +1551,13 @@ window.addEventListener('DOMContentLoaded', function () {
   */
   .dialog-head {
     position: sticky;
-    top: -22px;
+    top: calc(var(--pad-y) * -1);
     z-index: 1;
     display: flex;
     align-items: center;
     gap: 10px;
-    margin: -22px -22px 0;
-    padding: 22px 22px 4px;
+    margin: calc(var(--pad-y) * -1) calc(var(--pad-x) * -1) 0;
+    padding: var(--pad-y) var(--pad-x) 4px;
     background: var(--panel);
   }
 
@@ -1651,10 +1659,10 @@ window.addEventListener('DOMContentLoaded', function () {
        同じ位置に貼り付けている。
     */
     position: sticky;
-    bottom: -22px;
-    margin-bottom: -22px;
+    bottom: calc(var(--pad-y) * -1);
+    margin-bottom: calc(var(--pad-y) * -1);
     padding-top: 10px;
-    padding-bottom: 22px;
+    padding-bottom: var(--pad-y);
     background: var(--panel);
   }
 
@@ -1922,6 +1930,9 @@ window.addEventListener('DOMContentLoaded', function () {
   }
 
   .ai-card {
+    --pad-x: 20px;
+    --pad-y: 18px;
+
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -2057,10 +2068,118 @@ window.addEventListener('DOMContentLoaded', function () {
   /* 段の見出しをラベルに使うときは、ラベル側の字組みを打ち消す */
   label > .step-label { margin-bottom: 1px; }
 
-  .ai-presets { display: flex; flex-wrap: wrap; gap: 3px; }
-  .ai-presets button { padding: 5px 10px; background: var(--sunken); font-size: 12.5px; }
-  .ai-presets button:hover:not(:disabled) { background: var(--hover); }
-  .ai-presets button.active { background: var(--accent-weak); }
+  /*
+     依頼の種類。左に一覧、右に選んだものの中身。
+
+     横に流して折り返す形にしていたが、登録した依頼が増えるほど背が高く
+     なり、下の入力欄を押し下げる。数がいくつでも高さが変わらないよう、
+     縦のリストにして、入りきらないぶんはスクロールさせる。
+
+     右に「実際にAIへ渡す文」を出すのは、名前だけでは何を頼むのか
+     分からないため。選ぶ前に中身が読める。
+  */
+  .ai-pick {
+    display: flex;
+    gap: var(--seam);
+
+    /*
+       高さは、行がちょうど半分で切れるところに合わせている。
+
+       つまみの見え方はブラウザと環境で変わる（オーバーレイ式だと
+       触るまで出ない）。切れた行が見えていれば、続きがあることは
+       つまみに頼らず伝わる。
+    */
+    height: 143px;
+  }
+
+  .ai-presets {
+    flex: 0 0 150px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px;
+    border-radius: var(--radius);
+    background: var(--sunken);
+
+    /*
+       スクロールできることが分かるように、つまみは常に出しておく。
+       隠れていると、下にまだあることに気づけない。
+
+       暗い下地では既定のつまみが溶けて見えないので、色を与える。
+       auto ではなく scroll にして、動かせる余地が無いときも
+       溝が見えるようにしてある。
+    */
+    overflow-y: scroll;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--faint) var(--panel);
+  }
+
+  .ai-presets::-webkit-scrollbar { width: 10px; }
+
+  .ai-presets::-webkit-scrollbar-track {
+    border-radius: 5px;
+    background: var(--panel);
+  }
+
+  .ai-presets::-webkit-scrollbar-thumb {
+    border: 2px solid var(--sunken);
+    border-radius: 5px;
+    background: var(--faint);
+  }
+
+  .ai-presets::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  .ai-preset {
+    flex: none;
+    justify-content: space-between;
+    width: 100%;
+    padding: 5px 8px;
+    font-size: 12.5px;
+    text-align: left;
+  }
+
+  .ai-preset span { overflow: hidden; text-overflow: ellipsis; }
+
+  /* 自分で登録したものの印 */
+  .ai-preset i {
+    flex: none;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: var(--panel);
+    color: var(--faint);
+    font-size: 10px;
+    font-style: normal;
+  }
+
+  .ai-preset:hover:not(:disabled) { background: var(--hover); }
+
+  .ai-preset.active {
+    background: var(--accent-weak);
+    color: var(--accent-ink);
+    font-weight: 600;
+  }
+
+  .ai-preset.active i { color: var(--accent-ink); }
+
+  .ai-pick-body {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 9px 11px;
+    border-radius: var(--radius);
+    background: var(--sunken);
+    overflow-y: auto;
+  }
+
+  .ai-pick-body p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.75;
+  }
 
   @media (max-width: 1100px) {
     .inspector { flex-basis: 210px; }
@@ -2379,7 +2498,13 @@ window.addEventListener('DOMContentLoaded', function () {
 
             <div class="field">
               <label>Request type</label>
-              <div id="ai-presets" class="ai-presets"></div>
+              <div class="ai-pick">
+                <div id="ai-presets" class="ai-presets" role="listbox" aria-label="Request type"></div>
+                <div class="ai-pick-body">
+                  <span class="tool-label">What this asks the AI</span>
+                  <p id="ai-preset-body"></p>
+                </div>
+              </div>
             </div>
 
             <div class="field">
@@ -4127,7 +4252,7 @@ function applyTheme(html, key, accentKey) {
       'loc-input', 'loc-apply', 'loc-clear', 'loc-close',
       'web-modal', 'web-headings', 'web-responsive', 'web-report', 'web-output',
       'web-copy', 'web-save', 'web-close',
-      'ai-modal', 'ai-presets', 'ai-question', 'ai-include', 'ai-prompt', 'ai-answer',
+      'ai-modal', 'ai-presets', 'ai-preset-body', 'ai-question', 'ai-include', 'ai-prompt', 'ai-answer',
       'ai-status', 'ai-copy', 'ai-manage', 'ai-check', 'ai-replace',
       'ai-insert', 'ai-close',
       'prompt-modal', 'prompt-list', 'prompt-name', 'prompt-body',
@@ -6984,6 +7109,9 @@ function applyTheme(html, key, accentKey) {
     var host = elem.parentElement;
 
     elem.parentNode.removeChild(elem);
+
+    var tidied = pruneEmptyRow(host);
+
     wys.selected = null;
     wys.editing = null;
     clearAttr('data-wys-doom');
@@ -6994,12 +7122,52 @@ function applyTheme(html, key, accentKey) {
     updateWysButtons();
     positionHandles();
 
-    // 中身が無くなった枠は見えないので、残っていることを伝える
-    var left = host && !host.children.length && !(host.textContent || '').trim()
+    // 片付けきれなかった枠は見えないので、残っていることを伝える
+    var left = !tidied && host && host.parentNode
+      && !host.children.length && !(host.textContent || '').trim()
       ? ' (the surrounding panel is left empty)'
       : '';
 
     setStatus(label + ' deleted' + left + '. Ctrl + Z to undo', 'ok');
+  }
+
+  /**
+   * 中身が無くなった行を、行ごと片付ける。
+   *
+   * 面を持つ枠（色の帯、囲みなど）は、td の単位で選ばれる。消すと
+   * <tr></tr> だけが残り、プレビューには何も出ないのにコードには残る。
+   * 見えているものと書き出されるものが食い違うので、ここで揃える。
+   *
+   * td を単体で消さないのは、段組みが崩れるため。2カラムの片方だけが
+   * 無くなると、残った側の幅が変わる。行のすべての枠が空になったときに
+   * 限って、行ごと消す。
+   *
+   * @param {Element} host 消した要素が入っていた親
+   * @return {boolean} 行を片付けたか
+   */
+  function pruneEmptyRow(host) {
+    var node = host;
+
+    while (node && node.parentElement) {
+      if (node.tagName === 'TR') {
+        var alive = Array.prototype.some.call(node.cells, function (cell) {
+          return (cell.textContent || '').trim()
+            || cell.querySelector('img, hr, table, iframe');
+        });
+        if (alive) return false;
+
+        // 行がひとつだけの表は、消すと器が無くなる
+        var table = node.closest ? node.closest('table') : null;
+        if (table && table.rows.length <= 1) return false;
+
+        node.parentElement.removeChild(node);
+        return true;
+      }
+
+      node = node.parentElement;
+    }
+
+    return false;
   }
 
   /** 画面に出す、その要素の呼び名 */
@@ -9010,6 +9178,16 @@ function applyTheme(html, key, accentKey) {
     show(el['ai-modal']);
   }
 
+  /**
+   * 依頼の種類を並べる。
+   *
+   * 横に流して折り返す形にしていたが、登録した依頼が増えるほど背が高く
+   * なり、下の入力欄を押し下げてしまう。数が増えても場所が変わらないよう、
+   * 縦のリストにして、入りきらないぶんはスクロールさせる。
+   *
+   * 右側には、選んだ依頼で実際にAIへ渡す文を出す。選んだものが何を
+   * 頼むのかは、名前だけでは分からない。
+   */
   function renderAiPresets() {
     var box = el['ai-presets'];
     box.textContent = '';
@@ -9020,16 +9198,45 @@ function applyTheme(html, key, accentKey) {
 
     all.forEach(function (preset) {
       var button = document.createElement('button');
-      button.textContent = preset.name + (preset.custom ? ' ★' : '');
+      button.className = 'ai-preset';
       button.title = preset.body;
+
+      var name = document.createElement('span');
+      name.textContent = preset.name;
+      button.appendChild(name);
+
+      // 自分で登録したものは、組み込みと見分けられるようにする
+      if (preset.custom) {
+        var mark = document.createElement('i');
+        mark.textContent = 'saved';
+        button.appendChild(mark);
+      }
+
       button.classList.toggle('active', preset.key === state.aiPreset);
+
       button.addEventListener('click', function () {
         state.aiPreset = preset.key;
         renderAiPresets();
         buildPrompt();
       });
+
       box.appendChild(button);
     });
+
+    // 選んだものが見えていないと、どこにいるのか分からない
+    var here = box.querySelector('.ai-preset.active');
+    if (here && here.scrollIntoView) here.scrollIntoView({ block: 'nearest' });
+
+    renderAiPresetBody();
+  }
+
+  /** 選んだ依頼で、AIへ実際に渡す文を見せる */
+  function renderAiPresetBody() {
+    var out = el['ai-preset-body'];
+    if (!out) return;
+
+    var preset = currentPreset();
+    out.textContent = preset.body || '';
   }
 
   function currentPreset() {

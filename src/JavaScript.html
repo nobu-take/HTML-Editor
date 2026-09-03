@@ -249,7 +249,7 @@
       'loc-input', 'loc-apply', 'loc-clear', 'loc-close',
       'web-modal', 'web-headings', 'web-responsive', 'web-report', 'web-output',
       'web-copy', 'web-save', 'web-close',
-      'ai-modal', 'ai-presets', 'ai-question', 'ai-include', 'ai-prompt', 'ai-answer',
+      'ai-modal', 'ai-presets', 'ai-preset-body', 'ai-question', 'ai-include', 'ai-prompt', 'ai-answer',
       'ai-status', 'ai-copy', 'ai-manage', 'ai-check', 'ai-replace',
       'ai-insert', 'ai-close',
       'prompt-modal', 'prompt-list', 'prompt-name', 'prompt-body',
@@ -3106,6 +3106,9 @@
     var host = elem.parentElement;
 
     elem.parentNode.removeChild(elem);
+
+    var tidied = pruneEmptyRow(host);
+
     wys.selected = null;
     wys.editing = null;
     clearAttr('data-wys-doom');
@@ -3116,12 +3119,52 @@
     updateWysButtons();
     positionHandles();
 
-    // 中身が無くなった枠は見えないので、残っていることを伝える
-    var left = host && !host.children.length && !(host.textContent || '').trim()
+    // 片付けきれなかった枠は見えないので、残っていることを伝える
+    var left = !tidied && host && host.parentNode
+      && !host.children.length && !(host.textContent || '').trim()
       ? '（外側の枠は空のまま残っています）'
       : '';
 
     setStatus(label + 'を削除しました' + left + '。Ctrl + Z で取り消せます', 'ok');
+  }
+
+  /**
+   * 中身が無くなった行を、行ごと片付ける。
+   *
+   * 面を持つ枠（色の帯、囲みなど）は、td の単位で選ばれる。消すと
+   * <tr></tr> だけが残り、プレビューには何も出ないのにコードには残る。
+   * 見えているものと書き出されるものが食い違うので、ここで揃える。
+   *
+   * td を単体で消さないのは、段組みが崩れるため。2カラムの片方だけが
+   * 無くなると、残った側の幅が変わる。行のすべての枠が空になったときに
+   * 限って、行ごと消す。
+   *
+   * @param {Element} host 消した要素が入っていた親
+   * @return {boolean} 行を片付けたか
+   */
+  function pruneEmptyRow(host) {
+    var node = host;
+
+    while (node && node.parentElement) {
+      if (node.tagName === 'TR') {
+        var alive = Array.prototype.some.call(node.cells, function (cell) {
+          return (cell.textContent || '').trim()
+            || cell.querySelector('img, hr, table, iframe');
+        });
+        if (alive) return false;
+
+        // 行がひとつだけの表は、消すと器が無くなる
+        var table = node.closest ? node.closest('table') : null;
+        if (table && table.rows.length <= 1) return false;
+
+        node.parentElement.removeChild(node);
+        return true;
+      }
+
+      node = node.parentElement;
+    }
+
+    return false;
   }
 
   /** 画面に出す、その要素の呼び名 */
@@ -5132,6 +5175,16 @@
     show(el['ai-modal']);
   }
 
+  /**
+   * 依頼の種類を並べる。
+   *
+   * 横に流して折り返す形にしていたが、登録した依頼が増えるほど背が高く
+   * なり、下の入力欄を押し下げてしまう。数が増えても場所が変わらないよう、
+   * 縦のリストにして、入りきらないぶんはスクロールさせる。
+   *
+   * 右側には、選んだ依頼で実際にAIへ渡す文を出す。選んだものが何を
+   * 頼むのかは、名前だけでは分からない。
+   */
   function renderAiPresets() {
     var box = el['ai-presets'];
     box.textContent = '';
@@ -5142,16 +5195,45 @@
 
     all.forEach(function (preset) {
       var button = document.createElement('button');
-      button.textContent = preset.name + (preset.custom ? ' ★' : '');
+      button.className = 'ai-preset';
       button.title = preset.body;
+
+      var name = document.createElement('span');
+      name.textContent = preset.name;
+      button.appendChild(name);
+
+      // 自分で登録したものは、組み込みと見分けられるようにする
+      if (preset.custom) {
+        var mark = document.createElement('i');
+        mark.textContent = '登録';
+        button.appendChild(mark);
+      }
+
       button.classList.toggle('active', preset.key === state.aiPreset);
+
       button.addEventListener('click', function () {
         state.aiPreset = preset.key;
         renderAiPresets();
         buildPrompt();
       });
+
       box.appendChild(button);
     });
+
+    // 選んだものが見えていないと、どこにいるのか分からない
+    var here = box.querySelector('.ai-preset.active');
+    if (here && here.scrollIntoView) here.scrollIntoView({ block: 'nearest' });
+
+    renderAiPresetBody();
+  }
+
+  /** 選んだ依頼で、AIへ実際に渡す文を見せる */
+  function renderAiPresetBody() {
+    var out = el['ai-preset-body'];
+    if (!out) return;
+
+    var preset = currentPreset();
+    out.textContent = preset.body || '';
   }
 
   function currentPreset() {

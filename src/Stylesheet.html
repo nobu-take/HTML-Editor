@@ -1451,6 +1451,14 @@
   .backdrop[hidden] { display: none; }
 
   .dialog {
+    /*
+       余白を変数で持つ。貼り付ける題や操作列が、この値ぶんだけ
+       外へはみ出して幅いっぱいを覆う。直接22pxと書くと、余白の違う
+       入れ物（.ai-card は20px）で2pxずれ、横スクロールが出る。
+    */
+    --pad-x: 22px;
+    --pad-y: 22px;
+
     display: flex;
     flex-direction: column;
     gap: 14px;
@@ -1493,13 +1501,13 @@
   */
   .dialog-head {
     position: sticky;
-    top: -22px;
+    top: calc(var(--pad-y) * -1);
     z-index: 1;
     display: flex;
     align-items: center;
     gap: 10px;
-    margin: -22px -22px 0;
-    padding: 22px 22px 4px;
+    margin: calc(var(--pad-y) * -1) calc(var(--pad-x) * -1) 0;
+    padding: var(--pad-y) var(--pad-x) 4px;
     background: var(--panel);
   }
 
@@ -1601,10 +1609,10 @@
        同じ位置に貼り付けている。
     */
     position: sticky;
-    bottom: -22px;
-    margin-bottom: -22px;
+    bottom: calc(var(--pad-y) * -1);
+    margin-bottom: calc(var(--pad-y) * -1);
     padding-top: 10px;
-    padding-bottom: 22px;
+    padding-bottom: var(--pad-y);
     background: var(--panel);
   }
 
@@ -1872,6 +1880,9 @@
   }
 
   .ai-card {
+    --pad-x: 20px;
+    --pad-y: 18px;
+
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -2007,10 +2018,118 @@
   /* 段の見出しをラベルに使うときは、ラベル側の字組みを打ち消す */
   label > .step-label { margin-bottom: 1px; }
 
-  .ai-presets { display: flex; flex-wrap: wrap; gap: 3px; }
-  .ai-presets button { padding: 5px 10px; background: var(--sunken); font-size: 12.5px; }
-  .ai-presets button:hover:not(:disabled) { background: var(--hover); }
-  .ai-presets button.active { background: var(--accent-weak); }
+  /*
+     依頼の種類。左に一覧、右に選んだものの中身。
+
+     横に流して折り返す形にしていたが、登録した依頼が増えるほど背が高く
+     なり、下の入力欄を押し下げる。数がいくつでも高さが変わらないよう、
+     縦のリストにして、入りきらないぶんはスクロールさせる。
+
+     右に「実際にAIへ渡す文」を出すのは、名前だけでは何を頼むのか
+     分からないため。選ぶ前に中身が読める。
+  */
+  .ai-pick {
+    display: flex;
+    gap: var(--seam);
+
+    /*
+       高さは、行がちょうど半分で切れるところに合わせている。
+
+       つまみの見え方はブラウザと環境で変わる（オーバーレイ式だと
+       触るまで出ない）。切れた行が見えていれば、続きがあることは
+       つまみに頼らず伝わる。
+    */
+    height: 143px;
+  }
+
+  .ai-presets {
+    flex: 0 0 150px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px;
+    border-radius: var(--radius);
+    background: var(--sunken);
+
+    /*
+       スクロールできることが分かるように、つまみは常に出しておく。
+       隠れていると、下にまだあることに気づけない。
+
+       暗い下地では既定のつまみが溶けて見えないので、色を与える。
+       auto ではなく scroll にして、動かせる余地が無いときも
+       溝が見えるようにしてある。
+    */
+    overflow-y: scroll;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--faint) var(--panel);
+  }
+
+  .ai-presets::-webkit-scrollbar { width: 10px; }
+
+  .ai-presets::-webkit-scrollbar-track {
+    border-radius: 5px;
+    background: var(--panel);
+  }
+
+  .ai-presets::-webkit-scrollbar-thumb {
+    border: 2px solid var(--sunken);
+    border-radius: 5px;
+    background: var(--faint);
+  }
+
+  .ai-presets::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  .ai-preset {
+    flex: none;
+    justify-content: space-between;
+    width: 100%;
+    padding: 5px 8px;
+    font-size: 12.5px;
+    text-align: left;
+  }
+
+  .ai-preset span { overflow: hidden; text-overflow: ellipsis; }
+
+  /* 自分で登録したものの印 */
+  .ai-preset i {
+    flex: none;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: var(--panel);
+    color: var(--faint);
+    font-size: 10px;
+    font-style: normal;
+  }
+
+  .ai-preset:hover:not(:disabled) { background: var(--hover); }
+
+  .ai-preset.active {
+    background: var(--accent-weak);
+    color: var(--accent-ink);
+    font-weight: 600;
+  }
+
+  .ai-preset.active i { color: var(--accent-ink); }
+
+  .ai-pick-body {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 9px 11px;
+    border-radius: var(--radius);
+    background: var(--sunken);
+    overflow-y: auto;
+  }
+
+  .ai-pick-body p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.75;
+  }
 
   @media (max-width: 1100px) {
     .inspector { flex-basis: 210px; }

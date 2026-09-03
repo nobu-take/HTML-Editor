@@ -290,7 +290,13 @@
 
             <div class="field">
               <label>依頼の種類</label>
-              <div id="ai-presets" class="ai-presets"></div>
+              <div class="ai-pick">
+                <div id="ai-presets" class="ai-presets" role="listbox" aria-label="依頼の種類"></div>
+                <div class="ai-pick-body">
+                  <span class="tool-label">この依頼でAIに渡す文</span>
+                  <p id="ai-preset-body"></p>
+                </div>
+              </div>
             </div>
 
             <div class="field">

@@ -329,5 +329,7 @@
   "ブラウザがコピーを許可していない可能性があります。": "Your browser may be blocking clipboard access.",
   "この環境では使えません": "Not available in this browser",
   "本文をコピーしました": "Body copied",
-  "本文をコピーしました。作成画面を開いて貼り付けてください（Ctrl + V）。": "Body copied. Open a compose window and paste it in (Ctrl + V)."
+  "本文をコピーしました。作成画面を開いて貼り付けてください（Ctrl + V）。": "Body copied. Open a compose window and paste it in (Ctrl + V).",
+  "この依頼でAIに渡す文": "What this asks the AI",
+  "登録": "saved"
 }
