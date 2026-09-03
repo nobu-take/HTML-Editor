@@ -230,7 +230,7 @@
               <div class="subject-bar">
               <label for="subject">件名</label>
               <input id="subject" type="text" autocomplete="off"
-              placeholder="メールの件名（Gmailの下書きにそのまま使われます）" />
+              placeholder="メールの件名（書き出しや作成画面にそのまま渡ります）" />
               <span id="overflow-warn" class="warn" hidden>
               本文がキャンバスより <b id="overflow-size"></b> 広く、右端が隠れています
               <button id="fit-canvas">キャンバスを合わせる</button>
@@ -445,8 +445,8 @@
     <!-- Gmailの下書き作成 -->
     <div id="gmail-modal" class="backdrop" hidden>
       <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="gmail-title">
-        <h2 id="gmail-title">Gmailの下書きを作成</h2>
-        <p>編集中のHTMLを本文として、ご自身のGmailに下書きを作ります。送信は行いません。</p>
+        <h2 id="gmail-title">メールにする</h2>
+        <p>本文をコピーしてから、選んだ作成画面を開きます。開いた画面で貼り付けてください。送信は行いません。</p>
 
         <div class="field">
           <label for="gmail-subject">件名</label>
@@ -460,9 +460,16 @@
 
         <p id="gmail-note" class="note" hidden></p>
 
+        <p class="field-note">
+          GmailとOutlookのWeb版には、ファイルから下書きを作る機能がありません。
+          本文はコピーして貼り付ける形になります。
+        </p>
+
         <div class="dialog-actions">
           <button id="gmail-cancel">閉じる</button>
-          <button id="gmail-create" class="primary">下書きを作成</button>
+          <button id="gmail-eml">ファイルに書き出す</button>
+          <button id="gmail-outlook">Outlookを開く</button>
+          <button id="gmail-gmail" class="primary">Gmailを開く</button>
         </div>
       </div>
     </div>

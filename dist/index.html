@@ -2157,7 +2157,7 @@ window.addEventListener('DOMContentLoaded', function () {
               <div class="subject-bar">
               <label for="subject">件名</label>
               <input id="subject" type="text" autocomplete="off"
-              placeholder="メールの件名（書き出すファイルにそのまま入ります）" />
+              placeholder="メールの件名（書き出しや作成画面にそのまま渡ります）" />
               <span id="overflow-warn" class="warn" hidden>
               本文がキャンバスより <b id="overflow-size"></b> 広く、右端が隠れています
               <button id="fit-canvas">キャンバスを合わせる</button>
@@ -2370,8 +2370,8 @@ window.addEventListener('DOMContentLoaded', function () {
     <!-- Gmailの下書き作成 -->
     <div id="gmail-modal" class="backdrop" hidden>
       <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="gmail-title">
-        <h2 id="gmail-title">メールソフト用に書き出す</h2>
-        <p>編集中のHTMLを本文にした .eml ファイルを書き出します。Thunderbird・Outlook・Apple Mail などで開くと、そのまま下書きになります。送信は行いません。</p>
+        <h2 id="gmail-title">メールにする</h2>
+        <p>本文をコピーしてから、選んだ作成画面を開きます。開いた画面で貼り付けてください。送信は行いません。</p>
 
         <div class="field">
           <label for="gmail-subject">件名</label>
@@ -2385,9 +2385,16 @@ window.addEventListener('DOMContentLoaded', function () {
 
         <p id="gmail-note" class="note" hidden></p>
 
+        <p class="field-note">
+          GmailとOutlookのWeb版には、ファイルから下書きを作る機能がありません。
+          本文はコピーして貼り付ける形になります。
+        </p>
+
         <div class="dialog-actions">
           <button id="gmail-cancel">閉じる</button>
-          <button id="gmail-create" class="primary">書き出す</button>
+          <button id="gmail-eml">ファイルに書き出す</button>
+          <button id="gmail-outlook">Outlookを開く</button>
+          <button id="gmail-gmail" class="primary">Gmailを開く</button>
         </div>
       </div>
     </div>
@@ -3847,7 +3854,6 @@ function applyTheme(html, key, accentKey) {
     versions: [],
     selectedVersionId: null,
     webAppUrl: '',
-    gmailUrl: null,       // 下書き作成後の遷移先
     webExport: '',        // Web用に変換した結果
     manualUrl: '',        // クイックマニュアル（Googleドキュメント）
     prompts: [],          // 登録したAI依頼テンプレート
@@ -3975,7 +3981,8 @@ function applyTheme(html, key, accentKey) {
       'btn-scale', 'scale-pop', 'scale-hint', 'scale-hint-apply', 'scale-hint-close',
       'btn-export', 'export-pop', 'btn-more', 'more-pop',
       'btn-canvas', 'canvas-pop', 'canvas-now',
-      'gmail-modal', 'gmail-subject', 'gmail-to', 'gmail-note', 'gmail-create', 'gmail-cancel',
+      'gmail-modal', 'gmail-subject', 'gmail-to', 'gmail-note', 'gmail-cancel',
+      'gmail-gmail', 'gmail-outlook', 'gmail-eml',
       'signature-modal', 'signature-list', 'signature-name', 'signature-html',
       'signature-save', 'signature-reset', 'signature-close', 'signature-editing',
       'confirm', 'confirm-body', 'confirm-ok', 'confirm-cancel',
@@ -4250,7 +4257,9 @@ function applyTheme(html, key, accentKey) {
     el['confirm-cancel'].addEventListener('click', closeConfirm);
     el['template-cancel'].addEventListener('click', function () { hide(el['template-modal']); });
     el['gmail-cancel'].addEventListener('click', function () { hide(el['gmail-modal']); });
-    el['gmail-create'].addEventListener('click', onGmailPrimary);
+    el['gmail-gmail'].addEventListener('click', function () { openWebmail('gmail'); });
+    el['gmail-outlook'].addEventListener('click', function () { openWebmail('outlook'); });
+    el['gmail-eml'].addEventListener('click', createDraft);
     el['gmail-subject'].addEventListener('change', function () {
       el.subject.value = el['gmail-subject'].value;
       commitSubject();
@@ -9903,27 +9912,135 @@ function applyTheme(html, key, accentKey) {
   }
 
   // -------------------------------------------------------------------------
-  // Gmailの下書き
+  // メールにする
   // -------------------------------------------------------------------------
 
   function openGmail() {
-    state.gmailUrl = null;
     el['gmail-subject'].value = el.subject.value;
-    el['gmail-create'].textContent = '書き出す';
-    el['gmail-create'].disabled = false;
     hideNote();
     show(el['gmail-modal']);
     el['gmail-subject'].focus();
   }
 
-  /** 作成前は「下書きを作成」、作成後は「Gmailで開く」として振る舞う */
-  function onGmailPrimary() {
-    if (state.gmailUrl) {
-      window.open(state.gmailUrl, '_blank');
-      hide(el['gmail-modal']);
-      return;
+  /*
+     Web版のメールを開く。
+
+     本文はURLでは渡せない。Gmail の compose URL も Outlook の deeplink も
+     body は平文として扱われ、URLの長さにも限りがある。HTMLメール1通は
+     まず入らない。
+
+     渡し方は貼り付け。描画済みのHTMLをクリップボードへ載せてから作成画面を
+     開き、そこで貼ってもらう。実際にメールを作る人がやっているのと同じ手順。
+  */
+  var WEBMAIL = {
+    gmail: {
+      name: 'Gmail',
+      url: function (to, subject) {
+        return 'https://mail.google.com/mail/?view=cm&fs=1'
+          + '&to=' + encodeURIComponent(to)
+          + '&su=' + encodeURIComponent(subject);
+      }
+    },
+    outlook: {
+      name: 'Outlook',
+      url: function (to, subject) {
+        return 'https://outlook.live.com/mail/0/deeplink/compose'
+          + '?to=' + encodeURIComponent(to)
+          + '&subject=' + encodeURIComponent(subject);
+      }
     }
-    createDraft();
+  };
+
+  function openWebmail(which) {
+    flushWys();
+
+    var service = WEBMAIL[which];
+    var subject = el['gmail-subject'].value;
+    var to = el['gmail-to'].value;
+    var html = currentSource();
+
+    function go() {
+      window.open(service.url(to, subject), '_blank', 'noopener');
+      showNote('本文をコピーしました。' + service.name
+        + 'の作成画面で貼り付けてください（Ctrl + V）。');
+      setStatus('本文をコピーし、' + service.name + 'を開きました', 'ok');
+    }
+
+    // まず同期の道。押した直後ならこれが通る
+    if (copyRich(html)) { go(); return; }
+
+    /*
+       通らなかったときの逃げ道。
+
+       新しい clipboard API は非同期なので、待っているあいだに
+       「押した直後」ではなくなる。窓が開けないことがあるが、
+       開かないよりは試すほうがいい。
+    */
+    copyRichAsync(html).then(go, function () {
+      showNote('本文をコピーできませんでした。'
+        + 'ブラウザがコピーを許可していない可能性があります。', true);
+    });
+  }
+
+  /** 非同期の道。text/html として載せる */
+  function copyRichAsync(html) {
+    if (!window.ClipboardItem || !navigator.clipboard || !navigator.clipboard.write) {
+      return Promise.reject(new Error('この環境では使えません'));
+    }
+
+    var body = bodyOf(html);
+
+    return navigator.clipboard.write([
+      new ClipboardItem({
+        'text/html': new Blob([body], { type: 'text/html' }),
+        'text/plain': new Blob([htmlToPlainText(html)], { type: 'text/plain' })
+      })
+    ]);
+  }
+
+  /*
+     描画済みのHTMLとしてクリップボードへ載せる。
+
+     text/plain で載せるとHTMLのコードがそのまま貼られてしまう。
+     見た目のまま貼るには text/html として載せる必要がある。
+
+     ここは execCommand を使う。**同期で終わる**からで、これが要点。
+     新しい clipboard API は非同期なので、待っているあいだに window.open で
+     焦点が移り、「書き込む権利がない」と断られることがある。
+  */
+  function copyRich(html) {
+    var holder = document.createElement('div');
+    holder.setAttribute('contenteditable', 'true');
+    holder.style.cssText = 'position:fixed; left:-9999px; top:0; opacity:0;';
+    holder.innerHTML = bodyOf(html);
+
+    document.body.appendChild(holder);
+
+    var range = document.createRange();
+    range.selectNodeContents(holder);
+
+    var picked = window.getSelection();
+    picked.removeAllRanges();
+    picked.addRange(range);
+
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+
+    picked.removeAllRanges();
+    document.body.removeChild(holder);
+
+    return ok;
+  }
+
+  /** <body> の中身だけを取り出す。head や doctype は貼り付け先で捨てられる */
+  function bodyOf(html) {
+    try {
+      var doc = new DOMParser().parseFromString(String(html), 'text/html');
+      if (doc && doc.body) return doc.body.innerHTML;
+    } catch (err) {
+      // 読めなければ、そのまま渡す
+    }
+    return String(html);
   }
 
   function createDraft() {
@@ -9935,17 +10052,12 @@ function applyTheme(html, key, accentKey) {
       html: currentSource()
     };
 
-    el['gmail-create'].disabled = true;
-    showNote('作成中…');
+    showNote('書き出しています…');
 
-    call('createGmailDraft', payload).then(function (result) {
-      state.gmailUrl = result.url;
-      el['gmail-create'].disabled = false;
-      el['gmail-create'].textContent = 'もう一度書き出す';
-      showNote('書き出しました。');
+    call('createGmailDraft', payload).then(function () {
+      showNote('ファイルに書き出しました。メールソフトで開くと下書きになります。');
       setStatus('メールソフト用に書き出しました', 'ok');
     }, function (err) {
-      el['gmail-create'].disabled = false;
       showNote(message(err), true);
     });
   }

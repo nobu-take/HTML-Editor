@@ -29,7 +29,6 @@
   "例: 月例のお知らせ": "e.g. Monthly announcement",
   "例: 営業部・標準": "e.g. Sales team, standard",
   "例: 120px / 30%": "e.g. 120px or 30%",
-
   "あなたはHTMLメールの制作者です。次の依頼に答えてください。": "You are an HTML email developer. Please answer the request below.",
   "このメールの本文を書いてください。伝えたいことは次のとおりです。": "Write the body of this email. Here is what it needs to say.",
   "本文の日本語を、ビジネスメールとして自然で読みやすい表現に整えてください。意味は変えないでください。": "Rewrite the body so it reads naturally as a business email. Do not change the meaning.",
@@ -71,7 +70,6 @@
   "- 左右の余白を全体で統一する": "- Keep the left and right padding the same throughout.",
   "- 飾りが増えても、本文が読みにくくならないようにする": "- More decoration must not make the body harder to read.",
   "- 日本語のフォント指定は既存のものをそのまま使う": "- Keep the existing font-family declarations as they are.",
-
   "取り込む内容がありません。AIの回答を貼り付けてください。": "There is nothing to bring in. Paste the AI's reply first.",
   "HTMLが見つかりません。コードブロックごと貼り付けても構いません。": "No HTML found. You can paste the whole code block.",
   "貼り付けられた内容は HTML の全文ではないようです。\\n本文をこの内容で置き換えますか？": "What you pasted does not look like a complete HTML document.\\nReplace the body with it anyway?",
@@ -88,7 +86,6 @@
   "挿入先を用意できませんでした": "Could not work out where to insert it",
   "」を選択中の枠の中に挿入しました": "” inserted into the selected panel",
   "」を読み込みました": "” loaded",
-
   "保存先がいっぱいです。": "The storage is full.",
   "使わない原稿を消すか、「書き出す」でHTMLとして手元に保存してから消してください。": "Delete documents you no longer need, or export them as HTML first and then delete them.",
   "（保存先はこのブラウザの中で、容量に上限があります）": "(Everything is stored in this browser, and that has a size limit.)",
@@ -137,7 +134,6 @@
   "掴んで上下に動かす": "Drag to move up or down",
   "HTMLのタグをたどって、細かい要素を選びます": "Walk the HTML tags to select finer elements",
   "この要素に背景画像があります": "This element has a background image",
-
   "コピーできませんでした": "Could not copy",
   "クリップボードにコピー": "Copy to clipboard",
   "HTMLをコピーする": "Copy the HTML",
@@ -155,21 +151,14 @@
   "同じ内容で新しく作る": "Create a new one with the same content",
   "保存した過去の状態へ": "Back to an earlier saved state",
   "Gmailの下書きにする": "Export for your mail app",
-  "Gmailの下書きを作成": "Export for your mail app",
-  "Gmailに下書きを作成しました": "Exported for your mail app",
-  "下書きを作成しました。": "Exported.",
-  "編集中のHTMLを本文として、ご自身のGmailに下書きを作ります。送信は行いません。": "Exports an .eml file with the current HTML as its body. Open it in Thunderbird, Outlook, Apple Mail and it becomes a draft. Nothing is sent.",
-  "メールの件名（Gmailの下書きにそのまま使われます）": "Subject line (it goes straight into the exported file)",
   "宛先（空欄のままでも作成できます）": "To (you can leave this empty)",
   "差し込み用の記号などは、そのまま配信システムに渡ります。": "Merge tags are passed through to your sending platform untouched.",
-
   "保存するときのファイル名です。メールの件名はプレビュー上部の「件名」に入力してください。": "This is the file name. The email subject goes in the Subject field above the preview.",
   "プレビュー上部の「件名」と連動します。ここで直すと本文側にも反映されます。": "Tied to the Subject field above the preview. Changing it here changes it there too.",
   "用途や配信先で分類しておくと、左の一覧をタグで絞り込めます。カンマ区切りで複数指定できます。": "Tag by purpose or audience and you can filter the list on the left. Separate several with commas.",
   "タグ（例: キャンペーン, 定期便）": "Tags (e.g. campaign, newsletter)",
   "ファイル名で絞り込み": "Filter by file name",
   "Ctrl + S で保存": "Ctrl + S to save",
-
   "アプリ全体の表示サイズ": "Interface size",
   "アプリの表示だけが変わります。": "Only the interface changes.",
   "メールの見た目は変わりません。": "The email itself is unaffected.",
@@ -200,7 +189,6 @@
   "▾ ツールバーを表示": "▾ Show toolbar",
   "プレビュー ＋ コード": "Preview + code",
   "ドラッグで幅を調整": "Drag to adjust the width",
-
   "この要素と、まわりの要素との間隔です。": "The space between this element and the ones around it.",
   "文字とブロックの枠との間隔です。": "The space between the text and the edge of its box.",
   "ブロック内の余白（px）": "Padding (px)",
@@ -226,7 +214,6 @@
   "表のセルをクリックすると、行や列を追加・削除できます。": "Click a table cell to add or remove rows and columns.",
   "フォント（メールで崩れにくいものだけ）": "Fonts (only ones that survive email)",
   "Courier New（等幅）": "Courier New (monospace)",
-
   "装飾したい文字を選択してください": "Select the text you want to style",
   "装飾を外したい文字を選択してください": "Select the text you want to strip",
   "書式クリア（選択範囲の装飾をすべて外す）": "Clear formatting (strips everything from the selection)",
@@ -250,14 +237,12 @@
   "依頼を削除しました": "Request deleted",
   "新しい依頼として登録します": "Saves it as a new request",
   "挿入するにはプレビューを表示してください。": "Switch to the preview to insert it.",
-
   "メール用に使っている廃止属性（": "The legacy attributes used for email (",
   "など）を\n          同じ意味のCSSへ置き換え、HTML5として妥当な形にします。元のファイルは変更しません。": " and so on) are replaced with equivalent CSS, producing valid HTML5. Your original file is left alone.",
   "大きな太字を見出し（h1〜h3）に変換する": "Turn large bold text into headings (h1–h3)",
   "レスポンシブ用のCSSを追加する": "Add responsive CSS",
   "箇所レスポンシブ化しました。": " made responsive.",
   "スマホで読みやすく": "Readable on a phone",
-
   "この保存場所には書き込めません": "This location is read-only",
   "この保存場所には書き込めません。マイドライブへコピーしてから編集してください。": "This location is read-only. Copy it to Drafts before editing.",
   "に書き込めません。保存先の設定と権限をご確認ください。": " is not writable.",
@@ -285,7 +270,6 @@
   "原稿を別の保存場所へ移す": "Move this document to the other location",
   "へ移動します。\\n\\n": " will be moved.\\n\\n",
   "使い方のマニュアルを開く": "Open the manual",
-
   "先日ご案内した件について、まだご回答をいただいていない方に、\n                あらためてご連絡を差し上げております。": "We are writing again to those who have not yet replied about what we sent recently.",
   "すでにご回答いただいている場合、行き違いでお送りしている可能性がございます。\n                      その際は本メールを破棄してください。": "If you have already replied, our messages may have crossed. Please disregard this one.",
   "ログイン情報は第三者へ共有しないでください。\n                      初回ログイン後、パスワードの変更をお願いいたします。": "Please do not share your login details with anyone. Change your password after your first sign-in.",
