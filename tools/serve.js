@@ -32,7 +32,9 @@ const TYPES = {
 
 http
   .createServer((req, res) => {
-    const url = (req.url === '/' ? '/index.html' : req.url).split('?')[0];
+    // Cloudflare Pages は /en/ で /en/index.html を返す。ここも同じにする
+    let url = req.url.split('?')[0];
+    if (url.endsWith('/')) url += 'index.html';
     const file = path.join(dir, decodeURIComponent(url));
 
     // dist/ の外は返さない
