@@ -282,5 +282,14 @@
   "送信はしません": "Nothing is sent",
   "ほかの方法": "Other ways",
   "使い方": "How to use it",
-  "宛先": "To"
+  "宛先": "To",
+  "AIが返したHTMLを貼り付けます。```html の囲みは付いたままで構いません": "Paste the HTML the AI returned. The ```html fence can stay.",
+  "個人名やアドレスが入っていないか、コピーする前にご確認ください": "Check for names and addresses before you copy",
+  "です。やりとりはお使いのAIの画面で行ってください。": ". Have the conversation in your own AI app.",
+  "含めると、本文のHTMLがそのまま文面に入ります。": "The body HTML goes into the prompt as it is.",
+  "渡す文面を組み立てるところまで": "builds the prompt you hand over",
+  "返ってきたHTMLを戻す": "Bring the HTML back",
+  "AIは動かしません。": "This does not run an AI — it ",
+  "この文面をAIへ": "Take this to your AI",
+  "依頼を決める": "Decide what to ask"
 }

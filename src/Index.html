@@ -276,27 +276,18 @@
     <div id="ai-modal" class="backdrop" hidden>
       <div class="dialog dialog-wide ai-dialog" role="dialog" aria-modal="true" aria-labelledby="ai-title">
 
-        <!-- 1: これが何かを伝える -->
         <div class="ai-card">
           <div class="dialog-head">
             <h2 id="ai-title">AIに聞く</h2>
             <button id="ai-close" class="icon-only" title="閉じる" aria-label="閉じる"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6"/></svg></button>
           </div>
-          <p class="ai-explain">
-            <b>このツールはAIを動かしません。</b>
-            AIに貼り付けるための<b>文面（プロンプト）を組み立てるだけ</b>です。
-            実際のやりとりは、お使いのAIの画面で、あなた自身が行います。
-          </p>
-          <ol class="ai-steps">
-            <li><b>依頼を選ぶ</b><span>下で目的と質問を入力します</span></li>
-            <li><b>コピーしてAIへ</b><span>貼り付けて実行します</span></li>
-            <li><b>回答を取り込む</b><span>返ってきたHTMLをここに貼ります</span></li>
-          </ol>
+          <p class="ai-explain">AIは動かしません。<b>渡す文面を組み立てるところまで</b>です。やりとりはお使いのAIの画面で行ってください。</p>
         </div>
 
         <div class="ai-body">
-          <!-- 2: 何を頼むか -->
           <div class="ai-card ai-col">
+            <span class="step-label"><i>1</i>依頼を決める</span>
+
             <div class="field">
               <label>依頼の種類</label>
               <div id="ai-presets" class="ai-presets"></div>
@@ -307,35 +298,30 @@
               <textarea id="ai-question" rows="3" placeholder="例: 受講生向けに、もう少しやわらかい言い回しにしてください"></textarea>
             </div>
 
-            <label class="check">
-              <input id="ai-include" type="checkbox" checked />
-              いま編集中のHTMLを含める
-            </label>
-
-            <p id="ai-privacy" class="note warn">
-              <b>渡す内容にご注意ください</b>
-              右の文面がそのままAIに渡ります。個人名・メールアドレスなどが含まれていないか、
-              コピーする前にご確認ください。文面の相談だけなら、上のチェックを外せばHTMLは含まれません。
-            </p>
+            <div class="field">
+              <label class="check">
+                <input id="ai-include" type="checkbox" checked />
+                いま編集中のHTMLを含める
+              </label>
+              <span class="field-note">含めると、本文のHTMLがそのまま文面に入ります。</span>
+            </div>
           </div>
 
-          <!-- 3: 受け渡しする文面 -->
           <div class="ai-card ai-col">
             <div class="field field-grow">
-              <label for="ai-prompt">AIに渡す文面<span class="field-note">そのままコピーされます</span></label>
+              <label for="ai-prompt"><span class="step-label"><i>2</i>この文面をAIへ</span></label>
               <textarea id="ai-prompt" spellcheck="false" readonly></textarea>
             </div>
 
             <div class="field field-grow">
-              <label for="ai-answer">AIの回答を取り込む<span class="field-note">HTMLを貼り付けてください</span></label>
-              <textarea id="ai-answer" spellcheck="false" placeholder="AIが返したHTMLをここに貼り付けます。```html の囲みは付いたままで構いません"></textarea>
+              <label for="ai-answer"><span class="step-label"><i>3</i>返ってきたHTMLを戻す</span></label>
+              <textarea id="ai-answer" spellcheck="false" placeholder="AIが返したHTMLを貼り付けます。```html の囲みは付いたままで構いません"></textarea>
             </div>
 
             <p id="ai-status" class="note" hidden></p>
           </div>
         </div>
 
-        <!-- 4: 操作 -->
         <div class="ai-card ai-actions">
           <span class="ai-actions__group">
             <span class="tool-label">AIへ渡す</span>
@@ -355,11 +341,12 @@
           </span>
 
           <span class="spacer"></span>
+
+          <p class="dialog-foot"><span class="caution">個人名やアドレスが入っていないか、コピーする前にご確認ください</span><a href="manual.html#ai" target="_blank" rel="noopener">使い方</a></p>
         </div>
       </div>
     </div>
 
-    <!-- AI依頼の登録・編集 -->
     <div id="prompt-modal" class="backdrop" hidden>
       <div class="dialog dialog-wide" role="dialog" aria-modal="true" aria-labelledby="prompt-title">
         <div class="dialog-head">
