@@ -2115,20 +2115,40 @@ window.addEventListener('DOMContentLoaded', function () {
     scrollbar-color: var(--faint) var(--panel);
   }
 
-  .ai-presets::-webkit-scrollbar { width: 10px; }
+  /*
+     スクロールするところは、つまみの見た目を揃える。
 
-  .ai-presets::-webkit-scrollbar-track {
+     場所ごとに違う見え方をすると、同じ画面の中で別の部品のように
+     見える。暗い下地では既定のつまみが溶けるので、色は自分で与える。
+  */
+  .ai-presets::-webkit-scrollbar,
+  .ai-pick-body::-webkit-scrollbar,
+  textarea::-webkit-scrollbar { width: 10px; }
+
+  .ai-presets::-webkit-scrollbar-track,
+  .ai-pick-body::-webkit-scrollbar-track,
+  textarea::-webkit-scrollbar-track {
     border-radius: 5px;
     background: var(--panel);
   }
 
-  .ai-presets::-webkit-scrollbar-thumb {
+  .ai-presets::-webkit-scrollbar-thumb,
+  .ai-pick-body::-webkit-scrollbar-thumb,
+  textarea::-webkit-scrollbar-thumb {
     border: 2px solid var(--sunken);
     border-radius: 5px;
     background: var(--faint);
   }
 
-  .ai-presets::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+  .ai-presets::-webkit-scrollbar-thumb:hover,
+  .ai-pick-body::-webkit-scrollbar-thumb:hover,
+  textarea::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  .ai-pick-body,
+  textarea {
+    scrollbar-width: thin;
+    scrollbar-color: var(--faint) var(--panel);
+  }
 
   .ai-preset {
     flex: none;
@@ -2162,15 +2182,20 @@ window.addEventListener('DOMContentLoaded', function () {
 
   .ai-preset.active i { color: var(--accent-ink); }
 
+  /*
+     選んだ依頼の中身。面は持たせない。
+
+     入れ物を並べるほど画面は詰まって見える。ここは読むだけの場所で、
+     押したり書き込んだりしないので、面で囲う理由がない。左の一覧が
+     面を持っていれば、境目はそれで足りる。
+  */
   .ai-pick-body {
     flex: 1 1 auto;
     min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 5px;
-    padding: 9px 11px;
-    border-radius: var(--radius);
-    background: var(--sunken);
+    padding: 9px 4px 9px 8px;
     overflow-y: auto;
   }
 
@@ -7132,15 +7157,46 @@ function applyTheme(html, key, accentKey) {
   }
 
   /**
-   * 中身が無くなった行を、行ごと片付ける。
+   * その要素が、それ自体で何かを描いているか。
    *
-   * 面を持つ枠（色の帯、囲みなど）は、td の単位で選ばれる。消すと
-   * <tr></tr> だけが残り、プレビューには何も出ないのにコードには残る。
-   * 見えているものと書き出されるものが食い違うので、ここで揃える。
+   * 背景か罫線があれば、中身が空でも画面には出る。余白しか持たない
+   * 要素は、空になると何も見えない。
+   */
+  function drawsSomething(elem) {
+    var win = elem.ownerDocument && elem.ownerDocument.defaultView;
+    if (!win || !win.getComputedStyle) return false;
+
+    var style = win.getComputedStyle(elem);
+
+    if (style.backgroundImage && style.backgroundImage !== 'none') return true;
+
+    var bg = style.backgroundColor || '';
+    if (bg && bg !== 'transparent' && !/^rgba\(0,\s*0,\s*0,\s*0\)$/.test(bg)) return true;
+
+    return ['Top', 'Right', 'Bottom', 'Left'].some(function (side) {
+      return style['border' + side + 'Style'] !== 'none'
+        && parseFloat(style['border' + side + 'Width']) > 0;
+    });
+  }
+
+  /**
+   * 中身が無くなった行を、見えなくなる場合だけ片付ける。
+   *
+   * ---------------------------------------------------------------------
+   * なぜ「見えなくなる場合だけ」なのか
+   *
+   * 直したかったのは、コードに残るのにプレビューには出ない行だった。
+   * 色の帯のように面を持つ枠は td の単位で選ばれるので、消すと
+   * <tr></tr> だけが残る。これは画面に出ないので、見えているものと
+   * 書き出されるものが食い違う。
+   *
+   * 一方、罫線を持つ枠（署名の上の区切り線など）は、中身が空になっても
+   * 線として画面に残る。こちらは食い違いが起きていない。それでも行ごと
+   * 消すと、消すよう頼まれていない区切り線まで無くなる。**残っていれば
+   * 見えるので、消すかどうかは選んでもらえばよい。**
    *
    * td を単体で消さないのは、段組みが崩れるため。2カラムの片方だけが
-   * 無くなると、残った側の幅が変わる。行のすべての枠が空になったときに
-   * 限って、行ごと消す。
+   * 無くなると、残った側の幅が変わる。
    *
    * @param {Element} host 消した要素が入っていた親
    * @return {boolean} 行を片付けたか
@@ -7155,6 +7211,10 @@ function applyTheme(html, key, accentKey) {
             || cell.querySelector('img, hr, table, iframe');
         });
         if (alive) return false;
+
+        // 何かを描いている行や枠は、空でも見える。残して選んでもらう
+        if (drawsSomething(node)) return false;
+        if (Array.prototype.some.call(node.cells, drawsSomething)) return false;
 
         // 行がひとつだけの表は、消すと器が無くなる
         var table = node.closest ? node.closest('table') : null;
