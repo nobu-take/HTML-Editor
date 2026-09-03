@@ -44,7 +44,8 @@ function look(html) {
   const lines = [...new Set((html.match(/line-height:\s*([\d.]+)(?![\dpx%])/g) || [])
     .map((s) => s.split(':')[1].trim()))].sort();
 
-  const btn = html.match(/style="[^"]*display:\s*inline-block[^"]*"/i);
+  // ポップは幅いっぱいにするので display:block になる。両方拾う
+  const btn = html.match(/style="[^"]*display:\s*(?:inline-)?block[^"]*text-decoration[^"]*"/i);
   const btnPad = btn ? (btn[0].match(/padding:\s*([^;]*)/i) || [])[1] : '';
   const btnR = btn ? (btn[0].match(/border-radius:\s*([^;]*)/i) || [])[1] : '';
 
@@ -61,19 +62,21 @@ function look(html) {
 
 console.log('「' + tpl.name + '」— ジャンルごとの差\n');
 
-const head = ['ジャンル', '見出し', '本文', '行間', 'ボタンの余白', 'ボタンの角', '本文の余白', '差し色', '太さ'];
+const head = ['ジャンル', '見出しの置き方', '見出し', '本文', '行間', 'ボタンの余白', 'ボタンの角', '幅', '差し色'];
 const rows = themes.THEMES.map((theme) => {
   const v = look(themes.applyTheme(tpl.html, theme.key));
+  const full = /<table[^>]*width="100%"[^>]*>\s*<tr>\s*<td[^>]*bgcolor="#[0-9a-fA-F]{6}"[^>]*>\s*<a/i
+    .test(themes.applyTheme(tpl.html, theme.key));
   return [
     theme.name,
+    { plain: 'そのまま', rule: '中央＋罫線', bar: '左に線', band: '塗り・白抜き', topline: '上に線' }[theme.heading] || theme.heading,
     v.heading + 'px',
     v.body + 'px',
     v.lines.join('/'),
     v.btnPad,
     v.btnR,
-    (v.pads || '').replace('padding:', ''),
-    v.accent,
-    v.weight.join('/')
+    full ? '幅いっぱい' : '幅なり',
+    v.accent
   ];
 });
 

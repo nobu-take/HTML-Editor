@@ -3016,6 +3016,7 @@ window.addEventListener('DOMContentLoaded', function () {
      ボタン      … 角の丸み、大きさ
      罫線        … 細い線か、太い線か、線を引かないか
      色          … 地の色みと差し色
+     組み方      … 見出しの置き方、ボタンの幅
 
    ---------------------------------------------------------------------------
    なぜテンプレートを5倍書かないか
@@ -3037,8 +3038,8 @@ window.addEventListener('DOMContentLoaded', function () {
      注意書きに見えるべきです。
    ・**地を暗くするジャンルは作りません。** 暗い背景のメールは、受信側の
      ソフトによって文字が反転したり背景が落ちたりします。
-   ・**組み方（並び順・段組み）は変えません。** そこはテンプレートの役目で、
-     ジャンルの役目ではありません。
+   ・**並び順と段組みは変えません。** 見出しの置き方とボタンの形までは
+     ジャンルの役目ですが、どの要素をどの順に置くかはテンプレートの役目です。
 */
 
 /*
@@ -3059,8 +3060,9 @@ var THEMES = [
     colors: {},
     type: 1, headingBoost: 1, headingWeight: 'bold', headingSpacing: '',
     lineHeight: 1, density: 1,
-    radius: 1, buttonRadius: 6, buttonPad: '14px 32px',
-    rule: '1px solid', shadow: 'keep', font: 'sans'
+    radius: 1, buttonRadius: 6, buttonPad: '14px 32px', buttonWidth: 'auto',
+    rule: '1px solid', shadow: 'keep', font: 'sans',
+    heading: 'plain'
   },
 
   {
@@ -3082,8 +3084,9 @@ var THEMES = [
     type: 0.96, headingBoost: 1.08, headingWeight: 'normal',
     headingSpacing: '0.06em',
     lineHeight: 1.15, density: 1.3,
-    radius: 0, buttonRadius: 0, buttonPad: '16px 44px',
-    rule: '1px solid', shadow: 'none', font: 'serif'
+    radius: 0, buttonRadius: 0, buttonPad: '16px 44px', buttonWidth: 'auto',
+    rule: '1px solid', shadow: 'none', font: 'serif',
+    heading: 'rule'
   },
 
   {
@@ -3106,8 +3109,9 @@ var THEMES = [
     },
     type: 1.04, headingBoost: 1.12, headingWeight: 'bold', headingSpacing: '',
     lineHeight: 1.06, density: 1.05,
-    radius: 1.75, buttonRadius: 999, buttonPad: '15px 36px',
-    rule: '1px solid', shadow: 'keep', font: 'sans'
+    radius: 1.75, buttonRadius: 999, buttonPad: '15px 36px', buttonWidth: 'auto',
+    rule: '1px solid', shadow: 'keep', font: 'sans',
+    heading: 'bar'
   },
 
   {
@@ -3128,8 +3132,9 @@ var THEMES = [
     type: 1.08, headingBoost: 1.4, headingWeight: '800',
     headingSpacing: '-0.01em',
     lineHeight: 0.95, density: 0.96,
-    radius: 2.25, buttonRadius: 999, buttonPad: '18px 42px',
-    rule: '3px solid', shadow: 'keep', font: 'sans'
+    radius: 2.25, buttonRadius: 999, buttonPad: '18px 42px', buttonWidth: 'full',
+    rule: '3px solid', shadow: 'keep', font: 'sans',
+    heading: 'band'
   },
 
   {
@@ -3150,13 +3155,94 @@ var THEMES = [
     type: 0.94, headingBoost: 0.96, headingWeight: '600',
     headingSpacing: '0.09em',
     lineHeight: 1.16, density: 1.35,
-    radius: 0, buttonRadius: 0, buttonPad: '13px 30px',
-    rule: '1px solid', shadow: 'none', font: 'sans'
+    radius: 0, buttonRadius: 0, buttonPad: '13px 30px', buttonWidth: 'auto',
+    rule: '1px solid', shadow: 'none', font: 'sans',
+    heading: 'topline'
   }
 ];
 
 /** 見出しとみなす大きさ。ここから上は別の倍率で動かす */
 var HEADING_FROM = 18;
+
+/*
+   見出しの組み方。
+
+   ここがジャンルの差をいちばん強く出す。色や字の大きさより、
+   「見出しがどう置かれているか」のほうが先に目に入るため。
+
+     plain   … そのまま。文字だけ
+     rule    … 中央に寄せて、下に罫線を引く
+     bar     … 左に太い線を立てる
+     band    … 差し色で塗りつぶし、白抜きにする
+     topline … 上に線を引いて、間を空ける
+
+   組み替えではなく、見出しのセルに指定を足すだけで作っている。
+   要素を入れ替えると、テンプレートごとの事情（画像の直後、表の中、など）に
+   引っかかって壊れる。足すだけなら、どこにあっても壊れない。
+*/
+function dressHeading(html, theme, accent, line) {
+  if (theme.heading === 'plain') return html;
+
+  return html.replace(/<td([^>]*?)style="([^"]*)"/gi, function (all, attrs, style) {
+    var size = style.match(/font-size:\s*(\d+)px/i);
+    if (!size || Number(size[1]) < HEADING_FROM) return all;
+    if (!/font-weight:\s*(bold|[5-9]00)/i.test(style)) return all;
+
+    // すでに色を敷いているセルは、見出しの帯ではなく別の用がある
+    if (/background-color:\s*#(?!ffffff)/i.test(style)) return all;
+    if (/bgcolor="#(?!ffffff)/i.test(attrs)) return all;
+
+    var next = style;
+    var extra = '';
+
+    if (theme.heading === 'rule') {
+      next = next.replace(/text-align:[^;]*;?/i, '');
+      extra = ' text-align:center; border-bottom:1px solid ' + line + ';';
+    } else if (theme.heading === 'bar') {
+      extra = ' border-left:4px solid ' + accent + ';';
+    } else if (theme.heading === 'topline') {
+      extra = ' border-top:2px solid ' + line + ';';
+    } else if (theme.heading === 'band') {
+      next = next.replace(/color:\s*#[0-9a-fA-F]{6}/i, 'color:#ffffff');
+      extra = ' background-color:' + accent + ';';
+      // Outlook は style の背景を落とすので、属性でも書く
+      attrs = attrs + ' bgcolor="' + accent + '"';
+    }
+
+    if (next && !/;\s*$/.test(next)) next += ';';
+
+    /*
+       属性と style の間に必ず空白を入れる。
+
+       取り出しの正規表現が `<td([^>]*?)style="` なので、attrs の末尾の
+       空白まで飲み込まれている。そこへ bgcolor を足すと
+       `bgcolor="#d81b60"style="…` という壊れた形になる。
+       ブラウザは大目に見るが、Outlook で読めない形にはしたくない。
+    */
+    var head = attrs.replace(/\s+$/, '');
+
+    return '<td' + head + ' style="' + next + extra + '"';
+  });
+}
+
+/*
+   ボタンを本文の幅いっぱいに広げる。
+
+   包んでいる表と、中のリンクの両方を変える必要がある。表は中身の幅に
+   合わせて縮むので、リンクだけを block にしても広がらない。
+*/
+function widenButton(html) {
+  var out = html.replace(
+    /(<table(?![^>]*width=)[^>]*?)(>\s*<tr>\s*<td[^>]*bgcolor="#[0-9a-fA-F]{6}"[^>]*>\s*<a[^>]*display:\s*inline-block)/gi,
+    function (all, open, rest) {
+      return open + ' width="100%" style="width:100%"' + rest;
+    });
+
+  return out.replace(/style="([^"]*display:\s*)inline-block([^"]*text-decoration:\s*none[^"]*)"/gi,
+    function (all, head, tail) {
+      return 'style="' + head + 'block' + tail + ' text-align:center;"';
+    });
+}
 
 function findTheme(key) {
   for (var i = 0; i < THEMES.length; i++) {
@@ -3208,6 +3294,18 @@ function applyTheme(html, key) {
       return 'line-height:' + (Math.round(Number(n) * theme.lineHeight * 100) / 100);
     });
   }
+
+  /*
+     --- 見出しの組み方 ---
+
+     太さを変える前に当てる。見出しかどうかは font-weight:bold で見分けて
+     いるので、先に normal へ変えてしまうと、そのあとでは見つけられない。
+     フォーマルだけ組み方が効かない、という形で出た。
+  */
+  var accent = theme.colors['#1a73e8'] || '#1a73e8';
+  var line = theme.colors['#e5e7eb'] || '#e5e7eb';
+
+  out = dressHeading(out, theme, accent, line);
 
   // --- 見出しの太さと字間 ---
   if (theme.headingWeight !== 'bold' || theme.headingSpacing) {
@@ -3278,6 +3376,14 @@ function applyTheme(html, key) {
   // ボタンを敷いているセルの角も、ボタンに合わせる
   out = out.replace(/(bgcolor="#[0-9a-fA-F]{6}"\s+style="[^"]*?)border-radius:\s*[^;"]*/gi,
     function (all, head) { return head + 'border-radius:' + theme.buttonRadius + 'px'; });
+
+  /*
+     --- ボタンを広げる ---
+
+     ボタンの余白と角を当てたあとに動かす。見分け方が display:inline-block
+     なので、先に block へ変えてしまうと、そのあとでは見つけられない。
+  */
+  if (theme.buttonWidth === 'full') out = widenButton(out);
 
   return out;
 }
