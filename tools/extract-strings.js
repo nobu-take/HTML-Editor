@@ -3,7 +3,7 @@
  *
  *   node tools/extract-strings.js
  *
- * locales/ja.json に、日本語の文言を「そのまま鍵」にして並べます。
+ * locales/_source.json に、日本語の文言を「そのまま鍵」にして並べます。
  * 鍵を別に発明しないのは、訳し漏れがそのまま日本語として画面に出て、
  * すぐ気づけるからです。鍵を作ると、漏れは空欄や記号になって埋もれます。
  *
@@ -66,6 +66,15 @@ const library = new Function(
 function fromHtml(html, where) {
   // タグの外に出ている文字だけを拾う
   (String(html).match(/>[^<>]+</g) || []).forEach((m) => add(m.slice(1, -1), where));
+
+  /*
+     HTMLコメントも拾う。
+
+     テンプレートの中の注記（Outlook対策の理由など）は、書き出したHTMLに
+     そのまま入ります。訳さずに置くと、英語版から日本語のコメント付きの
+     HTMLが出てきます。
+  */
+  (String(html).match(/<!--[\s\S]*?-->/g) || []).forEach((m) => add(m.slice(4, -3), where));
   // alt と title も画面に出る
   (String(html).match(/(?:alt|title)="([^"]*)"/g) || []).forEach((m) => {
     add(m.slice(m.indexOf('"') + 1, -1), where);
@@ -87,19 +96,29 @@ function fromHtml(html, where) {
 // 長い順。差し替えのとき、短いものが長いものを食わないように
 const list = [...found.keys()].sort((a, b) => b.length - a.length);
 
+/*
+   洗い出した結果は locales/_source.json に書く。
+
+   はじめは ja.json に書いていた。しかしあれは日本語版の**訳**が入る
+   ファイルでもある（独立版では「マイドライブ」を「作業中」と言い換える）。
+   洗い出すたびに上書きすると、その言い換えが黙って消える。
+   実際に一度消して、日本語版だけ元のアプリの言い回しに戻っていた。
+
+   洗い出す先と、訳を置く先は分けること。
+*/
 const dict = {};
-list.forEach((k) => { dict[k] = k; });   // ja は自分自身
+list.forEach((k) => { dict[k] = k; });
 
 const dir = path.join(root, 'locales');
 fs.mkdirSync(dir, { recursive: true });
-fs.writeFileSync(path.join(dir, 'ja.json'), JSON.stringify(dict, null, 2) + '\n', 'utf8');
+fs.writeFileSync(path.join(dir, '_source.json'), JSON.stringify(dict, null, 2) + '\n', 'utf8');
 
 const counts = {};
 found.forEach((wheres) => {
   wheres.forEach((w) => { counts[w] = (counts[w] || 0) + 1; });
 });
 
-console.log('locales/ja.json に ' + list.length + ' 件を書き出しました');
+console.log('locales/_source.json に ' + list.length + ' 件を書き出しました');
 Object.keys(counts).sort().forEach((k) => console.log('  ' + k + ': ' + counts[k] + ' 件'));
 
 const chars = list.reduce((n, s) => n + s.length, 0);

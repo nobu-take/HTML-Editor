@@ -682,7 +682,9 @@ var TEMPLATE_LIST = [
       '                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:2px solid #1f2328; border-radius:6px;">',
       '                  <tr>',
       '                    <td align="center" style="padding:20px; font-family:{{FONT}}; font-size:17px; font-weight:bold; line-height:1.7; color:#1f2328;">',
-      '                      0月0日（〇） 〜 0月0日（〇）',
+      // 直下の文字と div を並べない。混ざると、その文字をクリックしても
+      // 「文字を打てるかたまり」と見なされず、編集に入れなくなる
+      '                      <div>0月0日（〇） 〜 0月0日（〇）</div>',
       '                      <div style="padding-top:6px; font-size:13px; font-weight:normal; color:#6b7280;">0月0日（〇）より通常営業いたします</div>',
       '                    </td>',
       '                  </tr>',

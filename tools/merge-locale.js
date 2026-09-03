@@ -3,7 +3,7 @@
  *
  *   node tools/merge-locale.js en
  *
- * locales/parts/<lang>-*.json を読み、locales/ja.json の並び順で
+ * locales/parts/<lang>-*.json を読み、locales/_source.json の並び順で
  * locales/<lang>.json を作ります。
  *
  * 辞書を分けているのは、901件を1つのファイルで扱うと、どこを直したのか
@@ -25,7 +25,7 @@ if (!lang) {
 const root = path.join(__dirname, '..');
 const dir = path.join(root, 'locales');
 
-const base = JSON.parse(fs.readFileSync(path.join(dir, 'ja.json'), 'utf8'));
+const base = JSON.parse(fs.readFileSync(path.join(dir, '_source.json'), 'utf8'));
 
 const partsDir = path.join(dir, 'parts');
 const files = fs.existsSync(partsDir)
@@ -58,10 +58,23 @@ files.forEach((f) => {
   console.log(f + ' … ' + Object.keys(part).length + '件');
 });
 
-// ja.json の並びで書き出す。差分が読みやすい
+/*
+   既定の言語は、書いていない分を「原文そのまま」で埋める。
+
+   日本語版で訳すのは、独立版で言い方の変わるところだけ（「マイドライブ」→
+   「作業中」など）。残り900件を自分自身に写して並べても意味がない。
+
+   ここを埋め忘れて、日本語版だけ元のアプリの言い回し（マイドライブ／
+   Gmailの下書き）に戻っていたことがある。既定の言語も辞書を通る。
+*/
+const index = JSON.parse(fs.readFileSync(path.join(dir, 'index.json'), 'utf8'));
+const isDefault = lang === index.default;
+
+// _source.json の並びで書き出す。差分が読みやすい
 const out = {};
 Object.keys(base).forEach((key) => {
   if (Object.prototype.hasOwnProperty.call(merged, key)) out[key] = merged[key];
+  else if (isDefault) out[key] = key;
 });
 
 fs.writeFileSync(path.join(dir, lang + '.json'), JSON.stringify(out, null, 2) + '\n', 'utf8');

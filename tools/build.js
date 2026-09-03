@@ -73,7 +73,12 @@ function translator(dict) {
     return String(text).replace(key, dict[key]);
   }
 
-  return { at, missing };
+  /** 訳があるか。触ってよいかどうかの判断に使う */
+  function has(text) {
+    return Object.prototype.hasOwnProperty.call(dict, String(text).trim());
+  }
+
+  return { at, has, missing };
 }
 
 /** タグの中身と、画面に出る属性 */
@@ -81,14 +86,64 @@ function markup(html, t) {
   return html
     .replace(/>([^<>]+)</g, (all, inner) => '>' + t.at(inner) + '<')
     .replace(/(placeholder|title|aria-label|alt)="([^"]*)"/g,
-      (all, name, value) => name + '="' + t.at(value) + '"');
+      // 属性の中に " が入ると、そこで属性が閉じてしまう
+      (all, name, value) => name + '="' + String(t.at(value)).split('"').join('&quot;') + '"');
 }
 
-/** コード中の文字列。引用符の種類はそのまま保つ */
+/*
+   テンプレートと部品は、HTMLコメントも訳す。
+
+   中の注記（「ボタンは table で組むと Outlook でも角丸が保たれる」など）は、
+   利用者が書き出したHTMLにそのまま入るためです。訳さずに置くと、英語版から
+   日本語のコメント付きのHTMLが出てきます。
+
+   画面の骨組み（Index.html）のコメントは訳しません。あちらは中を直す人への
+   注記で、利用者の手元には出て行きません。
+*/
+function templateMarkup(html, t) {
+  return markup(
+    html.replace(/<!--([\s\S]*?)-->/g, (all, inner) => '<!--' + t.at(inner) + '-->'),
+    t
+  );
+}
+
+/*
+   コード中の文字列。
+
+   引用符の種類はそのまま保ち、**中身は必ず逃がす**。
+
+   ここは一度事故を起こしている。英語の訳には "The AI's reply" のように
+   アポストロフィが入る。素通しで 'ここ' に戻すと引用符がそこで閉じ、
+   その先のコードが全部壊れる。画面は真っ白になり、手がかりは
+   「missing ) after argument list」だけ。
+
+   訳は人が書くもので、記号が混じる前提で扱うこと。
+*/
+function escapeFor(quote, text) {
+  return String(text)
+    .split('\\').join('\\\\')
+    .split(quote).join('\\' + quote);
+}
+
+/*
+   訳を当てた文字列だけを逃がす。
+
+   はじめは全部の文字列に逃がし処理をかけて、日本語版まで壊した。
+   元のコードには "'Hiragino Sans','Yu Gothic'" のように引用符を含む
+   リテラルや、\\u200b のような書き方が普通にある。訳と関係の無いものに
+   手を入れれば、当然そこが壊れる。
+
+   触らないものには一切触らないこと。
+*/
 function code(js, t) {
+  const swap = (quote) => (all, body) => {
+    if (!t.has(body)) return all;                   // 訳が無いものはそのまま
+    return quote + escapeFor(quote, t.at(body)) + quote;
+  };
+
   return js
-    .replace(/'((?:[^'\\\n]|\\.)*)'/g, (all, body) => "'" + t.at(body) + "'")
-    .replace(/"((?:[^"\\\n]|\\.)*)"/g, (all, body) => '"' + t.at(body) + '"');
+    .replace(/'((?:[^'\\\n]|\\.)*)'/g, swap("'"))
+    .replace(/"((?:[^"\\\n]|\\.)*)"/g, swap('"'));
 }
 
 // ---------------------------------------------------------------------------
@@ -190,11 +245,11 @@ function buildLocale(lang, meta) {
     tpl.name = t.at(tpl.name);
     tpl.description = t.at(tpl.description);
     tpl.category = t.at(tpl.category);
-    tpl.html = markup(tpl.html, t);
+    tpl.html = templateMarkup(tpl.html, t);
   });
 
   templates.categories = (templates.categories || []).map((c) => t.at(c));
-  parts.forEach((p) => { p.name = t.at(p.name); p.html = markup(p.html, t); });
+  parts.forEach((p) => { p.name = t.at(p.name); p.html = templateMarkup(p.html, t); });
 
   const store = '<script>\n'
     + code(read('store.js'), t)

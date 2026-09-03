@@ -192,16 +192,46 @@ dist/en/index.html     それ以外
 ### 言語を足すとき
 
 ```bash
-node tools/extract-strings.js      # locales/ja.json を作り直す
+node tools/extract-strings.js      # 文言を洗い出す → locales/_source.json
 node tools/merge-locale.js en      # locales/parts/en-*.json をまとめる
 node tools/build.js
 ```
 
-訳は `locales/parts/<lang>-*.json` に分けて書けます。901件を1つのファイルで
-扱うと、どこを直したのか見失うためです。まとめる段階で、**元の文言に無い鍵**
-（打ち間違い）を報告します。黙って無視されると気づけません。
+**この順番で流してください。** 訳は `locales/parts/<lang>-*.json` に分けて
+書けます。900件を1つのファイルで扱うと、どこを直したのか見失うためです。
+まとめる段階で、**元の文言に無い鍵**（打ち間違い）を報告します。
+黙って無視されると気づけません。
 
 言語ごとのフォントと表示名は `locales/index.json` に書きます。
+
+| ファイル | 役割 |
+| --- | --- |
+| `locales/_source.json` | 洗い出した原文の一覧。**自動生成。手で触らない** |
+| `locales/parts/<lang>-*.json` | 訳を書く場所 |
+| `locales/<lang>.json` | まとめた結果。ビルドが読む |
+
+洗い出す先と訳を置く先を分けているのには理由があります。はじめは両方を
+`ja.json` にしていて、洗い出すたびに日本語版の言い換え（「マイドライブ」→
+「作業中」）が消えていました。**日本語版だけ元のアプリの言い回しに戻る**
+という形で表に出ます。
+
+### 既定の言語も辞書を通る
+
+日本語版で訳すのは、独立版で言い方の変わるところだけです
+（`locales/parts/ja-standalone.json`、18件）。書いていない分は原文のまま
+通ります。
+
+### 記号の入った訳に気をつける
+
+訳は人が書くので、記号が混じります。英語なら "The AI's reply" のような
+アポストロフィです。コード中の文字列に素通しで入れると引用符がそこで閉じ、
+**その先のコードが全部壊れます**。画面は真っ白になり、手がかりは
+「missing ) after argument list」だけです。
+
+ビルドは引用符と `\` を逃がしますが、**逃がすのは訳を当てたものだけ**です。
+元のコードには `"'Hiragino Sans','Yu Gothic'"` のように引用符を含む
+リテラルが普通にあります。訳と関係の無いものに手を入れれば、そこが壊れます。
+一度それで日本語版まで壊しました。
 
 ### 内部の値と表示は分けてある
 
@@ -223,8 +253,15 @@ src/
   JavaScript.html   画面の動き（編集・選択・書き出し）
   Templates.js      テンプレート34件と部品10件
   store.js          保存部。localStorage に置く
+locales/
+  index.json        言語の一覧。フォントと表示名
+  _source.json      洗い出した原文（自動生成）
+  parts/            訳を書く場所
 tools/
-  build.js          1枚のHTMLに束ねる
+  build.js          言語ごとに1枚のHTMLへ束ねる
+  extract-strings.js 文言を洗い出す
+  merge-locale.js   訳をまとめる
+  check-api.js      画面と保存部の窓口を突き合わせる
   serve.js          手元で確かめる用のサーバー
   make-images.js    見本画像を作る
 assets/img/         見本画像
