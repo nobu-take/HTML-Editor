@@ -6268,12 +6268,32 @@
     });
   }
 
-  /** 作成画面を開くだけ。宛先と件名は入るが、本文は貼り付けてもらう */
+  /**
+   * 作成画面を開く。宛先と件名は入るが、本文は貼り付けてもらう。
+   *
+   * 開く前に、本文のコピーもここで済ませる。
+   *
+   * 以前は「コピー」と「開く」を完全に別の操作にしていた。順番を守れば
+   * 動くが、**守らなかったときに何も起きない**。押した本人には、
+   * 貼り付けても空のままに見える。押す順番を覚えていることを、
+   * 動作の前提にすべきではなかった。
+   *
+   * コピーはこのクリックと同じ操作の中で行うので、ブラウザからは
+   * 利用者の操作として扱われる。開くのはそのあと。
+   */
   function openWebmail(which) {
     var service = WEBMAIL[which];
 
+    var copied = copyRich(currentSource());
+
     window.open(service.url(el['gmail-to'].value, el['gmail-subject'].value),
       '_blank', 'noopener');
+
+    if (copied) {
+      setStatus('本文をコピーしました', 'ok');
+      showNote(service.name + 'を開きました。本文はコピー済みです。作成画面で貼り付けてください（Ctrl + V）。');
+      return;
+    }
 
     /*
        2文をつなげず、ひとつの文言として持つ。

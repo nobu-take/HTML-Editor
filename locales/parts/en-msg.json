@@ -275,5 +275,6 @@
   "ログイン情報は第三者へ共有しないでください。\n                      初回ログイン後、パスワードの変更をお願いいたします。": "Please do not share your login details with anyone. Change your password after your first sign-in.",
   "株式会社サンプル　営業部<br />": "Sample Company, Sales Team<br />",
   "山田 太郎<br />": "Jordan Taylor<br />",
-  "を開きました。作成画面で貼り付けてください（Ctrl + V）。まだコピーしていなければ、先に「本文をコピー」を押してください。": " opened. Paste the body into the compose window (Ctrl + V). If you have not copied it yet, press Copy the body first."
+  "を開きました。作成画面で貼り付けてください（Ctrl + V）。まだコピーしていなければ、先に「本文をコピー」を押してください。": " opened. Paste the body into the compose window (Ctrl + V). If you have not copied it yet, press Copy the body first.",
+  "を開きました。本文はコピー済みです。作成画面で貼り付けてください（Ctrl + V）。": " opened. The body is already copied — paste it into the compose window (Ctrl + V)."
 }
