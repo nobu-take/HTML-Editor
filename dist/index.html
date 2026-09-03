@@ -3295,6 +3295,27 @@ var HEADING_FROM = 18;
    要素を入れ替えると、テンプレートごとの事情（画像の直後、表の中、など）に
    引っかかって壊れる。足すだけなら、どこにあっても壊れない。
 */
+/*
+   帯の上下の余白を、左右に合わせてそろえる。
+
+   左右の値を基準にするのは、そこが「この原稿の余白の単位」だから。
+   0.7 は、正方形に近づけすぎず、詰まりすぎない落としどころ。
+*/
+function bandPadding(style) {
+  return style.replace(/padding:\s*([^;"]*)/i, function (all, value) {
+    var parts = String(value).trim().split(/\s+/);
+    if (parts.length < 2) return all;
+
+    var side = parseInt(parts[1], 10);
+    if (!side) return all;
+
+    var updown = Math.max(18, Math.round(side * 0.7));
+
+    return 'padding:' + updown + 'px ' + parts[1] + ' ' + updown + 'px '
+      + (parts[3] || parts[1]);
+  });
+}
+
 function dressHeading(html, theme, accent, line) {
   if (theme.heading === 'plain') return html;
 
@@ -3322,6 +3343,15 @@ function dressHeading(html, theme, accent, line) {
       extra = ' background-color:' + accent + ';';
       // Outlook は style の背景を落とすので、属性でも書く
       attrs = attrs + ' bgcolor="' + accent + '"';
+
+      /*
+         塗りつぶす以上、上下の余白はそろえる。
+
+         元の見出しは「下に本文が続く」前提で組まれていて、下だけ詰めて
+         ある（上31px・下15px など）。文字だけならそれで良いが、色を敷くと
+         文字が上に寄って見え、崩れて見える。左右の余白から作り直す。
+      */
+      next = bandPadding(next);
     }
 
     if (next && !/;\s*$/.test(next)) next += ';';
@@ -3441,6 +3471,51 @@ function topRows(html) {
 
    動かせる形になっていなければ、何もしない。壊すより、そのままのほうがいい。
 */
+/*
+   動かした段に、上の余白を足す。
+
+   元の並びでは、上にあった本文の下余白が間を作っていた。動かすと
+   その前提が消えるので、自分で間を持たせる必要がある。
+
+   左右の余白と同じだけ空ける。原稿ごとに余白の単位が違うので、
+   固定値ではなくその原稿の値に合わせる。
+*/
+function openTop(rowHtml) {
+  return rowHtml.replace(/padding:\s*0(?:px)?\s+(\d+px)/i, function (all, side) {
+    return 'padding:' + side + ' ' + side;
+  });
+}
+
+/*
+   帯の次の段に、間を空ける。
+
+   見出しに色を敷くと、それまで「次との間」を作っていた下余白が、
+   色の内側に取り込まれる。次の段の上余白が 0 だと、色にぴたりと接する。
+
+   動かしたボタンだけの話ではない。動かしていない段でも同じことが起きる
+   （元の並びで見出しの直下にあるものは、たいてい上余白が 0）。
+   だから、並べ替えが終わったあとに、帯の次を見て直す。
+*/
+function spaceAfterBand(html) {
+  var rows = topRows(html);
+  if (rows.length < 2) return html;
+
+  var bandAt = -1;
+  rows.forEach(function (row, i) {
+    if (bandAt < 0 && /<td[^>]*bgcolor="#[0-9a-fA-F]{6}"[^>]*color:\s*#ffffff/i.test(row.html)) {
+      bandAt = i;
+    }
+  });
+
+  if (bandAt < 0 || bandAt + 1 >= rows.length) return html;
+
+  var next = rows[bandAt + 1];
+  var opened = openTop(next.html);
+  if (opened === next.html) return html;
+
+  return html.slice(0, next.start) + opened + html.slice(next.end);
+}
+
 function ctaFirst(html) {
   var rows = topRows(html);
   if (rows.length < 3) return html;
@@ -3466,7 +3541,7 @@ function ctaFirst(html) {
 
   // 後ろから先に切る。前を切ると、後ろの位置がずれる
   var out = html.slice(0, cta.start) + html.slice(cta.end);
-  return out.slice(0, anchor.end) + '\n' + cta.html + out.slice(anchor.end);
+  return out.slice(0, anchor.end) + '\n' + openTop(cta.html) + out.slice(anchor.end);
 }
 
 function findTheme(key) {
@@ -3620,6 +3695,9 @@ function applyTheme(html, key, accentKey) {
   // --- 段組みと並び順。組み方を変えるので、いちばん最後 ---
   if (theme.columns === 'stack') out = stackColumns(out);
   if (theme.order === 'cta-first') out = ctaFirst(out);
+
+  // 並べ替えが終わってから、帯の次の間を見る
+  if (theme.heading === 'band') out = spaceAfterBand(out);
 
   return out;
 }
