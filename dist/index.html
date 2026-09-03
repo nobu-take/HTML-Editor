@@ -1561,10 +1561,34 @@ window.addEventListener('DOMContentLoaded', function () {
   .dialog-wide { width: min(880px, 100%); }
 
   /*
-     メールのダイアログだけ少し広げる。操作が5つ並ぶので、400pxだと
+     メールのダイアログだけ広げる。操作が4つ並ぶので、400pxだと
      どの言語でも1行に収まらない。
   */
-  .dialog-mail { width: min(470px, 100%); }
+  .dialog-mail { width: min(520px, 100%); }
+
+  /*
+     題と閉じるを横に並べる。
+
+     ✕ は「この窓を閉じる」の意味を、OSの窓の右上にあることから
+     得ている記号。下の操作列に置くと、その手がかりが無くなって
+     何の記号か分からない。閉じるは右上に置く。
+
+     スクロールしても消えないように、題ごと貼り付けておく。
+  */
+  .dialog-head {
+    position: sticky;
+    top: -22px;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: -22px -22px 0;
+    padding: 22px 22px 4px;
+    background: var(--panel);
+  }
+
+  .dialog-head h2 { flex: 1 1 auto; min-width: 0; }
+  .dialog-head button { flex: none; margin-right: -4px; }
 
   .dialog h2 { margin: 0; font-size: 17px; }
 
@@ -2449,7 +2473,10 @@ window.addEventListener('DOMContentLoaded', function () {
     <!-- Gmailの下書き作成 -->
     <div id="gmail-modal" class="backdrop" hidden>
       <div class="dialog dialog-mail" role="dialog" aria-modal="true" aria-labelledby="gmail-title">
-        <h2 id="gmail-title">メールにする</h2>
+        <div class="dialog-head">
+          <h2 id="gmail-title">メールにする</h2>
+          <button id="gmail-cancel" class="icon-only" title="閉じる" aria-label="閉じる"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6"/></svg></button>
+        </div>
         <p>本文をコピーして、メールの作成画面に貼り付けます。送信は行いません。</p>
 
         <ol class="ai-steps">
@@ -2476,10 +2503,9 @@ window.addEventListener('DOMContentLoaded', function () {
         </p>
 
         <div class="dialog-actions">
-          <button id="gmail-cancel" class="icon-only" title="閉じる" aria-label="閉じる"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
-          <button id="gmail-eml" class="icon-only" title="ファイルに書き出す" aria-label="ファイルに書き出す"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8"/><path d="M5 7.2L8 10.2l3-3"/><path d="M2.8 11.4v1.2a1 1 0 001 1h8.4a1 1 0 001-1v-1.2"/></svg></button>
-          <button id="gmail-outlook"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2.6h3.9v3.9"/><path d="M13.4 2.6L7.8 8.2"/><path d="M11.4 9.6v3a1 1 0 01-1 1H3.6a1 1 0 01-1-1V5.8a1 1 0 011-1h3"/></svg>Outlook</button>
-          <button id="gmail-gmail"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2.6h3.9v3.9"/><path d="M13.4 2.6L7.8 8.2"/><path d="M11.4 9.6v3a1 1 0 01-1 1H3.6a1 1 0 01-1-1V5.8a1 1 0 011-1h3"/></svg>Gmail</button>
+          <button id="gmail-eml"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8"/><path d="M5 7.2L8 10.2l3-3"/><path d="M2.8 11.4v1.2a1 1 0 001 1h8.4a1 1 0 001-1v-1.2"/></svg>ファイルに書き出す</button>
+          <button id="gmail-outlook"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><rect x="1.4" y="3.4" width="13.2" height="9.2" rx="1.3" fill="#0f6cbd"/><ellipse cx="6.1" cy="8" rx="2.5" ry="3" fill="none" stroke="#ffffff" stroke-width="1.5"/><path d="M10 5.6h3.5v4.8H10z" fill="#ffffff" opacity=".8"/></svg>Outlook</button>
+          <button id="gmail-gmail"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><rect x="1.4" y="3.4" width="13.2" height="9.2" rx="1.3" fill="#ea4335"/><path d="M3.2 5.5v5.3h1.8V8L8 10.2 11 8v2.8h1.8V5.5L8 8.9z" fill="#ffffff"/></svg>Gmail</button>
           <button id="gmail-copy" class="primary"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5.6" y="2.6" width="7.8" height="9.6" rx="1"/><path d="M10.4 12.2v1.2a1 1 0 01-1 1H3.6a1 1 0 01-1-1V5.6a1 1 0 011-1h1.2"/></svg>本文をコピー</button>
         </div>
       </div>
@@ -10086,25 +10112,40 @@ function applyTheme(html, key, accentKey) {
   function openWebmail(which) {
     var service = WEBMAIL[which];
 
-    var copied = copyRich(currentSource());
+    flushWys();
+
+    var html = currentSource();
+    var copied = copyRich(html);
 
     window.open(service.url(el['gmail-to'].value, el['gmail-subject'].value),
       '_blank', 'noopener');
 
-    if (copied) {
-      setStatus('本文をコピーしました', 'ok');
-      showNote(service.name + 'を開きました。本文はコピー済みです。作成画面で貼り付けてください（Ctrl + V）。');
-      return;
-    }
-
     /*
-       2文をつなげず、ひとつの文言として持つ。
+       案内は2文をつなげず、ひとつの文言として持つ。
 
        日本語は文と文のあいだに空白が要らないので、分けて連結すると
        その形のまま英語にも出て「(Ctrl + V).If you have not」と詰まる。
        区切りは言語ごとに違うので、言語ごとに全文を持たせる。
     */
-    showNote(service.name + 'を開きました。作成画面で貼り付けてください（Ctrl + V）。まだコピーしていなければ、先に「本文をコピー」を押してください。');
+    function done() {
+      setStatus('本文をコピーしました', 'ok');
+      showNote(service.name + 'を開きました。本文はコピー済みです。作成画面で貼り付けてください（Ctrl + V）。');
+    }
+
+    if (copied) {
+      done();
+      return;
+    }
+
+    /*
+       同期の道が通らなかったときは、非同期でも試す。
+
+       終わるのは利用者が開いた先へ移ったあとなので、案内そのものは
+       読まれない。それでもクリップボードには入るので、貼り付けは通る。
+    */
+    copyRichAsync(html).then(done, function () {
+      showNote(service.name + 'を開きました。作成画面で貼り付けてください（Ctrl + V）。まだコピーしていなければ、先に「本文をコピー」を押してください。');
+    });
   }
 
   /** 非同期の道。text/html として載せる */

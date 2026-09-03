@@ -6284,25 +6284,40 @@
   function openWebmail(which) {
     var service = WEBMAIL[which];
 
-    var copied = copyRich(currentSource());
+    flushWys();
+
+    var html = currentSource();
+    var copied = copyRich(html);
 
     window.open(service.url(el['gmail-to'].value, el['gmail-subject'].value),
       '_blank', 'noopener');
 
-    if (copied) {
-      setStatus('本文をコピーしました', 'ok');
-      showNote(service.name + 'を開きました。本文はコピー済みです。作成画面で貼り付けてください（Ctrl + V）。');
-      return;
-    }
-
     /*
-       2文をつなげず、ひとつの文言として持つ。
+       案内は2文をつなげず、ひとつの文言として持つ。
 
        日本語は文と文のあいだに空白が要らないので、分けて連結すると
        その形のまま英語にも出て「(Ctrl + V).If you have not」と詰まる。
        区切りは言語ごとに違うので、言語ごとに全文を持たせる。
     */
-    showNote(service.name + 'を開きました。作成画面で貼り付けてください（Ctrl + V）。まだコピーしていなければ、先に「本文をコピー」を押してください。');
+    function done() {
+      setStatus('本文をコピーしました', 'ok');
+      showNote(service.name + 'を開きました。本文はコピー済みです。作成画面で貼り付けてください（Ctrl + V）。');
+    }
+
+    if (copied) {
+      done();
+      return;
+    }
+
+    /*
+       同期の道が通らなかったときは、非同期でも試す。
+
+       終わるのは利用者が開いた先へ移ったあとなので、案内そのものは
+       読まれない。それでもクリップボードには入るので、貼り付けは通る。
+    */
+    copyRichAsync(html).then(done, function () {
+      showNote(service.name + 'を開きました。作成画面で貼り付けてください（Ctrl + V）。まだコピーしていなければ、先に「本文をコピー」を押してください。');
+    });
   }
 
   /** 非同期の道。text/html として載せる */
