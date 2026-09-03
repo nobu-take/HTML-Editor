@@ -4,12 +4,14 @@
     "ja": {
       "name": "日本語",
       "switchLabel": "表示言語",
-      "font": "'Hiragino Sans','Yu Gothic',Meiryo,sans-serif"
+      "font": "'Hiragino Sans','Yu Gothic',Meiryo,sans-serif",
+      "fontSerif": "'Hiragino Mincho ProN','Yu Mincho',serif"
     },
     "en": {
       "name": "English",
       "switchLabel": "Language",
-      "font": "-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif"
+      "font": "-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif",
+      "fontSerif": "Georgia,'Times New Roman',serif"
     }
   },
   "fallback": "en"

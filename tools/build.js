@@ -187,10 +187,10 @@ const BOOT = `<script>
     var saved = JSON.parse(localStorage.getItem('html-editor:settings')) || {};
     if (saved.uiScale) document.documentElement.style.zoom = saved.uiScale;
     window.SCALE_HINT_DONE = !!saved.scaleHintDone;
-    window.TEMPLATE_THEME = saved.templateTheme || 'standard';
+    window.TEMPLATE_THEME = saved.templateTheme || 'business';
   } catch (e) {
     window.SCALE_HINT_DONE = false;
-    window.TEMPLATE_THEME = 'standard';
+    window.TEMPLATE_THEME = 'business';
   }
 })();
 </script>
@@ -339,7 +339,12 @@ function buildLocale(lang, meta) {
     .replace("<?!= include('Stylesheet'); ?>", read('Stylesheet.html') + HIDE)
     .replace("<?!= include('JavaScript'); ?>",
       store
-      + '<script>\n' + code(read('themes.js'), t) + '\n</script>\n'
+      // ジャンルは明朝も使うので、言語ごとの2種類を渡す
+      + '<script>\n'
+      + code(read('themes.js'), t)
+          .replace('{{FONT_SANS}}', JSON.stringify(meta.font))
+          .replace('{{FONT_SERIF}}', JSON.stringify(meta.fontSerif || meta.font))
+      + '\n</script>\n'
       + code(read('JavaScript.html'), t));
 
   /*
