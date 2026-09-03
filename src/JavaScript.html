@@ -130,6 +130,9 @@
       mine: { items: [], error: '' }
     },
     customLoaded: false,    // 一度でも読めたか（読み込み中の表示に使う）
+
+    // 配色テーマ。組み込みのテンプレートと部品に当てる
+    theme: (typeof window.TEMPLATE_THEME === 'string' && window.TEMPLATE_THEME) || 'standard',
     customLoading: false,
     parts: [],
     signatures: [],
@@ -2307,7 +2310,9 @@
         button.addEventListener('click', openSignatures);
       } else {
         button.title = '「' + part.name + '」を挿入';
-        button.addEventListener('click', function () { insertRow(part.html, part.name); });
+        button.addEventListener('click', function () {
+          insertRow(themed(part.html), part.name);
+        });
       }
 
       container.appendChild(button);
@@ -6482,6 +6487,9 @@
       thumbWatcher = null;
     }
 
+    // 同じ内容を、好きな見た目で選べるようにする
+    if (typeof THEMES !== 'undefined') list.appendChild(themePicker());
+
     var mine = customItems('mine');
     var all = mine.concat(state.templates);
 
@@ -6537,6 +6545,42 @@
     list.scrollTop = keep;
   }
 
+  /**
+   * 配色の選び方。テンプレート一覧の先頭に置く。
+   *
+   * 一覧そのものを5倍に増やす作りにはしていない。170枚を眺めるのは
+   * 探すのが大変になるだけで、選びやすくはならない。
+   * **先に見た目を決めて、そのうえで34件から選ぶ**ほうが早い。
+   */
+  function themePicker() {
+    var wrap = document.createElement('div');
+    wrap.className = 'theme-row';
+
+    var label = document.createElement('span');
+    label.className = 'theme-label';
+    label.textContent = '配色';
+    wrap.appendChild(label);
+
+    THEMES.forEach(function (theme) {
+      var button = document.createElement('button');
+      button.className = 'theme-chip' + (theme.key === state.theme ? ' active' : '');
+      button.dataset.theme = theme.key;
+      button.textContent = theme.name;
+      button.title = theme.note;
+
+      button.addEventListener('click', function () {
+        if (state.theme === theme.key) return;
+        state.theme = theme.key;
+        call('setTemplateTheme', theme.key);   // 好みとして覚える
+        renderTemplateList();
+      });
+
+      wrap.appendChild(button);
+    });
+
+    return wrap;
+  }
+
   function customItems(kind) {
     var box = state.custom[kind];
     return (box && box.items) || [];
@@ -6573,6 +6617,18 @@
   //
   // 数が多いので、画面に入ったものだけ読み込む。
   // -------------------------------------------------------------------------
+
+  /*
+     組み込みのテンプレートと部品に、選ばれた配色を当てる。
+
+     自作のテンプレート（kind === 'mine'）には当てない。あれは利用者が
+     書いたHTMLで、こちらが色を書き換えてよいものではない。
+  */
+  function themed(html, kind) {
+    if (kind === 'mine') return html;
+    if (typeof applyTheme !== 'function') return html;
+    return applyTheme(html, state.theme);
+  }
 
   var THUMB_WIDTH = 600;   // 見本の中で使う横幅。本文幅と同じ
   var thumbWatcher = null;
@@ -6625,7 +6681,7 @@
 
     card.appendChild(body);
 
-    watchThumb(thumb, frame, template.html);
+    watchThumb(thumb, frame, themed(template.html, template.kind));
     return card;
   }
 
@@ -6669,7 +6725,7 @@
   function useTemplate(template) {
     hide(el['template-modal']);
     confirmDiscard(function () {
-      newDoc(template.html);
+      newDoc(themed(template.html, template.kind));
       el.title.value = template.name;
       setStatus('テンプレート「' + template.name + '」を読み込みました', 'ok');
       updateButtons();

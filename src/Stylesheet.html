@@ -1015,6 +1015,37 @@
 
   .crumb-sep { color: var(--faint); font-size: 11px; }
 
+  /* 配色の選び方。テンプレート一覧の先頭 */
+  .theme-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 16px;
+  }
+
+  .theme-label {
+    margin-right: 4px;
+    color: var(--faint);
+    font-size: 11px;
+  }
+
+  .theme-chip {
+    padding: 4px 11px;
+    border-radius: 999px;
+    background: var(--sunken);
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .theme-chip:hover { color: var(--text); }
+
+  .theme-chip.active {
+    background: var(--accent-weak);
+    color: var(--accent-ink);
+    font-weight: 700;
+  }
+
   /* タグのパンくずの開け閉め。畳んでいるのがふだんの姿 */
   .crumb-fold {
     padding: 2px 7px;

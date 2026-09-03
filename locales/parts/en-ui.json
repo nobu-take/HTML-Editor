@@ -81,7 +81,7 @@
   "行間": "Line height",
   "狭い": "Tight",
   "広い": "Loose",
-  "標準": "Normal",
+  "標準": "Standard",
   "小さめ": "Small",
   "大きめ": "Large",
   "特大": "Extra large",
@@ -296,5 +296,15 @@
   "「": "“",
   "〜": "–",
   "（": " (",
-  "）": ")"
+  "）": ")",
+  "配色": "Look",
+  "端正": "Crisp",
+  "温かい": "Warm",
+  "落ち着いた": "Formal",
+  "軽やか": "Light",
+  "青の差し色。どんな用件にも合う": "Blue accent. Suits anything.",
+  "角と罫線で締める。事務的な通知に": "Square corners and rules. For plain notices.",
+  "生成りの地に茶の差し色。案内や礼状に": "Cream ground, brown accent. For invitations and thank-yous.",
+  "紺で通す。改まった連絡に": "Navy throughout. For formal messages.",
+  "緑の差し色と大きめの角丸。案内や告知に": "Green accent, softer corners. For announcements."
 }

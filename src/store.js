@@ -351,6 +351,19 @@
       return scale;
     },
 
+    /*
+       選んだ配色テーマを覚える。
+
+       原稿ごとではなく、この人の好みとして持つ。同じ人が毎回同じ見た目を
+       選び直すのは手間なので。
+    */
+    setTemplateTheme: function (key) {
+      var s = settings();
+      s.templateTheme = String(key || 'standard');
+      saveSettings(s);
+      return s.templateTheme;
+    },
+
     dismissScaleHint: function () {
       var s = settings();
       s.scaleHintDone = true;

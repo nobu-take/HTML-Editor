@@ -187,8 +187,10 @@ const BOOT = `<script>
     var saved = JSON.parse(localStorage.getItem('html-editor:settings')) || {};
     if (saved.uiScale) document.documentElement.style.zoom = saved.uiScale;
     window.SCALE_HINT_DONE = !!saved.scaleHintDone;
+    window.TEMPLATE_THEME = saved.templateTheme || 'standard';
   } catch (e) {
     window.SCALE_HINT_DONE = false;
+    window.TEMPLATE_THEME = 'standard';
   }
 })();
 </script>
@@ -335,7 +337,10 @@ function buildLocale(lang, meta) {
     // Apps Script のテンプレート構文。独立版では表示サイズを store から読む
     .replace(/<\?!=[\s\S]*?uiScale[\s\S]*?\?>/, '')
     .replace("<?!= include('Stylesheet'); ?>", read('Stylesheet.html') + HIDE)
-    .replace("<?!= include('JavaScript'); ?>", store + code(read('JavaScript.html'), t));
+    .replace("<?!= include('JavaScript'); ?>",
+      store
+      + '<script>\n' + code(read('themes.js'), t) + '\n</script>\n'
+      + code(read('JavaScript.html'), t));
 
   /*
      振り分けは既定の言語のページにだけ入れる。

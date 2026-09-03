@@ -51,7 +51,7 @@ const index = read('Index.html');
 
 // --- JavaScript.html --------------------------------------------------------
 
-const js = (read('JavaScript.html') + '\n' + read('store.js'))
+const js = (read('JavaScript.html') + '\n' + read('store.js') + '\n' + read('themes.js'))
   .replace(/\/\*[\s\S]*?\*\//g, '')      // ブロックコメント
   .replace(/^[ \t]*\/\/.*$/gm, '');      // 行コメント
 
