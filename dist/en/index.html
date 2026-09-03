@@ -495,7 +495,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
   .item.active { background: var(--accent-weak); }
   .item.active .item-title { color: var(--accent-ink); font-weight: 600; }
-  .item.active .item-meta { color: #5b7fb8; }
+  .item.active .item-meta { color: #8fb0dd; }
 
   .item-title {
     font-weight: 500;
@@ -516,7 +516,14 @@ window.addEventListener('DOMContentLoaded', function () {
     font-size: 11px;
   }
 
-  .item.active .badge { background: #c5d9f7; color: var(--accent-ink); }
+  /*
+     選択中の原稿のタグ。
+
+     明るい配色のときの色（#c5d9f7）が残っていて、暗くしたあとは
+     薄い地に薄い文字になり、比 1.17 で読めなかった。
+     選択中の地（--accent-weak）より一段明るい面に置き直す。
+  */
+  .item.active .badge { background: #2b3d57; color: #cfe0ff; }
 
   .empty {
     padding: 16px 10px;
@@ -727,7 +734,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
   .warn[hidden] { display: none; }
   .warn button { padding: 3px 8px; font-size: 11px; color: var(--warn); }
-  .warn button:hover { background: #f6e6c8; color: var(--warn); }
+  .warn button:hover { background: #3a2f1c; color: var(--warn); }
 
   .hint { font-size: 12px; color: var(--faint); }
 
@@ -2338,7 +2345,13 @@ window.addEventListener('DOMContentLoaded', function () {
     <div id="gmail-modal" class="backdrop" hidden>
       <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="gmail-title">
         <h2 id="gmail-title">Send as email</h2>
-        <p>Copies the body, then opens the compose window you pick. Paste it there. Nothing is sent.</p>
+        <p>Copy the body, then paste it into your mail compose window. Nothing is sent.</p>
+
+        <ol class="ai-steps">
+          <li><b>Copy the body</b><span>Use the button below</span></li>
+          <li><b>Open a compose window</b><span>Gmail or Outlook</span></li>
+          <li><b>Paste it</b><span>Ctrl + V (⌘ + V on a Mac)</span></li>
+        </ol>
 
         <div class="field">
           <label for="gmail-subject">Subject</label>
@@ -2353,14 +2366,15 @@ window.addEventListener('DOMContentLoaded', function () {
         <p id="gmail-note" class="note" hidden></p>
 
         <p class="field-note">
-          Neither Gmail nor Outlook on the web can turn a file into a draft, so the body goes across by copy and paste.
+          Neither Gmail nor Outlook on the web can turn a file into a draft, so nothing arrives automatically — you paste it in.
         </p>
 
         <div class="dialog-actions">
           <button id="gmail-cancel">Close</button>
           <button id="gmail-eml">Save as a file</button>
           <button id="gmail-outlook">Open Outlook</button>
-          <button id="gmail-gmail" class="primary">Open Gmail</button>
+          <button id="gmail-gmail">Open Gmail</button>
+          <button id="gmail-copy" class="primary">Copy the body</button>
         </div>
       </div>
     </div>
@@ -3945,7 +3959,7 @@ function applyTheme(html, key, accentKey) {
       'btn-export', 'export-pop', 'btn-more', 'more-pop',
       'btn-canvas', 'canvas-pop', 'canvas-now',
       'gmail-modal', 'gmail-subject', 'gmail-to', 'gmail-note', 'gmail-cancel',
-      'gmail-gmail', 'gmail-outlook', 'gmail-eml',
+      'gmail-gmail', 'gmail-outlook', 'gmail-eml', 'gmail-copy',
       'signature-modal', 'signature-list', 'signature-name', 'signature-html',
       'signature-save', 'signature-reset', 'signature-close', 'signature-editing',
       'confirm', 'confirm-body', 'confirm-ok', 'confirm-cancel',
@@ -4220,6 +4234,7 @@ function applyTheme(html, key, accentKey) {
     el['confirm-cancel'].addEventListener('click', closeConfirm);
     el['template-cancel'].addEventListener('click', function () { hide(el['template-modal']); });
     el['gmail-cancel'].addEventListener('click', function () { hide(el['gmail-modal']); });
+    el['gmail-copy'].addEventListener('click', copyForMail);
     el['gmail-gmail'].addEventListener('click', function () { openWebmail('gmail'); });
     el['gmail-outlook'].addEventListener('click', function () { openWebmail('outlook'); });
     el['gmail-eml'].addEventListener('click', createDraft);
@@ -9914,35 +9929,43 @@ function applyTheme(html, key, accentKey) {
     }
   };
 
-  function openWebmail(which) {
+  /*
+     本文をコピーする。開くのとは分ける。
+
+     以前は「コピーして開く」を1回の操作にしていたが、開いた先へ焦点が
+     移るので、**貼り付けてくださいという案内が、利用者が去ったあとの画面に
+     出ていた**。誰も読めない。押すたびに結果が見える形にする。
+  */
+  function copyForMail() {
     flushWys();
 
-    var service = WEBMAIL[which];
-    var subject = el['gmail-subject'].value;
-    var to = el['gmail-to'].value;
     var html = currentSource();
 
-    function go() {
-      window.open(service.url(to, subject), '_blank', 'noopener');
-      showNote('Body copied.' + service.name
-        + ' — paste it into the compose window (Ctrl + V).');
-      setStatus('Copied the body and opened ' + service.name + '', 'ok');
+    if (copyRich(html)) {
+      showNote('Body copied. Open a compose window and paste it in (Ctrl + V).');
+      setStatus('Body copied', 'ok');
+      return;
     }
 
-    // まず同期の道。押した直後ならこれが通る
-    if (copyRich(html)) { go(); return; }
-
-    /*
-       通らなかったときの逃げ道。
-
-       新しい clipboard API は非同期なので、待っているあいだに
-       「押した直後」ではなくなる。窓が開けないことがあるが、
-       開かないよりは試すほうがいい。
-    */
-    copyRichAsync(html).then(go, function () {
+    // 同期の道が通らなかったときだけ、非同期を試す
+    copyRichAsync(html).then(function () {
+      showNote('Body copied. Open a compose window and paste it in (Ctrl + V).');
+      setStatus('Body copied', 'ok');
+    }, function () {
       showNote('Could not copy the body.'
         + 'Your browser may be blocking clipboard access.', true);
     });
+  }
+
+  /** 作成画面を開くだけ。宛先と件名は入るが、本文は貼り付けてもらう */
+  function openWebmail(which) {
+    var service = WEBMAIL[which];
+
+    window.open(service.url(el['gmail-to'].value, el['gmail-subject'].value),
+      '_blank', 'noopener');
+
+    showNote(service.name + ' opened. Paste the body into the compose window (Ctrl + V).'
+      + 'If you have not copied it yet, press Copy the body first.');
   }
 
   /** 非同期の道。text/html として載せる */
@@ -9967,15 +9990,42 @@ function applyTheme(html, key, accentKey) {
      text/plain で載せるとHTMLのコードがそのまま貼られてしまう。
      見た目のまま貼るには text/html として載せる必要がある。
 
-     ここは execCommand を使う。**同期で終わる**からで、これが要点。
-     新しい clipboard API は非同期なので、待っているあいだに window.open で
-     焦点が移り、「書き込む権利がない」と断られることがある。
+     **載せるものは自分で決める。** はじめは選択範囲をブラウザに書き出させて
+     いたが、それだと何が載ったのかこちらから確かめられず、空のまま気づけない。
+     copy の合図を捕まえて、text/html と text/plain を自分で入れる。
+     合図が来たかどうかで、載ったことも確かめられる。
+
+     execCommand を使うのは**同期で終わる**から。新しい clipboard API は
+     非同期で、待っているあいだに焦点が移ると断られることがある。
   */
   function copyRich(html) {
+    var body = bodyOf(html);
+    var text = htmlToPlainText(html);
+    var loaded = false;
+
+    function onCopy(event) {
+      if (!event.clipboardData) return;
+      event.clipboardData.setData('text/html', body);
+      event.clipboardData.setData('text/plain', text);
+      event.preventDefault();
+      loaded = true;
+    }
+
+    document.addEventListener('copy', onCopy, true);
+
+    /*
+       選ぶものが無いと copy の合図は飛ばない。中身は何でもよいので、
+       見えない場所に一文字だけ置いて選ぶ。
+
+       画面の外（left:-9999px）へは出さない。描かれていない要素からの
+       コピーを断るブラウザがあるため、1pxに切り詰めて置く。
+    */
     var holder = document.createElement('div');
     holder.setAttribute('contenteditable', 'true');
-    holder.style.cssText = 'position:fixed; left:-9999px; top:0; opacity:0;';
-    holder.innerHTML = bodyOf(html);
+    holder.style.cssText =
+      'position:fixed; top:0; left:0; width:1px; height:1px;'
+      + ' overflow:hidden; opacity:0; z-index:-1;';
+    holder.textContent = ' ';
 
     document.body.appendChild(holder);
 
@@ -9985,14 +10035,17 @@ function applyTheme(html, key, accentKey) {
     var picked = window.getSelection();
     picked.removeAllRanges();
     picked.addRange(range);
+    holder.focus({ preventScroll: true });
 
-    var ok = false;
-    try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+    var ran = false;
+    try { ran = document.execCommand('copy'); } catch (err) { ran = false; }
 
     picked.removeAllRanges();
     document.body.removeChild(holder);
+    document.removeEventListener('copy', onCopy, true);
 
-    return ok;
+    // 合図が来て、こちらが入れたときだけ成功とみなす
+    return ran && loaded;
   }
 
   /** <body> の中身だけを取り出す。head や doctype は貼り付け先で捨てられる */

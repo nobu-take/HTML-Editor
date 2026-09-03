@@ -445,7 +445,7 @@
 
   .item.active { background: var(--accent-weak); }
   .item.active .item-title { color: var(--accent-ink); font-weight: 600; }
-  .item.active .item-meta { color: #5b7fb8; }
+  .item.active .item-meta { color: #8fb0dd; }
 
   .item-title {
     font-weight: 500;
@@ -466,7 +466,14 @@
     font-size: 11px;
   }
 
-  .item.active .badge { background: #c5d9f7; color: var(--accent-ink); }
+  /*
+     選択中の原稿のタグ。
+
+     明るい配色のときの色（#c5d9f7）が残っていて、暗くしたあとは
+     薄い地に薄い文字になり、比 1.17 で読めなかった。
+     選択中の地（--accent-weak）より一段明るい面に置き直す。
+  */
+  .item.active .badge { background: #2b3d57; color: #cfe0ff; }
 
   .empty {
     padding: 16px 10px;
@@ -677,7 +684,7 @@
 
   .warn[hidden] { display: none; }
   .warn button { padding: 3px 8px; font-size: 11px; color: var(--warn); }
-  .warn button:hover { background: #f6e6c8; color: var(--warn); }
+  .warn button:hover { background: #3a2f1c; color: var(--warn); }
 
   .hint { font-size: 12px; color: var(--faint); }
 

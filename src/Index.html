@@ -446,7 +446,13 @@
     <div id="gmail-modal" class="backdrop" hidden>
       <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="gmail-title">
         <h2 id="gmail-title">メールにする</h2>
-        <p>本文をコピーしてから、選んだ作成画面を開きます。開いた画面で貼り付けてください。送信は行いません。</p>
+        <p>本文をコピーして、メールの作成画面に貼り付けます。送信は行いません。</p>
+
+        <ol class="ai-steps">
+          <li><b>本文をコピー</b><span>下のボタンで写します</span></li>
+          <li><b>作成画面を開く</b><span>GmailかOutlookを選びます</span></li>
+          <li><b>貼り付ける</b><span>Ctrl + V（Macは ⌘ + V）</span></li>
+        </ol>
 
         <div class="field">
           <label for="gmail-subject">件名</label>
@@ -462,14 +468,15 @@
 
         <p class="field-note">
           GmailとOutlookのWeb版には、ファイルから下書きを作る機能がありません。
-          本文はコピーして貼り付ける形になります。
+          自動では入らないので、貼り付けが要ります。
         </p>
 
         <div class="dialog-actions">
           <button id="gmail-cancel">閉じる</button>
           <button id="gmail-eml">ファイルに書き出す</button>
           <button id="gmail-outlook">Outlookを開く</button>
-          <button id="gmail-gmail" class="primary">Gmailを開く</button>
+          <button id="gmail-gmail">Gmailを開く</button>
+          <button id="gmail-copy" class="primary">本文をコピー</button>
         </div>
       </div>
     </div>
