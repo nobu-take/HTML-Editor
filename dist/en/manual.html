@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manual — HTML Editor for Email</title>
+<meta name="description" content="How to use the HTML email editor: pick a template, edit, save, and get it into your mail client.">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon-32.png" sizes="32x32">
+<style>
+  /*
+     アプリと同じ配色。行き来したときに別のサイトに見えないようにする。
+     暗い一色で通すのは、アプリがダーク固定のため。
+  */
+  :root {
+    --bg: #0e1013;
+    --panel: #191c21;
+    --sunken: #23272e;
+    --line: #2d323a;
+    --text: #e9ecf1;
+    --body: #c3c9d4;
+    --muted: #a2aab7;
+    --faint: #87909e;
+    --accent: #5b9cf8;
+    --accent-weak: #1e2c42;
+    --accent-ink: #a8c9ff;
+    --warn: #e0b25f;
+    --warn-weak: #302617;
+    --danger: #f2837a;
+    --danger-weak: #3a211f;
+    --radius: 8px;
+    --sans: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--body);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    display: grid;
+    grid-template-columns: 232px minmax(0, 1fr);
+    gap: 48px;
+    max-width: 1060px;
+    margin: 0 auto;
+    padding: 0 28px 96px;
+  }
+
+  /* ---------- 目次 ---------- */
+
+  .toc {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    max-height: 100vh;
+    overflow-y: auto;
+    padding: 40px 0;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .toc-label {
+    margin: 0 0 12px;
+    color: var(--faint);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+  }
+
+  .toc ol { margin: 0; padding: 0; list-style: none; }
+  .toc li { margin: 0 0 2px; }
+
+  .toc a {
+    display: block;
+    padding: 5px 10px;
+    border-radius: 6px;
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .toc a:hover { background: var(--panel); color: var(--text); }
+
+  .toc a.here {
+    background: var(--accent-weak);
+    color: var(--accent-ink);
+    font-weight: 600;
+  }
+
+  /* ---------- 本文 ---------- */
+
+  main { padding: 40px 0 0; min-width: 0; }
+
+  header.lead { margin: 0 0 56px; }
+
+  .eyebrow {
+    margin: 0 0 10px;
+    color: var(--faint);
+    font-size: 12px;
+    letter-spacing: .08em;
+  }
+
+  h1 {
+    margin: 0 0 14px;
+    color: var(--text);
+    font-size: 34px;
+    line-height: 1.2;
+    letter-spacing: -.02em;
+    text-wrap: balance;
+  }
+
+  .lead p { margin: 0; max-width: 36em; color: var(--muted); }
+
+  section { margin: 0 0 56px; scroll-margin-top: 24px; }
+
+  h2 {
+    margin: 0 0 6px;
+    padding: 0 0 10px;
+    border-bottom: 1px solid var(--line);
+    color: var(--text);
+    font-size: 21px;
+    letter-spacing: -.01em;
+  }
+
+  h2 .num {
+    margin-right: 10px;
+    color: var(--faint);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+
+  h3 {
+    margin: 30px 0 6px;
+    color: var(--text);
+    font-size: 15px;
+  }
+
+  p { margin: 12px 0; max-width: 36em; }
+
+  a { color: var(--accent-ink); }
+  a:hover { color: var(--accent); }
+
+  ul, ol { margin: 12px 0; padding-left: 1.4em; max-width: 36em; }
+  li { margin: 4px 0; }
+
+  strong { color: var(--text); font-weight: 600; }
+
+  /* 画面に出ている文字を指すとき */
+  .ui {
+    padding: 1px 6px;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: var(--sunken);
+    color: var(--text);
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  kbd {
+    padding: 2px 6px;
+    border: 1px solid var(--line);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    background: var(--sunken);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  /* ---------- 手順 ---------- */
+
+  .steps {
+    margin: 18px 0;
+    padding: 0;
+    max-width: 40em;
+    list-style: none;
+    counter-reset: step;
+  }
+
+  .steps > li {
+    position: relative;
+    margin: 0;
+    padding: 0 0 22px 42px;
+    counter-increment: step;
+  }
+
+  .steps > li::before {
+    content: counter(step);
+    position: absolute;
+    top: 2px;
+    left: 0;
+    display: grid;
+    place-items: center;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: var(--accent-weak);
+    color: var(--accent-ink);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+  }
+
+  /* 縦線でつないで、順番だと分かるようにする */
+  .steps > li:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 32px;
+    bottom: 4px;
+    left: 12px;
+    width: 1px;
+    background: var(--line);
+  }
+
+  .steps b { display: block; color: var(--text); }
+  .steps p { margin: 2px 0 0; }
+
+  /* ---------- 注記 ---------- */
+
+  .note {
+    margin: 20px 0;
+    padding: 14px 18px;
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    background: var(--panel);
+    max-width: 38em;
+  }
+
+  .note.warn { border-left-color: var(--warn); background: var(--warn-weak); }
+  .note.danger { border-left-color: var(--danger); background: var(--danger-weak); }
+
+  .note > :first-child { margin-top: 0; }
+  .note > :last-child { margin-bottom: 0; }
+
+  .note b { color: var(--text); }
+
+  /* ---------- 表 ---------- */
+
+  .scroller { margin: 18px 0; overflow-x: auto; }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 460px;
+    font-size: 14px;
+  }
+
+  th, td {
+    padding: 9px 14px 9px 0;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    color: var(--faint);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+
+  td:first-child { white-space: nowrap; color: var(--text); }
+
+  footer {
+    margin: 72px 0 0;
+    padding: 24px 0 0;
+    border-top: 1px solid var(--line);
+    color: var(--faint);
+    font-size: 13px;
+  }
+
+  footer a { color: var(--muted); }
+
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  @media (max-width: 860px) {
+    .page { grid-template-columns: minmax(0, 1fr); gap: 0; padding: 0 20px 72px; }
+    .toc {
+      position: static;
+      max-height: none;
+      padding: 32px 0 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    .toc ol { display: flex; flex-wrap: wrap; gap: 4px; }
+    .toc a { padding: 4px 9px; }
+    main { padding-top: 32px; }
+    h1 { font-size: 27px; }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <nav class="toc" aria-label="Contents">
+    <p class="toc-label">Contents</p>
+    <ol>
+      <li><a href="#about">What this is</a></li>
+      <li><a href="#screen">The screen</a></li>
+      <li><a href="#first">Your first email</a></li>
+      <li><a href="#templates">Templates and looks</a></li>
+      <li><a href="#edit">Editing</a></li>
+      <li><a href="#save">How saving works</a></li>
+      <li><a href="#signature">Signatures</a></li>
+      <li><a href="#ai">Ask AI</a></li>
+      <li><a href="#send">Getting it into email</a></li>
+      <li><a href="#keys">Keyboard</a></li>
+      <li><a href="#trouble">If something goes wrong</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <header class="lead">
+      <p class="eyebrow">HTML Editor for Email</p>
+      <h1>Manual</h1>
+      <p>An editor for the body of an HTML email. No signup, no login.
+         What you write stays in your browser and is never sent anywhere.</p>
+    </header>
+
+    <section id="about">
+      <h2><span class="num">01</span>What this is</h2>
+
+      <p>This editor produces <strong>the HTML that becomes the body of an email</strong>.
+         It does not send mail. You take the finished body and paste it into
+         whatever mail client you already use.</p>
+
+      <p>HTML for email is not HTML for the web. Mail clients strip and ignore
+         much of what a browser accepts, so the output here is built for those
+         constraints from the start:</p>
+
+      <ul>
+        <li>Layout is built from tables, not modern CSS layout</li>
+        <li>Every bit of styling is written directly on the tag</li>
+        <li>The body is 600px wide</li>
+        <li>Every image carries alt text</li>
+      </ul>
+
+      <p>Those four are the floor for rendering correctly across mail clients.
+         Every template and every part follows them.</p>
+
+      <div class="note">
+        <p><b>Everything is stored in this browser.</b>
+           There is no server. You can confirm nothing leaves your machine by
+           opening your browser's developer tools and watching the network tab.
+           The trade-off is that <a href="#save">your work is not visible on
+           another device or another browser</a>.</p>
+      </div>
+    </section>
+
+    <section id="screen">
+      <h2><span class="num">02</span>The screen</h2>
+
+      <p>Three areas:</p>
+
+      <div class="scroller">
+        <table>
+          <thead>
+            <tr><th>Area</th><th>What it does</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Left</td>
+              <td>Your documents, split into <span class="ui">Drafts</span> and <span class="ui">Archive</span></td>
+            </tr>
+            <tr>
+              <td>Middle</td>
+              <td>Where you edit — preview, code, or both side by side</td>
+            </tr>
+            <tr>
+              <td>Right</td>
+              <td>Settings for whatever you have selected: size, colour, spacing</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Three ways to work</h3>
+
+      <p>Switch with <span class="ui">Preview</span> / <span class="ui">Code</span> /
+         <span class="ui">Preview + code</span> at the top.</p>
+
+      <ul>
+        <li><strong>Preview</strong> — edit the text directly on the finished layout. This is enough most of the time</li>
+        <li><strong>Code</strong> — edit the HTML itself</li>
+        <li><strong>Preview + code</strong> — both at once; a change on either side shows up on the other</li>
+      </ul>
+
+      <h3>Making room</h3>
+
+      <p>Both side panels collapse. On a short screen, set
+         <span class="ui">Interface size</span> to <span class="ui">Small</span> to fit more on screen at once.
+         <strong>This does not change how the email looks</strong> — only the app around it.</p>
+    </section>
+
+    <section id="first">
+      <h2><span class="num">03</span>Your first email</h2>
+
+      <ol class="steps">
+        <li>
+          <b>Pick a template</b>
+          <p>Press <span class="ui">Start from a template</span>. There are 34, in six groups.
+             Pick the one closest to what you are writing.</p>
+        </li>
+        <li>
+          <b>Choose the look</b>
+          <p><span class="ui">Look</span> and <span class="ui">Accent</span> sit above the list.
+             <strong>Decide the look first</strong> — every thumbnail updates as you click, so you
+             are choosing from 34 designs you already like.</p>
+        </li>
+        <li>
+          <b>Write your text</b>
+          <p>Click any text in the preview and type over it. Headings, body copy,
+             button labels — all the same gesture.</p>
+        </li>
+        <li>
+          <b>Add your signature</b>
+          <p>Sender details go at the end. <a href="#signature">Save one</a> and it is
+             one click from then on.</p>
+        </li>
+        <li>
+          <b>Save</b>
+          <p><span class="ui">Save</span> or <kbd>Ctrl</kbd> + <kbd>S</kbd>.
+             It appears under <span class="ui">Drafts</span> on the left.</p>
+        </li>
+        <li>
+          <b>Get it into email</b>
+          <p><span class="ui">Send as email</span>, then <span class="ui">Copy the body</span>,
+             then <span class="ui">Open Gmail</span> or <span class="ui">Open Outlook</span>,
+             and paste. <a href="#send">Details below</a>.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section id="templates">
+      <h2><span class="num">04</span>Templates and looks</h2>
+
+      <p>There are <strong>34 templates</strong> in six groups.</p>
+
+      <div class="scroller">
+        <table>
+          <thead>
+            <tr><th>Group</th><th>What's in it</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Basics</td><td>Announcement, plain, empty</td></tr>
+            <tr><td>Announcements</td><td>Call to action, header image, event invitation, newsletter, and more</td></tr>
+            <tr><td>Transactional</td><td>Order confirmation, shipping notice, password reset</td></tr>
+            <tr><td>Requests</td><td>Sending a document, arranging a time, asking for a survey response</td></tr>
+            <tr><td>Internal</td><td>Team notices, meeting notes, action requests</td></tr>
+            <tr><td>Web page</td><td>For pages, not email</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Five genres, not five palettes</h3>
+
+      <p><strong>Changing the genre changes the construction, not just the colour.</strong>
+         Heading treatment, button shape and width, line height, density, rules,
+         typeface, columns, and even the order of the sections all move.</p>
+
+      <div class="scroller">
+        <table>
+          <thead>
+            <tr><th>Genre</th><th>Suits</th><th>Accents</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Business</td><td>Everyday correspondence with clients and partners</td><td>Blue, navy, green, grey</td></tr>
+            <tr><td>Formal</td><td>Invitations, ceremonies, anything that needs weight</td><td>Navy, forest, wine, ink</td></tr>
+            <tr><td>Casual</td><td>People you know, internal notes, light announcements</td><td>Orange, teal, rose, violet</td></tr>
+            <tr><td>Pop</td><td>Campaigns, sign-ups, anything that needs to catch the eye</td><td>Rose, orange, blue, green, purple</td></tr>
+            <tr><td>Minimal</td><td>Notices and admin mail that should not look decorated</td><td>Black, grey</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>34 templates across 19 look-and-accent combinations comes to
+         <strong>646 finished designs</strong>. The list is deliberately not 646 items long —
+         scrolling 646 cards is harder, not easier. Set the look first, then choose from 34.</p>
+
+      <h3>Saving your own</h3>
+
+      <p>Once a layout is one you keep reaching for, open it and press
+         <span class="ui">Save the current document</span> in the template dialog.
+         It appears at the top of the list from then on. Saving under an existing
+         name replaces it.</p>
+    </section>
+
+    <section id="edit">
+      <h2><span class="num">05</span>Editing</h2>
+
+      <h3>On the preview</h3>
+
+      <p>Click text and type. Select a range and a small toolbar appears with bold,
+         italic, underline, lists and headings.</p>
+
+      <p>Click the edge of a block to select the block itself. The right panel then
+         shows its settings, and <span class="ui">Move up</span> /
+         <span class="ui">Move down</span> reorder it.</p>
+
+      <div class="note">
+        <p><b>The font list is short on purpose.</b>
+           It contains <strong>only faces that survive in email</strong>. A font the
+           recipient does not have is silently swapped for one they do, so offering
+           more would only produce surprises.</p>
+      </div>
+
+      <h3>Adding parts</h3>
+
+      <p>Ten parts can be dropped in: Heading, Body, Button, Image, Info table,
+         Callout box, Divider, Spacing, Two columns, Signature.</p>
+
+      <p>Each can go <span class="ui">Insert at the selection</span> or at the end of the body.</p>
+
+      <h3>Images</h3>
+
+      <div class="note warn">
+        <p><b>You cannot attach an image file. Point to a URL instead.</b></p>
+        <p>None of the ways of embedding an image work in email any more. Data URIs
+           are stripped by Gmail, and direct links from cloud storage were closed off.
+           <strong>Hosting the image somewhere and linking to it</strong> is the only
+           reliable route left.</p>
+        <p>Many people read mail with images turned off, so
+           <strong>always write the alt text.</strong> It is what they will see instead.</p>
+      </div>
+
+      <h3>In code</h3>
+
+      <p>Switch to <span class="ui">Code</span> to edit the HTML directly, or
+         <span class="ui">Preview + code</span> to watch the result as you type.</p>
+
+      <p><span class="ui">Canvas width</span> at the top lets you try widths other than 600px.
+         <strong>600px is the de facto standard</strong>, though — go wider and some
+         clients will make the reader scroll sideways.</p>
+    </section>
+
+    <section id="save">
+      <h2><span class="num">06</span>How saving works</h2>
+
+      <p>Documents live in <span class="ui">Drafts</span> or <span class="ui">Archive</span>.
+         The idea is that work in progress sits in Drafts and finished work moves to
+         Archive. Neither has a limit on how many you keep.</p>
+
+      <h3>Every save keeps a version</h3>
+
+      <p>Each save records the document as it was. Select a document and press
+         <span class="ui">Restore this version</span> to go back to any of them.
+         This exists <strong>for the moment an AI rewrite turns out worse than what
+         you had</strong>.</p>
+
+      <div class="note danger">
+        <p><b>When your work disappears</b></p>
+        <p>Storage is your browser's own (localStorage). Documents are lost if:</p>
+        <ul>
+          <li>you clear your browsing data (cookies and site data)</li>
+          <li>you work in a private or incognito window and close it</li>
+          <li>you open the editor on another device or in another browser — it was never there</li>
+        </ul>
+        <p><strong>For anything you need to keep, use <span class="ui">Save as a file</span>
+           or <span class="ui">Export as a web page</span> and put it somewhere you control.</strong></p>
+      </div>
+
+      <p>Storage has a size limit too. As it fills, the oldest versions are dropped
+         automatically. The documents themselves are never dropped.</p>
+    </section>
+
+    <section id="signature">
+      <h2><span class="num">07</span>Signatures</h2>
+
+      <p>Save the signatures you use and inserting one at the end of the body becomes
+         a single click. These are stored in your browser as well.</p>
+
+      <p>The default shape is four lines:</p>
+
+      <ol>
+        <li>Company and team</li>
+        <li>Name</li>
+        <li>Postal address</li>
+        <li>Contact</li>
+      </ol>
+
+      <div class="note warn">
+        <p><b>Keep the address line.</b>
+           If you are sending anything promotional, <strong>several jurisdictions require
+           a physical postal address in the message itself</strong> — the US CAN-SPAM Act
+           among them. The address line is there so you do not have to remember.</p>
+      </div>
+    </section>
+
+    <section id="ai">
+      <h2><span class="num">08</span>Ask AI</h2>
+
+      <p>The editor is not connected to any AI. What it does is
+         <strong>assemble the request for you</strong>. You copy that out and paste it
+         into whichever assistant you use — nothing here is tied to one service.</p>
+
+      <ol class="steps">
+        <li>
+          <b>Choose the kind of request</b>
+          <p>Nine of them: draft the wording, polish the wording, make it more formal,
+             make it shorter, improve the look, add some styling, fix the HTML,
+             make it readable on a phone, translate to English.</p>
+        </li>
+        <li>
+          <b>Add anything specific</b>
+          <p>"Rewrite for a younger audience", for instance. You can leave it empty.</p>
+        </li>
+        <li>
+          <b>Copy the prompt</b>
+          <p><span class="ui">Copy the prompt</span>. You choose whether the current
+             document is included.</p>
+        </li>
+        <li>
+          <b>Paste the answer back</b>
+          <p>Put the HTML that comes back into <span class="ui">Replace everything</span>.
+             If you do not like it, go back to a saved version.</p>
+        </li>
+      </ol>
+
+      <p>Requests you make often can be kept with <span class="ui">Save this request</span>;
+         they then appear alongside the nine built-in ones.</p>
+
+      <div class="note">
+        <p><b>Save before you replace.</b>
+           A saved document can be brought back with
+           <span class="ui">Restore this version</span> if the rewrite is not what you wanted.</p>
+      </div>
+    </section>
+
+    <section id="send">
+      <h2><span class="num">09</span>Getting it into email</h2>
+
+      <p><span class="ui">Send as email</span> at the top offers four routes.</p>
+
+      <h3>Gmail and Outlook</h3>
+
+      <p><strong>Copy, then paste.</strong> Neither Gmail nor Outlook on the web can
+         import a prepared message file, so pasting is the only way in.</p>
+
+      <ol class="steps">
+        <li>
+          <b>Press <span class="ui">Copy the body</span></b>
+          <p>The formatting comes with it.</p>
+        </li>
+        <li>
+          <b>Press <span class="ui">Open Gmail</span> or <span class="ui">Open Outlook</span></b>
+          <p>A new tab opens on a blank draft.</p>
+        </li>
+        <li>
+          <b>Paste into the body field</b>
+          <p><kbd>Ctrl</kbd> + <kbd>V</kbd>. Fill in the subject and recipients there as usual.</p>
+        </li>
+      </ol>
+
+      <div class="note">
+        <p><b>Copying and opening are separate buttons because the order matters.</b>
+           Once you have switched tabs, going back to copy is awkward.
+           <strong>Copy first, then open.</strong></p>
+      </div>
+
+      <h3>A desktop mail client</h3>
+
+      <p><span class="ui">Save as a file</span> writes a message file (.eml). If your
+         desktop mail client is associated with that type, opening it gives you a draft.
+         Support varies between clients.</p>
+
+      <h3>As a web page</h3>
+
+      <p><span class="ui">Export as a web page</span> writes a standalone HTML file you
+         can open in a browser — useful when the piece is going on an intranet or a
+         notice page rather than into an inbox.</p>
+    </section>
+
+    <section id="keys">
+      <h2><span class="num">10</span>Keyboard</h2>
+
+      <div class="scroller">
+        <table>
+          <thead>
+            <tr><th>Keys</th><th>Does</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><kbd>Ctrl</kbd> + <kbd>S</kbd></td><td>Save</td></tr>
+            <tr><td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td><td>Undo</td></tr>
+            <tr><td><kbd>Ctrl</kbd> + <kbd>D</kbd></td><td>Duplicate the selected block</td></tr>
+            <tr><td><kbd>Delete</kbd></td><td>Remove the selected block (does nothing while editing text)</td></tr>
+            <tr><td><kbd>Esc</kbd></td><td>Drop the selection, stop editing, close a dialog</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>On a Mac, <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</p>
+    </section>
+
+    <section id="trouble">
+      <h2><span class="num">11</span>If something goes wrong</h2>
+
+      <h3>The paste arrived as plain text</h3>
+
+      <p>Check that nothing else was copied in between, and that you pasted into the
+         <strong>body</strong> field rather than the subject line.</p>
+
+      <h3>A document is missing</h3>
+
+      <p>Make sure you are in the same browser and the same profile. Documents are not
+         shared with another device, another browser, or a private window.
+         See <a href="#save">how saving works</a>.</p>
+
+      <h3>It renders badly for the recipient</h3>
+
+      <p>Check that the body is not wider than 600px and that the template's table
+         structure is intact. Some clients cannot render deeply nested layouts.
+         Asking an AI to make it <span class="ui">readable on a phone</span> is often
+         the quickest fix.</p>
+
+      <h3>The interface is in the wrong language</h3>
+
+      <p>The editor opens in your browser's language. To change it, use the language
+         list at the top right. <strong>English and Japanese are available for now.</strong></p>
+    </section>
+
+    <footer>
+      <p>HTML Editor for Email — <a href="./">back to the editor</a></p>
+    </footer>
+
+  </main>
+</div>
+
+<script>
+  /* いま読んでいる見出しを、目次側で示す */
+  (function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+    var map = {};
+    var targets = [];
+
+    links.forEach(function (a) {
+      var id = a.getAttribute('href').slice(1);
+      var section = document.getElementById(id);
+      if (!section) return;
+      map[id] = a;
+      targets.push(section);
+    });
+
+    if (!('IntersectionObserver' in window) || !targets.length) return;
+
+    var seen = {};
+
+    var watcher = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        seen[entry.target.id] = entry.isIntersecting;
+      });
+
+      // いちばん上に見えているものを現在地とする
+      for (var i = 0; i < targets.length; i++) {
+        if (!seen[targets[i].id]) continue;
+        links.forEach(function (a) { a.classList.remove('here'); });
+        map[targets[i].id].classList.add('here');
+        return;
+      }
+    }, { rootMargin: '0px 0px -70% 0px' });
+
+    targets.forEach(function (section) { watcher.observe(section); });
+  })();
+</script>
+
+</body>
+</html>

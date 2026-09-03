@@ -146,6 +146,15 @@ window.addEventListener('DOMContentLoaded', function () {
     cursor: pointer;
   }
 
+  /*
+    上の display 指定は、ブラウザ既定の [hidden] { display: none } より
+    強い。hidden を付けたボタンがそのまま出てしまうので、ここで戻す。
+
+    全体に [hidden] を効かせないのは、.panes.split .pane[hidden] のように
+    わざと表示している箇所があるため。
+  */
+  button[hidden] { display: none; }
+
   button svg { flex: none; color: var(--muted); }
 
   button:hover:not(:disabled) { background: var(--hover); color: var(--text); }
@@ -2656,7 +2665,11 @@ window.addEventListener('DOMContentLoaded', function () {
 
   var api = {
     getAppInfo: function () {
-      return { webAppUrl: location.href.split('?')[0], manualUrl: '' };
+      /*
+         マニュアルは index.html と同じ階層に置いてある。相対で指すことで、
+         / からでも /en/ からでも、その言語のものが開く。
+      */
+      return { webAppUrl: location.href.split('?')[0], manualUrl: 'manual.html' };
     },
 
     getTemplates: function () { return TEMPLATES; },

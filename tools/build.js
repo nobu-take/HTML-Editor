@@ -420,6 +420,30 @@ const iconSrc = path.join(root, 'assets', 'icon');
 const icons = fs.existsSync(iconSrc) ? fs.readdirSync(iconSrc) : [];
 icons.forEach((f) => fs.copyFileSync(path.join(iconSrc, f), path.join(outDir, f)));
 
+/*
+   使い方のマニュアル。
+
+   本文は言語ごとに書き下ろす。UIの短い語と違って、地の文を語句の
+   置き換えで訳すと不自然になるため、locales/ の辞書は通していない。
+
+   置き場所は index.html と同じ階層。エディタからは相対で manual.html を
+   指すので、/ と /en/ のどちらから開いても正しいほうに行く。
+*/
+const manualSrc = path.join(root, 'src', 'manual');
+let manuals = 0;
+
+Object.keys(locales.languages).forEach((lang) => {
+  const from = path.join(manualSrc, lang + '.html');
+  if (!fs.existsSync(from)) {
+    console.log('  マニュアルがありません: src/manual/' + lang + '.html');
+    return;
+  }
+  const dir = lang === locales.default ? outDir : path.join(outDir, lang);
+  fs.copyFileSync(from, path.join(dir, 'manual.html'));
+  manuals++;
+});
+
 console.log('見本画像 ' + images.length + '枚（置き場: ' + imageBase + '）');
 console.log('タブのアイコン ' + icons.length + '件');
+console.log('マニュアル ' + manuals + '言語ぶん');
 if (shortfall) console.log('訳し漏れが合計 ' + shortfall + '件あります。');

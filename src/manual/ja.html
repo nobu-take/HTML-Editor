@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>使い方 — HTML Editor for Email</title>
+<meta name="description" content="HTMLメール用エディタの使い方。テンプレートの選び方、編集、保存、メールにする手順。">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" sizes="32x32">
+<style>
+  /*
+     アプリと同じ配色。行き来したときに別のサイトに見えないようにする。
+     暗い一色で通すのは、アプリがダーク固定のため。
+  */
+  :root {
+    --bg: #0e1013;
+    --panel: #191c21;
+    --sunken: #23272e;
+    --line: #2d323a;
+    --text: #e9ecf1;
+    --body: #c3c9d4;
+    --muted: #a2aab7;
+    --faint: #87909e;
+    --accent: #5b9cf8;
+    --accent-weak: #1e2c42;
+    --accent-ink: #a8c9ff;
+    --warn: #e0b25f;
+    --warn-weak: #302617;
+    --danger: #f2837a;
+    --danger-weak: #3a211f;
+    --ok: #62c98b;
+    --radius: 8px;
+    --sans: 'Hiragino Sans', 'Yu Gothic', Meiryo, system-ui, sans-serif;
+    --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--body);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.85;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    display: grid;
+    grid-template-columns: 232px minmax(0, 1fr);
+    gap: 48px;
+    max-width: 1060px;
+    margin: 0 auto;
+    padding: 0 28px 96px;
+  }
+
+  /* ---------- 目次 ---------- */
+
+  .toc {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    max-height: 100vh;
+    overflow-y: auto;
+    padding: 40px 0;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .toc-label {
+    margin: 0 0 12px;
+    color: var(--faint);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .09em;
+  }
+
+  .toc ol { margin: 0; padding: 0; list-style: none; }
+  .toc li { margin: 0 0 2px; }
+
+  .toc a {
+    display: block;
+    padding: 5px 10px;
+    border-radius: 6px;
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .toc a:hover { background: var(--panel); color: var(--text); }
+
+  .toc a.here {
+    background: var(--accent-weak);
+    color: var(--accent-ink);
+    font-weight: 600;
+  }
+
+  /* ---------- 本文 ---------- */
+
+  main { padding: 40px 0 0; min-width: 0; }
+
+  header.lead { margin: 0 0 56px; }
+
+  .eyebrow {
+    margin: 0 0 10px;
+    color: var(--faint);
+    font-size: 12px;
+    letter-spacing: .08em;
+  }
+
+  h1 {
+    margin: 0 0 14px;
+    color: var(--text);
+    font-size: 32px;
+    line-height: 1.3;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+  }
+
+  .lead p { margin: 0; max-width: 40em; color: var(--muted); }
+
+  section { margin: 0 0 56px; scroll-margin-top: 24px; }
+
+  h2 {
+    margin: 0 0 6px;
+    padding: 0 0 10px;
+    border-bottom: 1px solid var(--line);
+    color: var(--text);
+    font-size: 20px;
+    letter-spacing: -.005em;
+  }
+
+  h2 .num {
+    margin-right: 10px;
+    color: var(--faint);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+
+  h3 {
+    margin: 30px 0 6px;
+    color: var(--text);
+    font-size: 15px;
+  }
+
+  p { margin: 12px 0; max-width: 40em; }
+
+  a { color: var(--accent-ink); }
+  a:hover { color: var(--accent); }
+
+  ul, ol { margin: 12px 0; padding-left: 1.4em; max-width: 40em; }
+  li { margin: 4px 0; }
+
+  strong { color: var(--text); font-weight: 600; }
+
+  /* 画面に出ている文字を指すとき */
+  .ui {
+    padding: 1px 6px;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: var(--sunken);
+    color: var(--text);
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  kbd {
+    padding: 2px 6px;
+    border: 1px solid var(--line);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    background: var(--sunken);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  /* ---------- 手順 ---------- */
+
+  .steps {
+    margin: 18px 0;
+    padding: 0;
+    max-width: 44em;
+    list-style: none;
+    counter-reset: step;
+  }
+
+  .steps > li {
+    position: relative;
+    margin: 0;
+    padding: 0 0 22px 42px;
+    counter-increment: step;
+  }
+
+  .steps > li::before {
+    content: counter(step);
+    position: absolute;
+    top: 3px;
+    left: 0;
+    display: grid;
+    place-items: center;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: var(--accent-weak);
+    color: var(--accent-ink);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+  }
+
+  /* 縦線でつないで、順番だと分かるようにする */
+  .steps > li:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 33px;
+    bottom: 4px;
+    left: 12px;
+    width: 1px;
+    background: var(--line);
+  }
+
+  .steps b { display: block; color: var(--text); }
+  .steps p { margin: 2px 0 0; }
+
+  /* ---------- 注記 ---------- */
+
+  .note {
+    margin: 20px 0;
+    padding: 14px 18px;
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    background: var(--panel);
+    max-width: 42em;
+  }
+
+  .note.warn { border-left-color: var(--warn); background: var(--warn-weak); }
+  .note.danger { border-left-color: var(--danger); background: var(--danger-weak); }
+
+  .note > :first-child { margin-top: 0; }
+  .note > :last-child { margin-bottom: 0; }
+
+  .note b { color: var(--text); }
+
+  /* ---------- 表 ---------- */
+
+  .scroller { margin: 18px 0; overflow-x: auto; }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 460px;
+    font-size: 14px;
+  }
+
+  th, td {
+    padding: 9px 14px 9px 0;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    color: var(--faint);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .04em;
+  }
+
+  td:first-child { white-space: nowrap; color: var(--text); }
+
+  footer {
+    margin: 72px 0 0;
+    padding: 24px 0 0;
+    border-top: 1px solid var(--line);
+    color: var(--faint);
+    font-size: 13px;
+  }
+
+  footer a { color: var(--muted); }
+
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  @media (max-width: 860px) {
+    .page { grid-template-columns: minmax(0, 1fr); gap: 0; padding: 0 20px 72px; }
+    .toc {
+      position: static;
+      max-height: none;
+      padding: 32px 0 0;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 20px;
+    }
+    .toc ol { display: flex; flex-wrap: wrap; gap: 4px; }
+    .toc a { padding: 4px 9px; }
+    main { padding-top: 32px; }
+    h1 { font-size: 26px; }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
+  }
+</style>
+</head>
+<body><div class="page"><nav class="toc" aria-label="目次"><p class="toc-label">目次</p><ol><li><a href="#about">はじめに</a></li><li><a href="#screen">画面の見かた</a></li><li><a href="#first">最初の一通</a></li><li><a href="#templates">テンプレートと見た目</a></li><li><a href="#edit">直す</a></li><li><a href="#save">保存のしくみ</a></li><li><a href="#signature">署名</a></li><li><a href="#ai">AIに聞く</a></li><li><a href="#send">メールにする</a></li><li><a href="#keys">キーボード操作</a></li><li><a href="#trouble">困ったとき</a></li></ol></nav><main><header class="lead"><p class="eyebrow">HTML Editor for Email</p><h1>使い方</h1><p>HTMLメールの本文を作るためのエディタです。登録もログインも要りません。書いた内容はお使いのブラウザの中だけに残り、どこにも送られません。</p></header><section id="about"><h2><span class="num">01</span>はじめに</h2><p>このエディタが作るのは、<strong>メールの本文になるHTML</strong>です。メールを送る機能はありません。出来上がった本文を、普段お使いのメールソフトに渡して送っていただく形になります。</p><p>メールのHTMLは、Webページとは書き方が違います。受信側のソフトによって使える書き方が大きく制限されるためです。このエディタが作るHTMLは、はじめからその制限に合わせてあります。</p><ul><li>レイアウトは表組み（<code>table</code>）で組む</li><li>装飾はすべてタグに直接書く</li><li>本文の幅は600px</li><li>画像には必ず代替テキストを付ける</li></ul><p>この4つは、多くのメールソフトで崩れないための最低条件です。テンプレートも部品も、これを守って作ってあります。</p><div class="note"><p><b>保存先はこのブラウザの中です。</b>サーバーはありません。書いた内容が外に出ていないことは、ブラウザの開発者ツールでネットワークを見れば確認できます。そのかわり、<a href="#save">別の端末や別のブラウザからは見えません</a>。</p></div></section><section id="screen"><h2><span class="num">02</span>画面の見かた</h2><p>画面は3つに分かれています。</p><div class="scroller"><table><thead><tr><th>場所</th><th>役割</th></tr></thead><tbody><tr><td>左</td><td>原稿の一覧。<span class="ui">作業中</span> と <span class="ui">保管</span> の2つに分かれています</td></tr><tr><td>中央</td><td>編集する場所。プレビューかコード、または両方を並べて表示します</td></tr><tr><td>右</td><td>選んでいる部分の設定。文字の大きさ、色、余白などを変えられます</td></tr></tbody></table></div><h3>3つの表示を切り替える</h3><p>上部の <span class="ui">プレビュー</span> / <span class="ui">コード</span> /<span class="ui">プレビュー ＋ コード</span> で切り替えます。</p><ul><li><strong>プレビュー</strong> — 完成した見た目のまま、文字を直接書き換えられます。ふだんはこれで足ります</li><li><strong>コード</strong> — HTMLをそのまま書き換えます</li><li><strong>プレビュー ＋ コード</strong> — 並べて表示します。片方を直すともう片方に反映されます</li></ul><h3>表示を広くする</h3><p>左の一覧や右の設定は畳めます。画面が狭いときは、右上の<span class="ui">アプリ全体の表示サイズ</span> で <span class="ui">小さめ</span> を選ぶと、一度に見える範囲が広がります。<strong>メールの見た目は変わりません。</strong>アプリ側の表示だけが変わります。</p></section><section id="first"><h2><span class="num">03</span>最初の一通</h2><p>ひととおりの流れです。</p><ol class="steps"><li><b>テンプレートを選ぶ</b><p>上部の <span class="ui">テンプレートから作成</span> を押します。34件が6つの分類に並びます。用途がいちばん近いものを選んでください。</p></li><li><b>見た目を決める</b><p>テンプレート一覧の上に <span class="ui">配色</span> と <span class="ui">差し色</span> が並んでいます。<strong>先に見た目を決めてから選ぶ</strong>と早く決まります。一覧のサムネイルがその場で変わります。</p></li><li><b>文字を書き換える</b><p>プレビューの文字をクリックすると、その場で書き換えられます。見出し、本文、ボタンの文言、どれも同じ操作です。</p></li><li><b>署名を入れる</b><p>末尾に差出人の情報を入れます。<a href="#signature">登録しておくと</a>選ぶだけで入ります。</p></li><li><b>保存する</b><p><span class="ui">保存</span> または <kbd>Ctrl</kbd> + <kbd>S</kbd>。左の <span class="ui">作業中</span> に並びます。</p></li><li><b>メールにする</b><p><span class="ui">メールにする</span> を押して <span class="ui">本文をコピー</span>、続けて <span class="ui">Gmailを開く</span> か <span class="ui">Outlookを開く</span>。開いた下書きに貼り付けます。<a href="#send">詳しくはこちら</a>。</p></li></ol></section><section id="templates"><h2><span class="num">04</span>テンプレートと見た目</h2><p>テンプレートは<strong>34件</strong>。分類は6つです。</p><div class="scroller"><table><thead><tr><th>分類</th><th>入っているもの</th></tr></thead><tbody><tr><td>基本</td><td>お知らせ、プレーン、白紙</td></tr><tr><td>告知・案内</td><td>ボタン付き、ヘッダー画像、イベント案内、ニュースレターなど</td></tr><tr><td>取引・通知</td><td>注文確認、発送通知、パスワード再設定など</td></tr><tr><td>依頼</td><td>資料送付、日程調整、アンケート依頼など</td></tr><tr><td>社内</td><td>社内連絡、議事録、対応依頼</td></tr><tr><td>Webページ</td><td>メールではなくページとして書き出すもの</td></tr></tbody></table></div><h3>見た目は5つのジャンルから</h3><p><strong>ジャンルを変えると、色だけでなく組み方が変わります。</strong>見出しの扱い、ボタンの形と幅、行間、余白、区切り線、書体、段組み、要素の並び順まで変わります。</p><div class="scroller"><table><thead><tr><th>ジャンル</th><th>向くもの</th><th>差し色</th></tr></thead><tbody><tr><td>ビジネス</td><td>取引先や社外への通常の連絡</td><td>青・紺・緑・灰</td></tr><tr><td>フォーマル</td><td>案内状、式典、格式のいる場面</td><td>紺・深緑・臙脂・墨</td></tr><tr><td>カジュアル</td><td>親しい相手、社内、軽い案内</td><td>橙・青緑・桃・菫</td></tr><tr><td>ポップ</td><td>キャンペーン、募集、目を引かせたいもの</td><td>桃・橙・青・緑・紫</td></tr><tr><td>ミニマル</td><td>装飾を避けたい通知、事務的な連絡</td><td>黒・灰</td></tr></tbody></table></div><p>34件 × 19通りの配色で、<strong>646通りの見た目</strong>になります。一覧を646件に増やしていないのは、そのほうが探しやすいためです。先に見た目を決めてから、34件の中から選んでください。</p><h3>自分のテンプレートにする</h3><p>よく使う形が決まったら、その原稿を開いた状態でテンプレート画面の<span class="ui">いまの内容を登録</span> を押します。次からは一覧の先頭に出ます。同じ名前で登録すると中身が入れ替わります。</p></section><section id="edit"><h2><span class="num">05</span>直す</h2><h3>プレビューの上で直す</h3><p>文字をクリックすると、その場で書き換えられます。範囲を選ぶと、上に太字・斜体・下線・箇条書き・見出しなどが出ます。</p><p>要素の枠をクリックすると、その要素が選ばれます。選ばれている間は、右側にその要素の設定が出ます。<span class="ui">ひとつ上へ移動</span> /<span class="ui">ひとつ下へ移動</span> で並び順を変えられます。</p><div class="note"><p><b>使える書体は限られています。</b>右側の書体の一覧には、<strong>メールで確実に表示されるものだけ</strong>を並べてあります。凝った書体を指定しても、受信側に無ければ別の書体に置き換わるためです。</p></div><h3>部品を足す</h3><p>10種類の部品を挿し込めます。</p><p>見出し / 本文 / ボタン / 画像 / 情報テーブル / 注意ボックス /区切り線 / 余白 / 2カラム / 署名</p><p>挿し込む位置は、<span class="ui">選択位置に挿入</span> か<span class="ui">本文の最後に足す</span> から選べます。</p><h3>画像について</h3><div class="note warn"><p><b>画像はファイルを貼り付けられません。URLで指定してください。</b></p><p>メールでは画像を埋め込む方法がどれも使えません。データとして直接埋め込む書き方はGmailで削られ、クラウドストレージの直リンクも塞がれています。<strong>どこかに置いた画像のURLを指定する</strong>のが、現状で唯一確実な方法です。</p><p>受信側が画像を出さない設定にしていることもあるので、<strong>代替テキストは必ず入れてください。</strong>画像が出ないときにその文字が表示されます。</p></div><h3>コードで直す</h3><p><span class="ui">コード</span> に切り替えるとHTMLを直接書き換えられます。<span class="ui">プレビュー ＋ コード</span> なら、直したそばから結果を確認できます。</p><p>本文の幅を変えたいときは、上部の <span class="ui">キャンバスサイズ</span> で600px以外も試せます。ただし<strong>600pxが事実上の標準</strong>で、それより広いと横スクロールが出る環境があります。</p></section><section id="save"><h2><span class="num">06</span>保存のしくみ</h2><p>原稿は <span class="ui">作業中</span> と <span class="ui">保管</span> の2つに分かれています。作りかけを <span class="ui">作業中</span> に置き、済んだものを <span class="ui">保管</span> へ移す、という使い方を想定しています。どちらも件数の上限はありません。</p><h3>版が残ります</h3><p>保存するたびに、その時点の内容が版として残ります。原稿を選んで<span class="ui">この版を復元</span> を押すと、その時点に戻せます。<strong>AIに書き換えさせて元に戻したくなったとき</strong>のためのものです。</p><div class="note danger"><p><b>消えるとき</b></p><p>保存先はこのブラウザの中（localStorage）です。次の場合、原稿は消えます。</p><ul><li>ブラウザの閲覧データ（Cookieやサイトデータ）を消したとき</li><li>プライベートウィンドウ／シークレットウィンドウで使い、そのウィンドウを閉じたとき</li><li>別の端末、別のブラウザで開いたとき（そちらには最初から入っていません）</li></ul><p><strong>残しておきたい原稿は、<span class="ui">ファイルに書き出す</span> か<span class="ui">Webページとして書き出す</span> で手元に保存してください。</strong></p></div><p>保存できる量にも限りがあります。いっぱいになりそうなときは、古い版から自動的に減らしていきます。原稿そのものが消えることはありません。</p></section><section id="signature"><h2><span class="num">07</span>署名</h2><p>よく使う署名を登録しておくと、選ぶだけで本文の末尾に入ります。登録内容もこのブラウザの中に保存されます。</p><p>署名の形は4行を基本にしてあります。</p><ol><li>会社名・部署</li><li>氏名</li><li>住所</li><li>連絡先</li></ol><div class="note warn"><p><b>住所の行は消さないでください。</b>宣伝や案内のメールを送るとき、<strong>差出人の所在地を本文に書くことが法律で求められる国があります</strong>（米国のCAN-SPAM法など）。日本国内だけに送る場合も、書いておいて損はありません。</p></div></section><section id="ai"><h2><span class="num">08</span>AIに聞く</h2><p>このエディタ自体はAIに接続していません。<strong>AIに渡すための依頼文を組み立てるところまで</strong>を受け持ちます。出来上がった依頼文をコピーして、お使いのAIに貼り付けてください。特定のサービスに限定していません。</p><ol class="steps"><li><b>依頼の種類を選ぶ</b><p>9種類あります。文面を考える / 表現を整える / もっと丁寧に / 短くする /見た目を整える / 装飾を足す / HTMLを直す / スマホで読みやすく / 英訳する</p></li><li><b>追加の注文を書く</b><p>「若い層向けに」など、伝えたいことがあれば書き添えます。空でも構いません。</p></li><li><b>プロンプトをコピーする</b><p><span class="ui">プロンプトをコピー</span> を押します。いまの原稿を含めるかどうかも選べます。</p></li><li><b>AIに貼って、返ってきたHTMLを戻す</b><p>返ってきたHTMLを <span class="ui">全体を置き換える</span> に貼ります。気に入らなければ、保存してある前の版に戻せます。</p></li></ol><p>よく使う依頼は <span class="ui">依頼を登録する</span> で登録しておけます。次からは種類の一覧に並びます。</p><div class="note"><p><b>置き換える前に保存しておいてください。</b>保存しておけば、AIの結果が思ったものと違っても<span class="ui">この版を復元</span> で戻せます。</p></div></section><section id="send"><h2><span class="num">09</span>メールにする</h2><p>上部の <span class="ui">メールにする</span> から、4つの方法を選べます。</p><h3>GmailやOutlookで送る場合</h3><p><strong>本文をコピーしてから、貼り付けます。</strong>GmailもOutlookも、Web版には出来上がったメールのファイルを読み込む機能がありません。貼り付けが唯一の方法です。</p><ol class="steps"><li><b><span class="ui">本文をコピー</span> を押す</b><p>見た目を保ったままコピーされます。</p></li><li><b><span class="ui">Gmailを開く</span> か <span class="ui">Outlookを開く</span> を押す</b><p>新しいタブで下書きが開きます。</p></li><li><b>本文の欄に貼り付ける</b><p><kbd>Ctrl</kbd> + <kbd>V</kbd>。件名と宛先は、そのまま続けて入力してください。</p></li></ol><div class="note"><p><b>コピーと「開く」を分けてあるのは、順番が大事だからです。</b>先に別のタブへ移ってしまうと、コピーの操作がしづらくなります。必ず<strong>コピーしてから開いて</strong>ください。</p></div><h3>メールソフトで開く場合</h3><p><span class="ui">ファイルに書き出す</span> を選ぶと、メール形式のファイル（.eml）を保存できます。パソコンのメールソフトに関連付けられていれば、開いて下書きとして使えます。対応はソフトによって異なります。</p><h3>Webページとして使う場合</h3><p><span class="ui">Webページとして書き出す</span> を選ぶと、そのまま開けるHTMLファイルとして保存できます。メールではなく、社内の掲示や案内ページに使いたいときに。</p></section><section id="keys"><h2><span class="num">10</span>キーボード操作</h2><div class="scroller"><table><thead><tr><th>キー</th><th>働き</th></tr></thead><tbody><tr><td><kbd>Ctrl</kbd> + <kbd>S</kbd></td><td>保存する</td></tr><tr><td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td><td>直前の操作を取り消す</td></tr><tr><td><kbd>Ctrl</kbd> + <kbd>D</kbd></td><td>選んでいる要素を複製する</td></tr><tr><td><kbd>Delete</kbd></td><td>選んでいる要素を消す（文字を編集中は効きません）</td></tr><tr><td><kbd>Esc</kbd></td><td>選択や編集をやめる。開いている画面を閉じる</td></tr></tbody></table></div><p>Macでは <kbd>Ctrl</kbd> のかわりに <kbd>⌘</kbd> です。</p></section><section id="trouble"><h2><span class="num">11</span>困ったとき</h2><h3>貼り付けても見た目が反映されない</h3><p>コピーしてから貼り付けるまでの間に、別のところをコピーしていないか確認してください。また、<strong>下書きの本文欄に貼り付けているか</strong>を確かめてください。件名の欄に貼ると文字だけになります。</p><h3>原稿が見当たらない</h3><p>同じブラウザの同じプロファイルで開いているか確認してください。別の端末、別のブラウザ、プライベートウィンドウには入っていません。詳しくは<a href="#save">保存のしくみ</a>を。</p><h3>受信側で崩れる</h3><p>本文の幅を600pxより広げていないか、テンプレートの表組みを崩していないかを確認してください。メールソフトによっては、複雑な組み方をそのまま表示できません。<span class="ui">スマホで読みやすく</span> をAIに依頼するのも手です。</p><h3>言語が思ったものと違う</h3><p>ブラウザの言語設定に合わせて自動で開きます。切り替えたいときは、右上の言語の一覧から選んでください。<strong>いまのところ日本語と英語です。</strong></p></section><footer><p>HTML Editor for Email — <a href="./">エディタに戻る</a></p></footer> </main>
+</div>
+
+<script>
+  /* いま読んでいる見出しを、目次側で示す */
+  (function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+    var map = {};
+    var targets = [];
+
+    links.forEach(function (a) {
+      var id = a.getAttribute('href').slice(1);
+      var section = document.getElementById(id);
+      if (!section) return;
+      map[id] = a;
+      targets.push(section);
+    });
+
+    if (!('IntersectionObserver' in window) || !targets.length) return;
+
+    var seen = {};
+
+    var watcher = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        seen[entry.target.id] = entry.isIntersecting;
+      });
+
+      // いちばん上に見えているものを現在地とする
+      for (var i = 0; i < targets.length; i++) {
+        if (!seen[targets[i].id]) continue;
+        links.forEach(function (a) { a.classList.remove('here'); });
+        map[targets[i].id].classList.add('here');
+        return;
+      }
+    }, { rootMargin: '0px 0px -70% 0px' });
+
+    targets.forEach(function (section) { watcher.observe(section); });
+  })();
+</script>
+
+</body>
+</html>

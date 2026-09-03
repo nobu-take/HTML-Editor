@@ -151,7 +151,11 @@ async function openChrome() {
   const close = () => {
     try { ws.close(); } catch (err) { /* すでに閉じている */ }
     child.kill();
-    fs.rmSync(profile, { recursive: true, force: true });
+    // 終了しきる前だと Windows がロックを外さない。消せなくても
+    // GIFは書けているので、ここで落とさない（一時フォルダに残るだけ）
+    try {
+      fs.rmSync(profile, { recursive: true, force: true });
+    } catch (err) { /* あとで OS が片付ける */ }
   };
 
   return { send: send, evaluate: evaluate, shot: shot, close: close };

@@ -139,7 +139,11 @@
 
   var api = {
     getAppInfo: function () {
-      return { webAppUrl: location.href.split('?')[0], manualUrl: '' };
+      /*
+         マニュアルは index.html と同じ階層に置いてある。相対で指すことで、
+         / からでも /en/ からでも、その言語のものが開く。
+      */
+      return { webAppUrl: location.href.split('?')[0], manualUrl: 'manual.html' };
     },
 
     getTemplates: function () { return TEMPLATES; },
