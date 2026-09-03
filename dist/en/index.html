@@ -109,6 +109,9 @@ window.addEventListener('DOMContentLoaded', function () {
     --lift-strong: inset 0 1px 0 rgba(255, 255, 255, .09),
                    0 18px 44px rgba(0, 0, 0, .55);
 
+    /* アプリ全体の表示サイズ。JSが実際の値を入れる */
+    --ui-scale: 1;
+
     --radius: 6px;
     --radius-panel: 10px;
     --seam: 4px;
@@ -1505,12 +1508,24 @@ window.addEventListener('DOMContentLoaded', function () {
     background: var(--panel);
   }
 
+  /*
+     コード欄の中だけ、表示サイズの zoom を打ち消す。
+
+     CodeMirror は選択の色を行ごとの矩形として重ねて描くが、その高さを
+     測るときに zoom を考えていない。倍率のぶんだけ矩形が短くなり、
+     **見えている範囲とコピーされる範囲が食い違う**（選択そのものは正しい）。
+
+     zoom は掛け算で伝わるので、1/倍率 を当てれば CodeMirror から見た
+     倍率は 1 になり、測り方が合う。それだけだと文字が元の大きさに戻るので、
+     font-size に倍率を掛けて見た目を保つ。
+  */
   .CodeMirror {
     position: absolute;
     inset: 0;
     height: 100%;
+    zoom: calc(1 / var(--ui-scale));
     font-family: Consolas, "SF Mono", "Roboto Mono", monospace;
-    font-size: 13px;
+    font-size: calc(13px * var(--ui-scale));
   }
 
   /* ---------- 全画面 ---------- */
@@ -4925,6 +4940,7 @@ function applyTheme(html, key, accentKey) {
   function initUiScale() {
     var current = parseFloat(document.documentElement.style.zoom) || 1;
     state.uiScale = current;
+    document.documentElement.style.setProperty('--ui-scale', current);
     markScaleOption();
 
     // 縦が足りない環境にだけ、一度きりの案内を出す
@@ -4936,6 +4952,8 @@ function applyTheme(html, key, accentKey) {
   function setUiScale(scale) {
     state.uiScale = scale;
     document.documentElement.style.zoom = scale === 1 ? '' : scale;
+    // コード欄が zoom を打ち消せるように、値をCSSへ渡す
+    document.documentElement.style.setProperty('--ui-scale', scale);
     markScaleOption();
 
     // 幅が変わるので、折り返しと倍率を取り直す

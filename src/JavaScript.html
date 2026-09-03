@@ -781,6 +781,7 @@
   function initUiScale() {
     var current = parseFloat(document.documentElement.style.zoom) || 1;
     state.uiScale = current;
+    document.documentElement.style.setProperty('--ui-scale', current);
     markScaleOption();
 
     // 縦が足りない環境にだけ、一度きりの案内を出す
@@ -792,6 +793,8 @@
   function setUiScale(scale) {
     state.uiScale = scale;
     document.documentElement.style.zoom = scale === 1 ? '' : scale;
+    // コード欄が zoom を打ち消せるように、値をCSSへ渡す
+    document.documentElement.style.setProperty('--ui-scale', scale);
     markScaleOption();
 
     // 幅が変わるので、折り返しと倍率を取り直す
