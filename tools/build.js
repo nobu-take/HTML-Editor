@@ -179,6 +179,19 @@ const HIDE = `
 </style>
 `;
 
+/*
+   タブのアイコン。
+
+   SVG を先に置き、読めないブラウザ向けに PNG を続ける。順番に意味があり、
+   SVG を読めるブラウザはそちらを使う（どの大きさでも縁が崩れない）。
+
+   置き場はサイトの根。/ と /en/ の両方から同じものを指す。
+*/
+const ICONS = `<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="alternate icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+`;
+
 // 覚えている表示サイズを、画面が組み上がる前に当てる。
 // あとから当てると、大きさが一瞬飛んで見える。
 const BOOT = `<script>
@@ -360,7 +373,7 @@ function buildLocale(lang, meta) {
 
   html = html
     .replace('<html lang="ja">', '<html lang="' + lang + '">')
-    .replace('<head>', '<head>\n' + alternates() + auto + BOOT + languageMenu(lang, meta));
+    .replace('<head>', '<head>\n' + ICONS + alternates() + auto + BOOT + languageMenu(lang, meta));
 
   return { html, missing: t.missing, size: Object.keys(dict).length };
 }
@@ -402,5 +415,11 @@ const images = fs.readdirSync(imgSrc)
 
 images.forEach((f) => fs.copyFileSync(path.join(imgSrc, f), path.join(imgOut, f)));
 
+// タブのアイコンはサイトの根に置く。/ と /en/ の両方から同じものを指すため
+const iconSrc = path.join(root, 'assets', 'icon');
+const icons = fs.existsSync(iconSrc) ? fs.readdirSync(iconSrc) : [];
+icons.forEach((f) => fs.copyFileSync(path.join(iconSrc, f), path.join(outDir, f)));
+
 console.log('見本画像 ' + images.length + '枚（置き場: ' + imageBase + '）');
+console.log('タブのアイコン ' + icons.length + '件');
 if (shortfall) console.log('訳し漏れが合計 ' + shortfall + '件あります。');
