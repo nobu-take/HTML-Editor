@@ -357,11 +357,12 @@
        原稿ごとではなく、この人の好みとして持つ。同じ人が毎回同じ見た目を
        選び直すのは手間なので。
     */
-    setTemplateTheme: function (key) {
+    setTemplateTheme: function (key, accent) {
       var s = settings();
-      s.templateTheme = String(key || 'standard');
+      s.templateTheme = String(key || 'business');
+      s.templateAccent = String(accent || '');
       saveSettings(s);
-      return s.templateTheme;
+      return { theme: s.templateTheme, accent: s.templateAccent };
     },
 
     dismissScaleHint: function () {

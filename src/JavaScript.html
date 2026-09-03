@@ -131,8 +131,9 @@
     },
     customLoaded: false,    // 一度でも読めたか（読み込み中の表示に使う）
 
-    // 配色テーマ。組み込みのテンプレートと部品に当てる
+    // デザインのジャンルと差し色。組み込みのテンプレートと部品に当てる
     theme: (typeof window.TEMPLATE_THEME === 'string' && window.TEMPLATE_THEME) || 'business',
+    accent: (typeof window.TEMPLATE_ACCENT === 'string' && window.TEMPLATE_ACCENT) || '',
     customLoading: false,
     parts: [],
     signatures: [],
@@ -6488,7 +6489,10 @@
     }
 
     // 同じ内容を、好きな見た目で選べるようにする
-    if (typeof THEMES !== 'undefined') list.appendChild(themePicker());
+    if (typeof THEMES !== 'undefined') {
+      list.appendChild(themePicker());
+      list.appendChild(accentPicker());
+    }
 
     var mine = customItems('mine');
     var all = mine.concat(state.templates);
@@ -6570,8 +6574,53 @@
 
       button.addEventListener('click', function () {
         if (state.theme === theme.key) return;
+
         state.theme = theme.key;
-        call('setTemplateTheme', theme.key);   // 好みとして覚える
+        state.accent = '';                     // ジャンルごとに差し色は違う
+        call('setTemplateTheme', state.theme, state.accent);
+        renderTemplateList();
+      });
+
+      wrap.appendChild(button);
+    });
+
+    return wrap;
+  }
+
+  /**
+   * 差し色の選び方。
+   *
+   * ジャンルごとに、そのジャンルに合う色だけを並べる。全ジャンル共通の
+   * 一覧にすると、フォーマルに蛍光色が並ぶことになる。
+   *
+   * 選ばなければ、そのジャンルの先頭の色を使う。
+   */
+  function accentPicker() {
+    var theme = null;
+    THEMES.forEach(function (t) { if (t.key === state.theme) theme = t; });
+
+    var wrap = document.createElement('div');
+    wrap.className = 'theme-row accent-row';
+    if (!theme || theme.accents.length < 2) return wrap;
+
+    var label = document.createElement('span');
+    label.className = 'theme-label';
+    label.textContent = '差し色';
+    wrap.appendChild(label);
+
+    var current = state.accent || theme.accents[0].key;
+
+    theme.accents.forEach(function (accent) {
+      var button = document.createElement('button');
+      button.className = 'accent-chip' + (accent.key === current ? ' active' : '');
+      button.style.setProperty('--swatch', accent.base);
+      button.textContent = accent.name;
+      button.title = accent.name;
+
+      button.addEventListener('click', function () {
+        if (state.accent === accent.key) return;
+        state.accent = accent.key;
+        call('setTemplateTheme', state.theme, state.accent);
         renderTemplateList();
       });
 
@@ -6627,7 +6676,7 @@
   function themed(html, kind) {
     if (kind === 'mine') return html;
     if (typeof applyTheme !== 'function') return html;
-    return applyTheme(html, state.theme);
+    return applyTheme(html, state.theme, state.accent);
   }
 
   var THUMB_WIDTH = 600;   // 見本の中で使う横幅。本文幅と同じ

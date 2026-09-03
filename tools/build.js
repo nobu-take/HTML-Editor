@@ -188,9 +188,11 @@ const BOOT = `<script>
     if (saved.uiScale) document.documentElement.style.zoom = saved.uiScale;
     window.SCALE_HINT_DONE = !!saved.scaleHintDone;
     window.TEMPLATE_THEME = saved.templateTheme || 'business';
+    window.TEMPLATE_ACCENT = saved.templateAccent || '';
   } catch (e) {
     window.SCALE_HINT_DONE = false;
     window.TEMPLATE_THEME = 'business';
+    window.TEMPLATE_ACCENT = '';
   }
 })();
 </script>

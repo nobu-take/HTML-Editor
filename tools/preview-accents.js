@@ -11,7 +11,8 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.join(__dirname, '..');
-const want = process.argv[2] || 'CTA';
+const want = process.argv[3] || 'CTA';
+const genre = process.argv[2] || 'pop';
 
 const locales = JSON.parse(fs.readFileSync(path.join(root, 'locales', 'index.json'), 'utf8'));
 const meta = locales.languages[locales.default];
@@ -36,11 +37,13 @@ const tpl = library.templates.templates.find((t) => t.name.indexOf(want) >= 0)
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
 
-const columns = themes.THEMES.map((theme) => {
-  const html = themes.applyTheme(tpl.html, theme.key, (theme.accents[0]||{}).key);
+const only = themes.THEMES.filter((t) => t.key === genre)[0] || themes.THEMES[0];
+const columns = only.accents.map((accent) => {
+  const theme = only;
+  const html = themes.applyTheme(tpl.html, theme.key, accent.key);
   return '<div class="col">'
-    + '<h2>' + theme.name + '</h2>'
-    + '<p>' + theme.note + '</p>'
+    + '<h2>' + accent.name + '</h2>'
+    + '<p>' + theme.name + '</p>'
     + '<div class="shot"><iframe sandbox="" scrolling="no" srcdoc="' + esc(html) + '"></iframe></div>'
     + '</div>';
 }).join('\n');
@@ -60,7 +63,7 @@ const page = `<!doctype html>
   .shot iframe { width: 600px; height: 1400px; border: 0;
                  transform: scale(var(--s)); transform-origin: 0 0; }
 </style>
-<h1>${tpl.name} — 5ジャンル</h1>
+<h1>${tpl.name} — ${only.name} の差し色</h1>
 <div class="row">
 ${columns}
 </div>
@@ -76,5 +79,5 @@ ${columns}
 </script>
 `;
 
-fs.writeFileSync(path.join(root, 'dist', 'genres.html'), page, 'utf8');
-console.log('dist/genres.html に「' + tpl.name + '」を5ジャンルで並べました');
+fs.writeFileSync(path.join(root, 'dist', 'accents.html'), page, 'utf8');
+console.log('dist/genres.html に「' + tpl.name + '」を差し色ちがいで並べました');

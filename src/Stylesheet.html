@@ -1046,6 +1046,32 @@
     font-weight: 700;
   }
 
+  /* 差し色。ジャンルの下に並べる */
+  .accent-row { margin-top: -10px; }
+
+  .accent-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 11px 4px 8px;
+    border-radius: 999px;
+    background: var(--sunken);
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  /* 色そのものを見せる。名前だけでは選べない */
+  .accent-chip::before {
+    content: "";
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--swatch);
+  }
+
+  .accent-chip:hover { color: var(--text); }
+  .accent-chip.active { color: var(--text); font-weight: 700; }
+
   /* タグのパンくずの開け閉め。畳んでいるのがふだんの姿 */
   .crumb-fold {
     padding: 2px 7px;

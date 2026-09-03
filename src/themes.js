@@ -58,110 +58,157 @@ var THEMES = [
   {
     key: 'business',
     name: 'ビジネス',
-    note: '青の差し色。詰めすぎず、事務的すぎず',
-    colors: {},
+    note: '詰めすぎず、事務的すぎず。どんな用件にも',
+    accents: [
+      { key: 'blue', name: '青', base: '#1a73e8' },
+      { key: 'navy', name: '紺', base: '#1c3557' },
+      { key: 'green', name: '緑', base: '#16803c' },
+      { key: 'gray', name: '灰', base: '#4b5563' }
+    ],
+    tint: 0,
     type: 1, headingBoost: 1, headingWeight: 'bold', headingSpacing: '',
     lineHeight: 1, density: 1,
     radius: 1, buttonRadius: 6, buttonPad: '14px 32px', buttonWidth: 'auto',
     rule: '1px solid', shadow: 'keep', font: 'sans',
-    heading: 'plain'
+    heading: 'plain', columns: 'keep', order: 'natural'
   },
 
   {
     key: 'formal',
     name: 'フォーマル',
-    note: '明朝体と広めの行間。改まった案内に',
-    colors: {
-      '#1a73e8': '#1c3557',
-      '#1765cc': '#132540',
-      '#174ea6': '#132540',
-      '#e8f0fe': '#eaeef4',
-      '#f4f5f7': '#f2f3f5',
-      '#f4f6f9': '#f2f3f5',
-      '#1f2328': '#1a1d22',
-      '#3c4149': '#363b43',
-      '#e5e7eb': '#cfd3da',
-      '#dfe3e8': '#cfd3da'
-    },
+    note: '明朝体と広めの行間。段は積んで一つずつ読ませる',
+    accents: [
+      { key: 'navy', name: '紺', base: '#1c3557' },
+      { key: 'forest', name: '深緑', base: '#164d3a' },
+      { key: 'wine', name: '臙脂', base: '#7d1f2e' },
+      { key: 'sumi', name: '墨', base: '#26292e' }
+    ],
+    tint: 0.1,
     type: 0.96, headingBoost: 1.08, headingWeight: 'normal',
     headingSpacing: '0.06em',
     lineHeight: 1.15, density: 1.3,
     radius: 0, buttonRadius: 0, buttonPad: '16px 44px', buttonWidth: 'auto',
     rule: '1px solid', shadow: 'none', font: 'serif',
-    heading: 'rule'
+    heading: 'rule', columns: 'stack', order: 'natural'
   },
 
   {
     key: 'casual',
     name: 'カジュアル',
-    note: '丸みと温かい色。ゆるやかな案内に',
-    colors: {
-      '#1a73e8': '#b45a0a',
-      '#1765cc': '#a04f08',
-      '#174ea6': '#a04f08',
-      '#e8f0fe': '#fbeee0',
-      '#f4f5f7': '#fdf8f2',
-      '#f4f6f9': '#fdf8f2',
-      '#1f2328': '#332a20',
-      '#3c4149': '#4c4136',
-      '#6b7280': '#7f7264',
-      '#4b5563': '#5e5245',
-      '#e5e7eb': '#eadfd1',
-      '#dfe3e8': '#eadfd1'
-    },
+    note: '丸みと温かさ。ゆるやかな案内に',
+    accents: [
+      { key: 'orange', name: '橙', base: '#b45a0a' },
+      { key: 'teal', name: '青緑', base: '#0c7256' },
+      { key: 'rose', name: '桃', base: '#b8395e' },
+      { key: 'violet', name: '菫', base: '#5f4bb6' }
+    ],
+    tint: 0.18,
     type: 1.04, headingBoost: 1.12, headingWeight: 'bold', headingSpacing: '',
     lineHeight: 1.06, density: 1.05,
     radius: 1.75, buttonRadius: 999, buttonPad: '15px 36px', buttonWidth: 'auto',
     rule: '1px solid', shadow: 'keep', font: 'sans',
-    heading: 'bar'
+    heading: 'bar', columns: 'keep', order: 'natural'
   },
 
   {
     key: 'pop',
     name: 'ポップ',
-    note: '大きな見出しと丸いボタン。告知やキャンペーンに',
-    colors: {
-      '#1a73e8': '#d81b60',
-      '#1765cc': '#ad144c',
-      '#174ea6': '#ad144c',
-      '#e8f0fe': '#fde7ef',
-      '#f4f5f7': '#fff5f8',
-      '#f4f6f9': '#fff5f8',
-      '#1f2328': '#20141a',
-      '#e5e7eb': '#f4d9e2',
-      '#dfe3e8': '#f4d9e2'
-    },
+    note: '大きな見出しと丸いボタン。ボタンは先に見せる',
+    accents: [
+      { key: 'pink', name: '桃', base: '#d81b60' },
+      { key: 'orange', name: '橙', base: '#c2410c' },
+      { key: 'blue', name: '青', base: '#1263d8' },
+      { key: 'green', name: '緑', base: '#0f7a3d' },
+      { key: 'purple', name: '紫', base: '#7b1fa2' }
+    ],
+    tint: 0.12,
     type: 1.08, headingBoost: 1.4, headingWeight: '800',
     headingSpacing: '-0.01em',
     lineHeight: 0.95, density: 0.96,
     radius: 2.25, buttonRadius: 999, buttonPad: '18px 42px', buttonWidth: 'full',
     rule: '3px solid', shadow: 'keep', font: 'sans',
-    heading: 'band'
+    heading: 'band', columns: 'keep', order: 'cta-first'
   },
 
   {
     key: 'minimal',
     name: 'ミニマル',
-    note: '色を使わず、余白で見せる。通知や事務連絡に',
-    colors: {
-      '#1a73e8': '#1f2328',
-      '#1765cc': '#000000',
-      '#174ea6': '#000000',
-      '#e8f0fe': '#f2f3f4',
-      '#f4f5f7': '#fafafa',
-      '#f4f6f9': '#fafafa',
-      '#6b7280': '#7a7f87',
-      '#e5e7eb': '#dcdee2',
-      '#dfe3e8': '#dcdee2'
-    },
+    note: '色を使わず、余白で見せる。段は積む',
+    accents: [
+      { key: 'ink', name: '黒', base: '#1f2328' },
+      { key: 'slate', name: '灰', base: '#3c4149' }
+    ],
+    tint: 0,
     type: 0.94, headingBoost: 0.96, headingWeight: '600',
     headingSpacing: '0.09em',
     lineHeight: 1.16, density: 1.35,
     radius: 0, buttonRadius: 0, buttonPad: '13px 30px', buttonWidth: 'auto',
     rule: '1px solid', shadow: 'none', font: 'sans',
-    heading: 'topline'
+    heading: 'topline', columns: 'stack', order: 'natural'
   }
 ];
+
+/*
+   差し色から、地の色みまでを作る。
+
+   ジャンルごとに1色だけ決め打ちにしていたら、「ポップはいつも同じ桃色」に
+   なった。差し色を選べるようにしたが、選ぶたびに地の色・淡い色・罫線まで
+   手で決めるのは続かない。**差し色1色から機械的に作る**ことにした。
+
+   白と混ぜて薄くするだけなので、どの色を選んでも調子が揃う。
+*/
+function hex(n) {
+  var s = Math.max(0, Math.min(255, Math.round(n))).toString(16);
+  return s.length < 2 ? '0' + s : s;
+}
+
+function parse(color) {
+  return [1, 3, 5].map(function (i) { return parseInt(color.slice(i, i + 2), 16); });
+}
+
+/** color を white 方向へ ratio ぶん寄せる（1 で真っ白） */
+function mix(color, ratio, toward) {
+  var a = parse(color);
+  var b = parse(toward || '#ffffff');
+  return '#' + a.map(function (v, i) { return hex(v + (b[i] - v) * ratio); }).join('');
+}
+
+/** 濃くする。ボタンの押した状態などに使う */
+function darken(color, ratio) {
+  return mix(color, ratio, '#000000');
+}
+
+/*
+   差し色ひとつから、テンプレートで使っている色への対応表を作る。
+
+   文字の色も少しだけ差し色へ寄せる（tint）。カジュアルの茶色い差し色に
+   対して文字が青灰色のままだと、ちぐはぐに見えるため。ジャンルごとに
+   どれだけ寄せるかを決めている。
+
+   罫線は差し色に寄せすぎると主張が強くなるので、元の灰色のほうへ
+   4分の3ほど戻している。
+*/
+function accentColors(base, tint) {
+  var map = {
+    '#1a73e8': base,
+    '#1765cc': darken(base, 0.2),
+    '#174ea6': darken(base, 0.2),
+    '#e8f0fe': mix(base, 0.88),
+    '#f4f5f7': mix(base, 0.955),
+    '#f4f6f9': mix(base, 0.955),
+    '#e5e7eb': mix(mix(base, 0.87), 0.75, '#e5e7eb'),
+    '#dfe3e8': mix(mix(base, 0.87), 0.75, '#e5e7eb')
+  };
+
+  if (tint) {
+    map['#1f2328'] = mix('#1f2328', tint, base);
+    map['#3c4149'] = mix('#3c4149', tint, base);
+    map['#6b7280'] = mix('#6b7280', tint, base);
+    map['#4b5563'] = mix('#4b5563', tint, base);
+  }
+
+  return map;
+}
 
 /** 見出しとみなす大きさ。ここから上は別の倍率で動かす */
 var HEADING_FROM = 18;
@@ -246,6 +293,116 @@ function widenButton(html) {
     });
 }
 
+/*
+   段組みを縦に積む。
+
+   2カラム・3カラムは、幅を決めた table を align="left" で横に並べて
+   作られている。幅を100%にして align を外すと、そのまま縦に積まれる。
+
+   落ち着いた見せ方のジャンル（フォーマル・ミニマル）で使う。横に並べると
+   視線が行き来するので、一つずつ読ませたい場面には向かない。
+*/
+function stackColumns(html) {
+  return html.replace(/<table([^>]*?)>/gi, function (all, attrs) {
+    // 幅を持ち、左右に寄せてある table が段組みの正体
+    if (!/align="(left|right)"/i.test(attrs)) return all;
+    if (!/width="\d+"/.test(attrs)) return all;
+
+    var next = attrs
+      .replace(/\s*align="(?:left|right)"/i, '')
+      .replace(/width="\d+"/i, 'width="100%"')
+      .replace(/width:\s*\d+px/i, 'width:100%');
+
+    return '<table' + next + '>';
+  });
+}
+
+/*
+   本文テーブルの直下にある段（tr）を、順番に取り出す。
+
+   正規表現だけでは取り出せない。中に入れ子の table があり、その中の tr まで
+   拾ってしまうため。開き閉じを数えながら歩く。
+
+   @return {Array<Object>} {start, end, html} 直下の tr だけ
+*/
+function topRows(html) {
+  var open = html.search(/<table[^>]*max-width:\s*600px/i);
+  if (open < 0) return [];
+
+  var from = html.indexOf('>', open);
+  if (from < 0) return [];
+
+  var depth = 1;      // いま何枚の table の中にいるか
+  var rows = [];
+  var rowStart = -1;
+  var rowDepth = 0;
+  var i = from + 1;
+
+  var tag = /<(\/?)(table|tr)\b[^>]*>/gi;
+  tag.lastIndex = i;
+
+  var m;
+  while ((m = tag.exec(html)) !== null) {
+    var closing = m[1] === '/';
+    var name = m[2].toLowerCase();
+
+    if (name === 'table') {
+      depth += closing ? -1 : 1;
+      if (depth === 0) break;                 // 本文テーブルが閉じた
+    } else if (name === 'tr') {
+      if (!closing && depth === 1 && rowStart < 0) {
+        rowStart = m.index;
+        rowDepth = depth;
+      } else if (closing && depth === rowDepth && rowStart >= 0) {
+        rows.push({
+          start: rowStart,
+          end: m.index + m[0].length,
+          html: html.slice(rowStart, m.index + m[0].length)
+        });
+        rowStart = -1;
+      }
+    }
+  }
+
+  return rows;
+}
+
+/*
+   ボタンの段を、見出しの段のすぐ下へ動かす。
+
+   キャンペーンの告知では、read → 決める、より先に「押せる場所」を見せる
+   ほうが通りがよい。ポップだけで使う。
+
+   動かせる形になっていなければ、何もしない。壊すより、そのままのほうがいい。
+*/
+function ctaFirst(html) {
+  var rows = topRows(html);
+  if (rows.length < 3) return html;
+
+  var headingAt = -1;
+  var ctaAt = -1;
+
+  rows.forEach(function (row, i) {
+    if (headingAt < 0 && /font-size:\s*(?:[2-9]\d|1[89])px[^"]*font-weight:\s*(?:bold|[5-9]00)/i.test(row.html)) {
+      headingAt = i;
+    }
+    if (ctaAt < 0 && /display:\s*(?:inline-)?block[^"]*text-decoration:\s*none/i.test(row.html)) {
+      ctaAt = i;
+    }
+  });
+
+  // 見出しが無い、ボタンが無い、すでに直後にある、なら触らない
+  if (headingAt < 0 || ctaAt < 0) return html;
+  if (ctaAt <= headingAt + 1) return html;
+
+  var cta = rows[ctaAt];
+  var anchor = rows[headingAt];
+
+  // 後ろから先に切る。前を切ると、後ろの位置がずれる
+  var out = html.slice(0, cta.start) + html.slice(cta.end);
+  return out.slice(0, anchor.end) + '\n' + cta.html + out.slice(anchor.end);
+}
+
 function findTheme(key) {
   for (var i = 0; i < THEMES.length; i++) {
     if (THEMES[i].key === key) return THEMES[i];
@@ -269,16 +426,26 @@ function scalePx(value, factor, min) {
  * @param {string} key  ジャンルの key
  * @return {string}
  */
-function applyTheme(html, key) {
+function pickAccent(theme, accentKey) {
+  for (var i = 0; i < theme.accents.length; i++) {
+    if (theme.accents[i].key === accentKey) return theme.accents[i];
+  }
+  return theme.accents[0];
+}
+
+function applyTheme(html, key, accentKey) {
   var theme = findTheme(key);
-  if (!theme || theme.key === 'business') return String(html);
+  if (!theme) return String(html);
+
+  var chosen = pickAccent(theme, accentKey);
+  var colors = accentColors(chosen.base, theme.tint);
 
   var out = String(html);
 
   // --- 色。大文字で書かれていることもあるので両方見る ---
-  Object.keys(theme.colors).forEach(function (from) {
-    out = out.split(from).join(theme.colors[from]);
-    out = out.split(from.toUpperCase()).join(theme.colors[from]);
+  Object.keys(colors).forEach(function (from) {
+    out = out.split(from).join(colors[from]);
+    out = out.split(from.toUpperCase()).join(colors[from]);
   });
 
   // --- 文字の大きさ。見出しは別倍率 ---
@@ -304,10 +471,7 @@ function applyTheme(html, key) {
      いるので、先に normal へ変えてしまうと、そのあとでは見つけられない。
      フォーマルだけ組み方が効かない、という形で出た。
   */
-  var accent = theme.colors['#1a73e8'] || '#1a73e8';
-  var line = theme.colors['#e5e7eb'] || '#e5e7eb';
-
-  out = dressHeading(out, theme, accent, line);
+  out = dressHeading(out, theme, colors['#1a73e8'], colors['#e5e7eb']);
 
   // --- 見出しの太さと字間 ---
   if (theme.headingWeight !== 'bold' || theme.headingSpacing) {
@@ -386,6 +550,10 @@ function applyTheme(html, key) {
      なので、先に block へ変えてしまうと、そのあとでは見つけられない。
   */
   if (theme.buttonWidth === 'full') out = widenButton(out);
+
+  // --- 段組みと並び順。組み方を変えるので、いちばん最後 ---
+  if (theme.columns === 'stack') out = stackColumns(out);
+  if (theme.order === 'cta-first') out = ctaFirst(out);
 
   return out;
 }
