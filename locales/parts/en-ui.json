@@ -290,5 +290,11 @@
   "お知らせページ": "Announcement page",
   "記事ページ": "Article page",
   "プロンプトをコピー": "Copy the prompt",
-  "自分のテンプレート": "My templates"
+  "自分のテンプレート": "My templates",
+  "px）": "px)",
+  "：": ": ",
+  "「": "“",
+  "〜": "–",
+  "（": " (",
+  "）": ")"
 }

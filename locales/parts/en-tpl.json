@@ -342,5 +342,11 @@
   "上半分。濃い色に白抜き": "Top half: reversed out of a dark fill",
   "下半分。白地に本文": "Bottom half: body text on white",
   "1手順ぶん。番号の丸は正方形のセルで作る（Outlookは角丸を無視するため）": "One step. The number sits in a square cell — Outlook ignores the radius",
-  "宿題": "Actions"
+  "宿題": "Actions",
+  "TEL: 00-0000-0000　MAIL: sample@example.com": "Tel +0 000 000 0000  ·  hello@example.com",
+  "TEL: 00-0000-0000　／　https://example.com": "+0 000 000 0000  ·  example.com",
+  "株式会社サンプル　営業部": "Sample Company — Sales",
+  "山田 太郎": "Jordan Taylor",
+  "〒000-0000": "",
+  "〇〇、〇〇、〇〇": "One, two, three"
 }

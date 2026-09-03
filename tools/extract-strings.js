@@ -23,7 +23,9 @@ const root = path.join(__dirname, '..');
 const src = path.join(root, 'src');
 const read = (name) => fs.readFileSync(path.join(src, name), 'utf8');
 
-const JP = /[぀-ヿ㐀-䶿一-鿿ｦ-ﾟ]/;
+// 全角の記号と句読点も日本語として扱う。「TEL: 0-0　／　https://…」のような
+// 行は、記号だけが日本語で、見落とすと英語版に残る
+const JP = /[　-〿぀-ヿ㐀-䶿一-鿿！-｠ｦ-ﾟ]/;
 const hasJp = (s) => JP.test(s);
 
 const found = new Map();   // 文言 → どこで見つけたか

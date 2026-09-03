@@ -11,5 +11,6 @@
       "switchLabel": "Language",
       "font": "-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif"
     }
-  }
+  },
+  "fallback": "en"
 }

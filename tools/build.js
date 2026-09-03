@@ -44,7 +44,9 @@ const imageBase = config.imageBase || '/img/';
 
 const locales = JSON.parse(fs.readFileSync(path.join(root, 'locales', 'index.json'), 'utf8'));
 
-const JP = /[぀-ヿ㐀-䶿一-鿿ｦ-ﾟ]/;
+// 全角の記号と句読点も日本語として扱う。「TEL: 0-0　／　https://…」のような
+// 行は、記号だけが日本語で、見落とすと英語版に残る
+const JP = /[　-〿぀-ヿ㐀-䶿一-鿿！-｠ｦ-ﾟ]/;
 
 // ---------------------------------------------------------------------------
 // 差し替え
@@ -201,7 +203,8 @@ const BOOT = `<script>
 function languageMenu(lang, meta) {
   const options = Object.keys(locales.languages).map((key) => {
     const to = key === locales.default ? '/' : '/' + key + '/';
-    return '<option value="' + to + '"' + (key === lang ? ' selected' : '') + '>'
+    return '<option value="' + to + '" data-lang="' + key + '"'
+      + (key === lang ? ' selected' : '') + '>'
       + locales.languages[key].name + '</option>';
   }).join('');
 
@@ -211,13 +214,76 @@ function languageMenu(lang, meta) {
     + '  pick.className = \'lang-pick\';\n'
     + '  pick.setAttribute(\'aria-label\', ' + JSON.stringify(meta.switchLabel) + ');\n'
     + '  pick.innerHTML = ' + JSON.stringify(options) + ';\n'
-    + '  pick.addEventListener(\'change\', function () { location.href = pick.value; });\n'
+    + '  pick.addEventListener(\'change\', function () {\n'
+    // 自分で選んだ言語は覚える。次からは自動判定を止める
+    + '    try { localStorage.setItem(\'html-editor:lang\', pick.selectedOptions[0].dataset.lang); } catch (e) {}\n'
+    + '    location.href = pick.value;\n'
+    + '  });\n'
     + '\n'
     + '  var status = document.getElementById(\'status\');\n'
     + '  if (status && status.parentNode) status.parentNode.insertBefore(pick, status);\n'
     + '  else document.querySelector(\'header\').appendChild(pick);\n'
     + '});\n'
     + '</script>\n';
+}
+
+/*
+   開いた人の言語で振り分ける。既定の言語のページにだけ入れる。
+
+   気をつけること。
+
+   ・**自分で選んだ言語を上書きしない。** 日本語版を見たいドイツの人が
+     切り替えても、次に開いたとき英語へ飛ばされては使えない。
+   ・**飛ばすのは1回だけ。** 行き先のページには入れないので、往復しない。
+   ・**判断は <head> で。** 画面が組み上がる前に決めるので、既定の言語が
+     一瞬見えることはない。
+   ・検索避けにはしない。<link rel="alternate" hreflang> を併記して、
+     どの言語版があるかを検索側にも伝える。
+*/
+function autoLanguage(known, here, fallback) {
+  return '<script>\n'
+    + '(function () {\n'
+    + '  var known = ' + JSON.stringify(known) + ';\n'
+    + '  var here = ' + JSON.stringify(here) + ';\n'
+    + '  var fallback = ' + JSON.stringify(fallback) + ';\n'
+    + '\n'
+    + '  function go(tag) { if (tag !== here) location.replace("/" + tag + "/"); }\n'
+    + '\n'
+    + '  // 自分で選んだ言語があれば、それに従う。判定より優先する\n'
+    + '  try {\n'
+    + '    var picked = localStorage.getItem(\'html-editor:lang\');\n'
+    + '    if (picked) { go(picked); return; }\n'
+    + '  } catch (e) { /* 保存が使えない環境。判定を続ける */ }\n'
+    + '\n'
+    + '  var want = (navigator.languages || [navigator.language || ""]);\n'
+    + '\n'
+    + '  for (var i = 0; i < want.length; i++) {\n'
+    + '    var tag = String(want[i]).toLowerCase().split("-")[0];\n'
+    + '    if (tag === here) return;\n'                                   // 既定の言語でよい
+    + '    if (known.indexOf(tag) >= 0) { go(tag); return; }\n'
+    + '  }\n'
+    + '\n'
+    + '  /*\n'
+    + '     どれにも当てはまらなかったとき。\n'
+    + '\n'
+    + '     一覧に日本語が1つも無いなら、その人は日本語を読まない。\n'
+    + '     読めない言語を出すより、英語を出したほうがまだ届く。\n'
+    + '  */\n'
+    + '  for (var j = 0; j < want.length; j++) {\n'
+    + '    if (String(want[j]).toLowerCase().split("-")[0] === here) return;\n'
+    + '  }\n'
+    + '  go(fallback);\n'
+    + '})();\n'
+    + '</script>\n';
+}
+
+/** どの言語版があるかを、検索側にも伝える */
+function alternates() {
+  return Object.keys(locales.languages).map((key) => {
+    const to = key === locales.default ? '/' : '/' + key + '/';
+    return '<link rel="alternate" hreflang="' + key + '" href="' + to + '" />';
+  }).join('\n')
+    + '\n<link rel="alternate" hreflang="x-default" href="/" />\n';
 }
 
 // ---------------------------------------------------------------------------
@@ -271,9 +337,18 @@ function buildLocale(lang, meta) {
     .replace("<?!= include('Stylesheet'); ?>", read('Stylesheet.html') + HIDE)
     .replace("<?!= include('JavaScript'); ?>", store + code(read('JavaScript.html'), t));
 
+  /*
+     振り分けは既定の言語のページにだけ入れる。
+     行き先にも入れると、選んだ言語から弾き返されて往復する。
+  */
+  const others = Object.keys(locales.languages).filter((k) => k !== locales.default);
+  const auto = lang === locales.default
+    ? autoLanguage(others, locales.default, locales.fallback || others[0] || locales.default)
+    : '';
+
   html = html
     .replace('<html lang="ja">', '<html lang="' + lang + '">')
-    .replace('<head>', '<head>\n' + BOOT + languageMenu(lang, meta));
+    .replace('<head>', '<head>\n' + alternates() + auto + BOOT + languageMenu(lang, meta));
 
   return { html, missing: t.missing, size: Object.keys(dict).length };
 }
