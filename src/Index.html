@@ -453,41 +453,40 @@
           <h2 id="gmail-title">メールにする</h2>
           <button id="gmail-cancel" class="icon-only" title="閉じる" aria-label="閉じる"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6"/></svg></button>
         </div>
-        <p>本文をコピーして、メールの作成画面に貼り付けます。送信は行いません。</p>
-
-        <ol class="ai-steps">
-          <li><b>本文をコピー</b><span>下のボタンで写します</span></li>
-          <li><b>作成画面を開く</b><span>GmailかOutlookを選びます</span></li>
-          <li><b>貼り付ける</b><span>Ctrl + V（Macは ⌘ + V）</span></li>
-        </ol>
 
         <div class="field">
           <label for="gmail-subject">件名</label>
           <input id="gmail-subject" type="text" autocomplete="off" />
-          <span class="field-note">プレビュー上部の「件名」と連動します。ここで直すと本文側にも反映されます。</span>
         </div>
+
         <div class="field">
-          <label for="gmail-to">宛先（空欄のままでも作成できます）</label>
-          <input id="gmail-to" type="text" placeholder="taro@example.com, hanako@example.com" autocomplete="off" />
+          <label for="gmail-to">宛先</label>
+          <input id="gmail-to" type="text" placeholder="空欄のままでも構いません" autocomplete="off" />
+        </div>
+
+        <div class="opt-group">
+          <span class="opt-label">Webメールで送る</span>
+          <p class="opt-hint">本文をコピーして作成画面を開きます。Ctrl + V で貼り付けてください。</p>
+          <div class="opt-row">
+            <button id="gmail-gmail"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><rect x="1.4" y="3.4" width="13.2" height="9.2" rx="1.3" fill="#ea4335"/><path d="M3.2 5.5v5.3h1.8V8L8 10.2 11 8v2.8h1.8V5.5L8 8.9z" fill="#ffffff"/></svg>Gmail</button>
+            <button id="gmail-outlook"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><rect x="1.4" y="3.4" width="13.2" height="9.2" rx="1.3" fill="#0f6cbd"/><ellipse cx="6.1" cy="8" rx="2.5" ry="3" fill="none" stroke="#ffffff" stroke-width="1.5"/><path d="M10 5.6h3.5v4.8H10z" fill="#ffffff" opacity=".8"/></svg>Outlook</button>
+          </div>
+        </div>
+
+        <div class="opt-group">
+          <span class="opt-label">ほかの方法</span>
+          <div class="opt-row">
+            <button id="gmail-eml"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8"/><path d="M5 7.2L8 10.2l3-3"/><path d="M2.8 11.4v1.2a1 1 0 001 1h8.4a1 1 0 001-1v-1.2"/></svg>ファイルに書き出す</button>
+            <button id="gmail-copy"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5.6" y="2.6" width="7.8" height="9.6" rx="1"/><path d="M10.4 12.2v1.2a1 1 0 01-1 1H3.6a1 1 0 01-1-1V5.6a1 1 0 011-1h1.2"/></svg>本文だけコピー</button>
+          </div>
         </div>
 
         <p id="gmail-note" class="note" hidden></p>
 
-        <p class="field-note">
-          GmailとOutlookのWeb版には、ファイルから下書きを作る機能がありません。
-          自動では入らないので、貼り付けが要ります。
-        </p>
-
-        <div class="dialog-actions">
-          <button id="gmail-eml"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8"/><path d="M5 7.2L8 10.2l3-3"/><path d="M2.8 11.4v1.2a1 1 0 001 1h8.4a1 1 0 001-1v-1.2"/></svg>ファイルに書き出す</button>
-          <button id="gmail-outlook"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><rect x="1.4" y="3.4" width="13.2" height="9.2" rx="1.3" fill="#0f6cbd"/><ellipse cx="6.1" cy="8" rx="2.5" ry="3" fill="none" stroke="#ffffff" stroke-width="1.5"/><path d="M10 5.6h3.5v4.8H10z" fill="#ffffff" opacity=".8"/></svg>Outlook</button>
-          <button id="gmail-gmail"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><rect x="1.4" y="3.4" width="13.2" height="9.2" rx="1.3" fill="#ea4335"/><path d="M3.2 5.5v5.3h1.8V8L8 10.2 11 8v2.8h1.8V5.5L8 8.9z" fill="#ffffff"/></svg>Gmail</button>
-          <button id="gmail-copy" class="primary"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5.6" y="2.6" width="7.8" height="9.6" rx="1"/><path d="M10.4 12.2v1.2a1 1 0 01-1 1H3.6a1 1 0 01-1-1V5.6a1 1 0 011-1h1.2"/></svg>本文をコピー</button>
-        </div>
+        <p class="dialog-foot"><span>送信はしません</span><a href="manual.html#send" target="_blank" rel="noopener">使い方</a></p>
       </div>
     </div>
 
-    <!-- Webページ用の書き出し -->
     <div id="web-modal" class="backdrop" hidden>
       <div class="dialog dialog-wide" role="dialog" aria-modal="true" aria-labelledby="web-title">
         <div class="dialog-head">

@@ -1506,6 +1506,55 @@
   .dialog-head h2 { flex: 1 1 auto; min-width: 0; }
   .dialog-head button { flex: none; margin-right: -4px; }
 
+  /*
+     行き先ごとのまとまり。
+
+     手順を1・2・3と並べるのをやめ、行き先で束ねた。GmailとOutlookは
+     「開いてから貼り付ける」という同じ一文を共有しているので、
+     まとまりの見出しの下に一度書けば足りる。手順ごとに書くと、
+     同じことが3か所に散る。
+  */
+  .opt-group { display: flex; flex-direction: column; gap: 7px; }
+
+  .opt-label {
+    color: var(--faint);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .04em;
+  }
+
+  .opt-hint {
+    margin: -2px 0 1px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.7;
+  }
+
+  .opt-row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  /*
+     行き先はどれも等しく押せるので、4つとも同じ面を持たせる。
+
+     面の有無で差をつけると、地のままの方が「押せない文字」に見える。
+     どれを選ぶかの案内は、まとまりの見出しと説明文が担う。
+  */
+  .opt-row button { padding: 7px 13px; background: var(--sunken); }
+
+  /*
+     窓の締め。不安を消す一文と、詳しい説明への導線だけを置く。
+     説明そのものは、読んだ結果やることが変わらないのでマニュアルへ移した。
+  */
+  .dialog-foot {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin: 0;
+    color: var(--faint);
+    font-size: 11.5px;
+  }
+
+  .dialog-foot a { margin-left: auto; color: var(--accent); }
+
   .dialog h2 { margin: 0; font-size: 17px; }
 
   .dialog > p {

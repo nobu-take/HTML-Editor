@@ -151,10 +151,8 @@
   "同じ内容で新しく作る": "Create a new one with the same content",
   "保存した過去の状態へ": "Back to an earlier saved state",
   "Gmailの下書きにする": "Export for your mail app",
-  "宛先（空欄のままでも作成できます）": "To (you can leave this empty)",
   "差し込み用の記号などは、そのまま配信システムに渡ります。": "Merge tags are passed through to your sending platform untouched.",
   "保存するときのファイル名です。メールの件名はプレビュー上部の「件名」に入力してください。": "This is the file name. The email subject goes in the Subject field above the preview.",
-  "プレビュー上部の「件名」と連動します。ここで直すと本文側にも反映されます。": "Tied to the Subject field above the preview. Changing it here changes it there too.",
   "用途や配信先で分類しておくと、左の一覧をタグで絞り込めます。カンマ区切りで複数指定できます。": "Tag by purpose or audience and you can filter the list on the left. Separate several with commas.",
   "タグ（例: キャンペーン, 定期便）": "Tags (e.g. campaign, newsletter)",
   "ファイル名で絞り込み": "Filter by file name",
@@ -276,5 +274,13 @@
   "株式会社サンプル　営業部<br />": "Sample Company, Sales Team<br />",
   "山田 太郎<br />": "Jordan Taylor<br />",
   "を開きました。作成画面で貼り付けてください（Ctrl + V）。まだコピーしていなければ、先に「本文をコピー」を押してください。": " opened. Paste the body into the compose window (Ctrl + V). If you have not copied it yet, press Copy the body first.",
-  "を開きました。本文はコピー済みです。作成画面で貼り付けてください（Ctrl + V）。": " opened. The body is already copied — paste it into the compose window (Ctrl + V)."
+  "本文をコピーして作成画面を開きます。Ctrl + V で貼り付けてください。": "The body is copied and a compose window opens. Paste it with Ctrl + V.",
+  "を開きました。本文はコピー済みです。": " opened. The body is already copied.",
+  "空欄のままでも構いません": "You can leave this empty",
+  "Webメールで送る": "Send with webmail",
+  "本文だけコピー": "Copy the body only",
+  "送信はしません": "Nothing is sent",
+  "ほかの方法": "Other ways",
+  "使い方": "How to use it",
+  "宛先": "To"
 }

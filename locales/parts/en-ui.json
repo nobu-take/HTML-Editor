@@ -328,14 +328,6 @@
   "メールの件名（書き出しや作成画面にそのまま渡ります）": "Subject line (passed straight to the file or the compose window)",
   "ブラウザがコピーを許可していない可能性があります。": "Your browser may be blocking clipboard access.",
   "この環境では使えません": "Not available in this browser",
-  "本文をコピーして、メールの作成画面に貼り付けます。送信は行いません。": "Copy the body, then paste it into your mail compose window. Nothing is sent.",
-  "GmailとOutlookのWeb版には、ファイルから下書きを作る機能がありません。\n          自動では入らないので、貼り付けが要ります。": "Neither Gmail nor Outlook on the web can turn a file into a draft, so nothing arrives automatically — you paste it in.",
-  "本文をコピー": "Copy the body",
-  "下のボタンで写します": "Use the button below",
-  "作成画面を開く": "Open a compose window",
-  "GmailかOutlookを選びます": "Gmail or Outlook",
-  "貼り付ける": "Paste it",
-  "Ctrl + V（Macは ⌘ + V）": "Ctrl + V (⌘ + V on a Mac)",
   "本文をコピーしました": "Body copied",
   "本文をコピーしました。作成画面を開いて貼り付けてください（Ctrl + V）。": "Body copied. Open a compose window and paste it in (Ctrl + V)."
 }
