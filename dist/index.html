@@ -4767,7 +4767,7 @@ function applyTheme(html, key, accentKey) {
         removeSelected();
       }
       if ((event.ctrlKey || event.metaKey) && event.key === 'z' && state.view !== 'code') {
-        if (document.activeElement === el.subject) return;
+        if (!keysAreOurs()) return;
         event.preventDefault();
         undoWys();
       }
@@ -7253,9 +7253,14 @@ function applyTheme(html, key, accentKey) {
    * 文字を打てる状態のときは必ず false。編集中の Delete は文字を消すためのもので、
    * ここで要素を消すと「本文を消そうとしたら枠ごと消えた」という事故になる。
    */
-  function canDeleteByKey() {
-    if (!wys.selected || wys.editing) return false;
-
+  /**
+   * いま押されたキーを、画面側で受け取ってよいか。
+   *
+   * 入力欄の中や、ダイアログが開いているあいだは受け取らない。
+   * 横取りすると、その欄で使えるはずの操作が効かなくなる。実際、
+   * 署名の編集で Ctrl+Z / Ctrl+Shift+Z が効かなかった。
+   */
+  function keysAreOurs() {
     var active = document.activeElement;
     var tag = active ? active.tagName : '';
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return false;
@@ -7266,6 +7271,11 @@ function applyTheme(html, key, accentKey) {
     if (document.querySelector('.backdrop:not([hidden])')) return false;
 
     return true;
+  }
+
+  function canDeleteByKey() {
+    if (!wys.selected || wys.editing) return false;
+    return keysAreOurs();
   }
 
   /**
@@ -7318,47 +7328,24 @@ function applyTheme(html, key, accentKey) {
     setStatus(label + 'を削除しました' + left + '。Ctrl + Z で取り消せます', 'ok');
   }
 
-  /**
-   * その要素が、それ自体で何かを描いているか。
-   *
-   * 背景か罫線があれば、中身が空でも画面には出る。余白しか持たない
-   * 要素は、空になると何も見えない。
-   */
-  function drawsSomething(elem) {
-    var win = elem.ownerDocument && elem.ownerDocument.defaultView;
-    if (!win || !win.getComputedStyle) return false;
-
-    var style = win.getComputedStyle(elem);
-
-    if (style.backgroundImage && style.backgroundImage !== 'none') return true;
-
-    var bg = style.backgroundColor || '';
-    if (bg && bg !== 'transparent' && !/^rgba\(0,\s*0,\s*0,\s*0\)$/.test(bg)) return true;
-
-    return ['Top', 'Right', 'Bottom', 'Left'].some(function (side) {
-      return style['border' + side + 'Style'] !== 'none'
-        && parseFloat(style['border' + side + 'Width']) > 0;
-    });
-  }
 
   /**
-   * 中身が無くなった行を、見えなくなる場合だけ片付ける。
+   * 枠がひとつも残らなかった行を片付ける。
    *
-   * ---------------------------------------------------------------------
-   * なぜ「見えなくなる場合だけ」なのか
+   * -------------------------------------------------------------------------
+   * どこまで消すか
    *
-   * 直したかったのは、コードに残るのにプレビューには出ない行だった。
-   * 色の帯のように面を持つ枠は td の単位で選ばれるので、消すと
-   * <tr></tr> だけが残る。これは画面に出ないので、見えているものと
-   * 書き出されるものが食い違う。
+   * 直したいのは「枠ごと無くなって <tr></tr> だけが残る」場合だけ。
+   * 面を持つ枠（色の帯など）は td の単位で選ばれるので、消すと枠が
+   * ひとつも無い行が残る。これは画面に何も出さず、選ぶこともできない。
+   * コードにだけ残るので、見えているものと書き出されるものが食い違う。
    *
-   * 一方、罫線を持つ枠（署名の上の区切り線など）は、中身が空になっても
-   * 線として画面に残る。こちらは食い違いが起きていない。それでも行ごと
-   * 消すと、消すよう頼まれていない区切り線まで無くなる。**残っていれば
-   * 見えるので、消すかどうかは選んでもらえばよい。**
+   * **枠が残っているなら消さない。** 中身が空でも、余白として場所を占め、
+   * 選ぶこともできる。食い違いは起きていない。消すよう頼まれたのは中身で
+   * あって、枠ではない。空いた枠に別のものを入れたい、という使い方もある。
    *
-   * td を単体で消さないのは、段組みが崩れるため。2カラムの片方だけが
-   * 無くなると、残った側の幅が変わる。
+   * 一度これを「背景も罫線も無ければ消す」という条件にして、署名として
+   * 挿し込んだ枠（padding しか持たない）を、中身を消しただけで失わせた。
    *
    * @param {Element} host 消した要素が入っていた親
    * @return {boolean} 行を片付けたか
@@ -7368,15 +7355,7 @@ function applyTheme(html, key, accentKey) {
 
     while (node && node.parentElement) {
       if (node.tagName === 'TR') {
-        var alive = Array.prototype.some.call(node.cells, function (cell) {
-          return (cell.textContent || '').trim()
-            || cell.querySelector('img, hr, table, iframe');
-        });
-        if (alive) return false;
-
-        // 何かを描いている行や枠は、空でも見える。残して選んでもらう
-        if (drawsSomething(node)) return false;
-        if (Array.prototype.some.call(node.cells, drawsSomething)) return false;
+        if (node.cells.length) return false;
 
         // 行がひとつだけの表は、消すと器が無くなる
         var table = node.closest ? node.closest('table') : null;
