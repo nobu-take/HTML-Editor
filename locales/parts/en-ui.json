@@ -339,7 +339,5 @@
   "貼り付ける": "Paste it",
   "Ctrl + V（Macは ⌘ + V）": "Ctrl + V (⌘ + V on a Mac)",
   "本文をコピーしました": "Body copied",
-  "本文をコピーしました。作成画面を開いて貼り付けてください（Ctrl + V）。": "Body copied. Open a compose window and paste it in (Ctrl + V).",
-  "を開きました。作成画面で貼り付けてください（Ctrl + V）。": " opened. Paste the body into the compose window (Ctrl + V).",
-  "まだコピーしていなければ、先に「本文をコピー」を押してください。": "If you have not copied it yet, press Copy the body first."
+  "本文をコピーしました。作成画面を開いて貼り付けてください（Ctrl + V）。": "Body copied. Open a compose window and paste it in (Ctrl + V)."
 }

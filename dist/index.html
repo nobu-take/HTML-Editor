@@ -1544,6 +1544,18 @@ window.addEventListener('DOMContentLoaded', function () {
     border-radius: 12px;
     background: var(--panel);
     box-shadow: var(--lift-strong);
+
+    /*
+       高さが足りないときは、ダイアログの中でスクロールさせる。
+
+       これが無いと、max-height で枠は縮むのに中身は縮まないので
+       （flexの子は既定で内容より小さくならない）、下から溢れる。
+       いちばん下にある操作ボタンが画面の外に出て、押せなくなる。
+       ノートPCの縦768pxでもブラウザのUIを引くと600px台になるので、
+       珍しい状況ではない。
+    */
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .dialog-wide { width: min(880px, 100%); }
@@ -1567,9 +1579,29 @@ window.addEventListener('DOMContentLoaded', function () {
 
   .dialog-actions {
     display: flex;
+    /*
+       折り返せるようにする。メールのダイアログは操作が5つあり、
+       語の長い言語では400px幅に1行で収まらない。折り返さないと
+       左端が枠の外に出て、ボタンが切れる。
+    */
+    flex-wrap: wrap;
     justify-content: flex-end;
     gap: 5px;
     margin-top: auto;
+
+    /*
+       スクロールしても操作ボタンは常に見えるようにする。
+       スクロールできること自体に気づかず「壊れている」と受け取られるため。
+
+       下の余白22pxはダイアログのpaddingぶん。ここで自分で持ち直して、
+       同じ位置に貼り付けている。
+    */
+    position: sticky;
+    bottom: -22px;
+    margin-bottom: -22px;
+    padding-top: 10px;
+    padding-bottom: 22px;
+    background: var(--panel);
   }
 
   .note {
@@ -1579,7 +1611,13 @@ window.addEventListener('DOMContentLoaded', function () {
     color: var(--accent-ink);
     font-size: 13px;
     line-height: 1.8;
-    word-break: break-all;
+
+    /*
+       長いURLをはみ出させないための指定。break-all にすると英単語まで
+       途中で割れて "Copy the bo dy" のようになるので、必要なときだけ
+       割る anywhere を使う。日本語は既定でどこでも折り返せる。
+    */
+    overflow-wrap: anywhere;
   }
 
   .note[hidden] { display: none; }
@@ -1848,9 +1886,18 @@ window.addEventListener('DOMContentLoaded', function () {
 
   .ai-explain b { color: var(--text); }
 
+  /*
+     手順は縦に並べる。
+
+     横3列にすると、400pxのダイアログでは1列あたり100px弱しか取れない。
+     日本語の「本文をコピー」は収まっても、英語の "Copy the body" は
+     3行に折れて読めなくなる。語の長さは言語で変わるので、横並びは
+     どの言語でも安全とは言えない。
+  */
   .ai-steps {
     display: flex;
-    gap: 24px;
+    flex-direction: column;
+    gap: 7px;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -1858,10 +1905,10 @@ window.addEventListener('DOMContentLoaded', function () {
   }
 
   .ai-steps li {
-    flex: 1 1 0;
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
-    gap: 8px;
+    gap: 2px 8px;
     counter-increment: ai;
     font-size: 13px;
   }
@@ -1874,8 +1921,15 @@ window.addEventListener('DOMContentLoaded', function () {
     font-weight: 700;
   }
 
+  .ai-steps b { flex: none; }
+
+  /*
+     説明は見出しの後ろに続け、余った幅いっぱいを使う。
+     入りきらないときだけ、この中で折り返る。
+  */
   .ai-steps span {
-    display: block;
+    flex: 1 1 auto;
+    min-width: 0;
     color: var(--faint);
     font-size: 11.5px;
     line-height: 1.6;
@@ -10017,8 +10071,14 @@ function applyTheme(html, key, accentKey) {
     window.open(service.url(el['gmail-to'].value, el['gmail-subject'].value),
       '_blank', 'noopener');
 
-    showNote(service.name + 'を開きました。作成画面で貼り付けてください（Ctrl + V）。'
-      + 'まだコピーしていなければ、先に「本文をコピー」を押してください。');
+    /*
+       2文をつなげず、ひとつの文言として持つ。
+
+       日本語は文と文のあいだに空白が要らないので、分けて連結すると
+       その形のまま英語にも出て「(Ctrl + V).If you have not」と詰まる。
+       区切りは言語ごとに違うので、言語ごとに全文を持たせる。
+    */
+    showNote(service.name + 'を開きました。作成画面で貼り付けてください（Ctrl + V）。まだコピーしていなければ、先に「本文をコピー」を押してください。');
   }
 
   /** 非同期の道。text/html として載せる */

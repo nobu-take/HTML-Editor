@@ -6275,8 +6275,14 @@
     window.open(service.url(el['gmail-to'].value, el['gmail-subject'].value),
       '_blank', 'noopener');
 
-    showNote(service.name + 'を開きました。作成画面で貼り付けてください（Ctrl + V）。'
-      + 'まだコピーしていなければ、先に「本文をコピー」を押してください。');
+    /*
+       2文をつなげず、ひとつの文言として持つ。
+
+       日本語は文と文のあいだに空白が要らないので、分けて連結すると
+       その形のまま英語にも出て「(Ctrl + V).If you have not」と詰まる。
+       区切りは言語ごとに違うので、言語ごとに全文を持たせる。
+    */
+    showNote(service.name + 'を開きました。作成画面で貼り付けてください（Ctrl + V）。まだコピーしていなければ、先に「本文をコピー」を押してください。');
   }
 
   /** 非同期の道。text/html として載せる */
