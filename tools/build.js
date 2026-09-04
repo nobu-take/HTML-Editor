@@ -154,13 +154,6 @@ function code(js, t) {
 
 const HIDE = `
 <style>
-  /* 保存先はこのブラウザの中なので、フォルダを開く・設定する入口は無い */
-  #btn-open-folder,
-  #btn-loc-settings { display: none !important; }
-
-  /* 同じ理由で、保存先を選ぶ画面ごと出さない */
-  #loc-modal { display: none !important; }
-
   /* 言語の切り替え */
   .lang-pick {
     margin-left: 6px;

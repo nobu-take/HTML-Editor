@@ -108,12 +108,10 @@
             <button id="loc-shared" class="loc-tab">共有の場所</button>
           </div>
           <div class="location-row">
-            <span id="loc-badge" class="loc-badge" hidden></span>
             <span class="spacer"></span>
-            <button id="btn-open-folder" class="icon-only" title="保存先フォルダをドライブで開く" aria-label="保存先フォルダを開く"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12.5v-9h4l1.5 2h6.5v7z"/></svg></button>
-            <button id="btn-loc-settings" class="icon-only" title="共有の保存場所を設定" aria-label="共有の保存場所を設定"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="2"/><path d="M8 1.8v1.6M8 12.6v1.6M2.8 8H1.2M14.8 8h-1.6M4.3 4.3L3.2 3.2M12.8 12.8l-1.1-1.1M4.3 11.7l-1.1 1.1M12.8 3.2l-1.1 1.1"/></svg></button>
             <button id="sidebar-hide" class="icon-only" title="一覧を隠してプレビューを広げる" aria-label="一覧を隠す"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4L4.5 8 8 12M12.5 4L9 8l3.5 4"/></svg></button>
           </div>
+
           <input id="search" type="search" placeholder="ファイル名で絞り込み" autocomplete="off" />
           <div id="tag-filter" class="tag-filter"></div>
         </div>
@@ -517,53 +515,6 @@
     </div>
 
     <!-- 保存場所の設定 -->
-    <div id="loc-modal" class="backdrop" hidden>
-      <div class="dialog dialog-wide" role="dialog" aria-modal="true" aria-labelledby="loc-title">
-        <div class="dialog-head">
-          <h2 id="loc-title">共有の保存場所</h2>
-          <button id="loc-close" class="icon-only" title="閉じる" aria-label="閉じる"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6"/></svg></button>
-        </div>
-        <p>
-          チームで原稿を共有するための保存先です。<b>共有ドライブでも、共有されたフォルダでもかまいません</b>
-          — 開ける場所ならどこでも指定できます。編集権限が無い場所は、閲覧のみとして扱います。
-        </p>
-        <p class="dialog-sub">
-          設定はご自身のアカウントにのみ保存され、他の方には影響しません。
-          マイドライブ側の保存先はこれまでどおり使えます。
-        </p>
-
-        <div id="loc-current" class="note" hidden></div>
-
-        <div class="loc-picker">
-          <div class="loc-browse">
-            <div class="field">
-              <label for="loc-drive">共有ドライブから選ぶ（参加しているもの）</label>
-              <select id="loc-drive"></select>
-            </div>
-            <div id="loc-breadcrumb" class="breadcrumb"></div>
-            <div id="loc-folders" class="loc-folders"></div>
-          </div>
-
-          <div class="loc-manual">
-            <div class="field">
-              <label for="loc-input">フォルダのURL または ID を貼り付ける</label>
-              <input id="loc-input" type="text" autocomplete="off"
-                     placeholder="https://drive.google.com/drive/folders/..." />
-              <span class="field-note">
-                ドライブでフォルダを開き、アドレスバーのURLをそのまま貼り付けてください。
-                共有ドライブのほか、マイドライブの共有フォルダや、他の方から共有されたフォルダも指定できます。
-              </span>
-            </div>
-            <div class="field-row">
-              <button id="loc-apply" class="primary">この場所に設定</button>
-              <button id="loc-clear">設定を解除</button>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
     <!-- 署名 -->
     <div id="signature-modal" class="backdrop" hidden>
       <div class="dialog dialog-wide" role="dialog" aria-modal="true" aria-labelledby="signature-title">

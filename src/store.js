@@ -1,9 +1,9 @@
 /*
    保存部。ブラウザの localStorage に置く。
 
-   画面側は google.script.run というひとつの窓口しか知らないので、
-   ここでその窓口を作って受ければ、サーバーが無くても同じように動く。
-   画面側のコードは1行も変えていない。
+   画面側はひとつの窓口しか知らない（call）。ここでその窓口を受けるので、
+   サーバーが無くても同じように動く。保存の作りを変えるときに触るのは
+   このファイルだけで済む。
 
    localStorage の性質は理解して使うこと。
      ・端末ごと、ブラウザごとに別。同期はしない
@@ -166,16 +166,6 @@
                   name: 'このブラウザの中', url: '', error: '' }
       };
     },
-
-    /*
-       保存先の設定は独立版には無い。画面のボタンもCSSで隠してある。
-       ただし窓口だけは残す。画面側は28個の名前をそのまま呼ぶので、
-       どれか1つでも欠けると、そこで例外になる。
-    */
-    setSharedFolder: function () { return api.getLocations(); },
-    clearSharedFolder: function () { return api.getLocations(); },
-    listSharedDrives: function () { return []; },
-    listChildFolders: function () { return []; },
 
     // --- ドキュメント ---
 

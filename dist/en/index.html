@@ -2301,13 +2301,6 @@ window.addEventListener('DOMContentLoaded', function () {
 </style>
 
 <style>
-  /* 保存先はこのブラウザの中なので、フォルダを開く・設定する入口は無い */
-  #btn-open-folder,
-  #btn-loc-settings { display: none !important; }
-
-  /* 同じ理由で、保存先を選ぶ画面ごと出さない */
-  #loc-modal { display: none !important; }
-
   /* 言語の切り替え */
   .lang-pick {
     margin-left: 6px;
@@ -2422,12 +2415,10 @@ window.addEventListener('DOMContentLoaded', function () {
             <button id="loc-shared" class="loc-tab">Archive</button>
           </div>
           <div class="location-row">
-            <span id="loc-badge" class="loc-badge" hidden></span>
             <span class="spacer"></span>
-            <button id="btn-open-folder" class="icon-only" title="Open the destination folder" aria-label="Open the destination folder"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12.5v-9h4l1.5 2h6.5v7z"/></svg></button>
-            <button id="btn-loc-settings" class="icon-only" title="Set the shared location" aria-label="Set the shared location"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="2"/><path d="M8 1.8v1.6M8 12.6v1.6M2.8 8H1.2M14.8 8h-1.6M4.3 4.3L3.2 3.2M12.8 12.8l-1.1-1.1M4.3 11.7l-1.1 1.1M12.8 3.2l-1.1 1.1"/></svg></button>
             <button id="sidebar-hide" class="icon-only" title="Hide the list and widen the preview" aria-label="Hide list"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4L4.5 8 8 12M12.5 4L9 8l3.5 4"/></svg></button>
           </div>
+
           <input id="search" type="search" placeholder="Filter by file name" autocomplete="off" />
           <div id="tag-filter" class="tag-filter"></div>
         </div>
@@ -2828,51 +2819,6 @@ window.addEventListener('DOMContentLoaded', function () {
     </div>
 
     <!-- 保存場所の設定 -->
-    <div id="loc-modal" class="backdrop" hidden>
-      <div class="dialog dialog-wide" role="dialog" aria-modal="true" aria-labelledby="loc-title">
-        <div class="dialog-head">
-          <h2 id="loc-title">Shared location</h2>
-          <button id="loc-close" class="icon-only" title="Close" aria-label="Close"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6"/></svg></button>
-        </div>
-        <p>
-          A location for sharing documents with your team.<b>A shared drive or a shared folder both work</b>
-           — anywhere you can open. Places you cannot edit are treated as read-only.
-        </p>
-        <p class="dialog-sub">
-          This setting is yours alone and affects nobody else.
-        </p>
-
-        <div id="loc-current" class="note" hidden></div>
-
-        <div class="loc-picker">
-          <div class="loc-browse">
-            <div class="field">
-              <label for="loc-drive">Pick a shared drive you belong to</label>
-              <select id="loc-drive"></select>
-            </div>
-            <div id="loc-breadcrumb" class="breadcrumb"></div>
-            <div id="loc-folders" class="loc-folders"></div>
-          </div>
-
-          <div class="loc-manual">
-            <div class="field">
-              <label for="loc-input">Paste a folder URL or ID</label>
-              <input id="loc-input" type="text" autocomplete="off"
-                     placeholder="https://drive.google.com/drive/folders/..." />
-              <span class="field-note">
-                Open the folder and paste the URL from the address bar.
-              </span>
-            </div>
-            <div class="field-row">
-              <button id="loc-apply" class="primary">Use this location</button>
-              <button id="loc-clear">Clear</button>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
     <!-- 署名 -->
     <div id="signature-modal" class="backdrop" hidden>
       <div class="dialog dialog-wide" role="dialog" aria-modal="true" aria-labelledby="signature-title">
@@ -2984,9 +2930,9 @@ window.addEventListener('DOMContentLoaded', function () {
 /*
    保存部。ブラウザの localStorage に置く。
 
-   画面側は google.script.run というひとつの窓口しか知らないので、
-   ここでその窓口を作って受ければ、サーバーが無くても同じように動く。
-   画面側のコードは1行も変えていない。
+   画面側はひとつの窓口しか知らない（call）。ここでその窓口を受けるので、
+   サーバーが無くても同じように動く。保存の作りを変えるときに触るのは
+   このファイルだけで済む。
 
    localStorage の性質は理解して使うこと。
      ・端末ごと、ブラウザごとに別。同期はしない
@@ -3149,16 +3095,6 @@ window.addEventListener('DOMContentLoaded', function () {
                   name: 'In this browser', url: '', error: '' }
       };
     },
-
-    /*
-       保存先の設定は独立版には無い。画面のボタンもCSSで隠してある。
-       ただし窓口だけは残す。画面側は28個の名前をそのまま呼ぶので、
-       どれか1つでも欠けると、そこで例外になる。
-    */
-    setSharedFolder: function () { return api.getLocations(); },
-    clearSharedFolder: function () { return api.getLocations(); },
-    listSharedDrives: function () { return []; },
-    listChildFolders: function () { return []; },
 
     // --- ドキュメント ---
 
@@ -4395,9 +4331,7 @@ function applyTheme(html, key, accentKey) {
   function cacheElements() {
     [
       'title', 'subject', 'tags', 'search', 'tag-filter', 'list', 'status', 'preview',
-      'loc-my', 'loc-shared', 'loc-badge', 'btn-open-folder', 'btn-loc-settings',
-      'loc-modal', 'loc-current', 'loc-drive', 'loc-breadcrumb', 'loc-folders',
-      'loc-input', 'loc-apply', 'loc-clear', 'loc-close',
+      'loc-my', 'loc-shared',
       'web-modal', 'web-headings', 'web-responsive', 'web-report', 'web-output',
       'web-copy', 'web-save', 'web-close',
       'ai-modal', 'ai-presets', 'ai-preset-body', 'ai-question', 'ai-include', 'ai-prompt', 'ai-answer',
@@ -4509,18 +4443,7 @@ function applyTheme(html, key, accentKey) {
     // 保存場所
     el['loc-my'].addEventListener('click', function () { switchLocation('my'); });
     el['loc-shared'].addEventListener('click', function () { switchLocation('shared'); });
-    el['btn-open-folder'].addEventListener('click', openStorageFolder);
-    el['btn-loc-settings'].addEventListener('click', openLocationSettings);
-    el['loc-close'].addEventListener('click', function () { hide(el['loc-modal']); });
-    el['loc-apply'].addEventListener('click', function () { applySharedFolder(el['loc-input'].value); });
-    el['loc-clear'].addEventListener('click', clearSharedFolder);
-    el['loc-drive'].addEventListener('change', function () {
-      var driveId = el['loc-drive'].value;
-      if (!driveId) return;
-      var label = el['loc-drive'].options[el['loc-drive'].selectedIndex].textContent;
-      state.browse = { driveId: driveId, path: [{ id: driveId, name: label }] };
-      loadFolders();
-    });
+
     el.web.addEventListener('click', openWebExport);
     el.ai.addEventListener('click', openAi);
 
@@ -4754,7 +4677,7 @@ function applyTheme(html, key, accentKey) {
           return;
         }
         var modalOpen = ['confirm', 'template-modal', 'history-modal', 'gmail-modal',
-          'signature-modal', 'loc-modal', 'web-modal', 'ai-modal', 'prompt-modal']
+          'signature-modal', 'web-modal', 'ai-modal', 'prompt-modal']
           .some(function (id) {
           return !el[id].hidden;
         });
@@ -4767,7 +4690,6 @@ function applyTheme(html, key, accentKey) {
         hide(el['history-modal']);
         hide(el['gmail-modal']);
         hide(el['signature-modal']);
-        hide(el['loc-modal']);
         hide(el['web-modal']);
         hide(el['ai-modal']);
         hide(el['prompt-modal']);
@@ -10081,24 +10003,6 @@ function applyTheme(html, key, accentKey) {
     el['loc-shared'].classList.toggle('active', state.location === 'shared');
     el['loc-shared'].disabled = !usable('shared');
 
-    var info = locationInfo(state.location);
-    var badge = el['loc-badge'];
-    badge.classList.remove('err');
-
-    if (info.error) {
-      badge.textContent = info.error;
-      badge.classList.add('err');
-      show(badge);
-    } else if (state.location === 'shared' && !info.canWrite) {
-      badge.textContent = 'Read-only (cannot save)';
-      show(badge);
-    } else if (state.location === 'shared' && info.name) {
-      badge.textContent = info.name;
-      show(badge);
-    } else {
-      hide(badge);
-    }
-
     // コピー・移動の相手先は常にもう一方
     var other = state.location === 'my' ? 'shared' : 'my';
     var otherLabel = other === 'my' ? 'Drafts' : 'Archive';
@@ -10128,11 +10032,6 @@ function applyTheme(html, key, accentKey) {
 
   function switchLocation(key) {
     if (state.location === key) return;
-    if (!usable(key)) {
-      openLocationSettings();
-      return;
-    }
-
     confirmDiscard(function () {
       state.location = key;
       state.id = null;
@@ -10143,44 +10042,9 @@ function applyTheme(html, key, accentKey) {
     });
   }
 
-  function openStorageFolder() {
-    var info = locationInfo(state.location);
-    if (!info.url) {
-      setStatus('Could not get the folder URL', 'err');
-      return;
-    }
-    window.open(info.url, '_blank');
-  }
 
   // --- 保存先の設定 ---------------------------------------------------------
 
-  function openLocationSettings() {
-    renderCurrentSetting();
-    el['loc-input'].value = '';
-    el['loc-folders'].textContent = '';
-    el['loc-breadcrumb'].textContent = '';
-    state.browse = { driveId: '', path: [] };
-    show(el['loc-modal']);
-
-    el['loc-drive'].textContent = '';
-    appendOption(el['loc-drive'], '', 'Loading…');
-
-    call('listSharedDrives').then(function (drives) {
-      el['loc-drive'].textContent = '';
-      if (!drives || !drives.length) {
-        appendOption(el['loc-drive'], '', 'You do not belong to any shared drives');
-        el['loc-folders'].appendChild(emptyNode(
-          'Could not list the shared drives. Paste a folder URL on the right instead.'
-        ));
-        return;
-      }
-      appendOption(el['loc-drive'], '', 'Choose a shared drive…');
-      drives.forEach(function (drive) { appendOption(el['loc-drive'], drive.id, drive.name); });
-    }, function () {
-      el['loc-drive'].textContent = '';
-      appendOption(el['loc-drive'], '', 'Could not load the list');
-    });
-  }
 
   function appendOption(select, value, label) {
     var option = document.createElement('option');
@@ -10189,153 +10053,11 @@ function applyTheme(html, key, accentKey) {
     select.appendChild(option);
   }
 
-  function renderCurrentSetting() {
-    var info = locationInfo('shared');
-    var box = el['loc-current'];
-    box.classList.remove('err');
 
-    if (!info.configured) {
-      box.textContent = 'No shared location is set.';
-      show(box);
-      return;
-    }
-    if (info.error) {
-      box.textContent = info.error;
-      box.classList.add('err');
-      show(box);
-      return;
-    }
 
-    box.textContent = 'Saving to:  ' + info.name
-      + ' (' + (info.canWrite ? 'Editable' : 'Read-only') + ')';
-    show(box);
-  }
 
-  function loadFolders() {
-    var current = state.browse.path[state.browse.path.length - 1];
-    if (!current) return;
 
-    renderBreadcrumb();
-    el['loc-folders'].textContent = '';
-    el['loc-folders'].appendChild(emptyNode('Loading…'));
 
-    call('listChildFolders', current.id).then(function (folders) {
-      renderFolders(folders || []);
-    }, function (err) {
-      el['loc-folders'].textContent = '';
-      el['loc-folders'].appendChild(emptyNode(message(err)));
-    });
-  }
-
-  function renderBreadcrumb() {
-    var bar = el['loc-breadcrumb'];
-    bar.textContent = '';
-
-    state.browse.path.forEach(function (node, index) {
-      if (index > 0) {
-        var separator = document.createElement('span');
-        separator.textContent = '›';
-        bar.appendChild(separator);
-      }
-
-      var button = document.createElement('button');
-      button.textContent = node.name;
-      button.addEventListener('click', function () {
-        state.browse.path = state.browse.path.slice(0, index + 1);
-        loadFolders();
-      });
-      bar.appendChild(button);
-    });
-  }
-
-  function renderFolders(folders) {
-    var container = el['loc-folders'];
-    container.textContent = '';
-
-    var current = state.browse.path[state.browse.path.length - 1];
-
-    // いま開いている階層そのものを選べるようにする
-    var here = document.createElement('div');
-    here.className = 'loc-folder';
-
-    var hereName = document.createElement('span');
-    hereName.className = 'name';
-    hereName.textContent = 'This folder (' + current.name + ') as the destination';
-    here.appendChild(hereName);
-    here.appendChild(smallButton('Settings', function () { applySharedFolder(current.id); }, 'primary'));
-    container.appendChild(here);
-
-    if (!folders.length) {
-      container.appendChild(emptyNode('There are no folders in here.'));
-      return;
-    }
-
-    folders.forEach(function (folder) {
-      var row = document.createElement('div');
-      row.className = 'loc-folder';
-
-      var name = document.createElement('span');
-      name.className = 'name';
-      name.textContent = '📁 ' + folder.name;
-      name.addEventListener('click', function () {
-        state.browse.path.push({ id: folder.id, name: folder.name });
-        loadFolders();
-      });
-      row.appendChild(name);
-
-      if (!folder.canWrite) {
-        var readOnly = document.createElement('span');
-        readOnly.className = 'ro';
-        readOnly.textContent = 'Read-only';
-        row.appendChild(readOnly);
-      }
-
-      row.appendChild(smallButton('Settings', function () { applySharedFolder(folder.id); }));
-      container.appendChild(row);
-    });
-  }
-
-  function applySharedFolder(input) {
-    if (!String(input || '').trim()) {
-      setStatus('Enter a folder URL or ID', 'err');
-      return;
-    }
-
-    el['loc-apply'].disabled = true;
-    call('setSharedFolder', input).then(function (locations) {
-      el['loc-apply'].disabled = false;
-      state.locations = locations || {};
-      renderCurrentSetting();
-      renderLocationBar();
-      updateButtons();
-
-      var info = locationInfo('shared');
-      setStatus(info.canWrite
-        ? 'Shared location set'
-        : 'Set (this folder is read-only)', 'ok');
-    }, function (err) {
-      el['loc-apply'].disabled = false;
-      setStatus(message(err), 'err');
-    });
-  }
-
-  function clearSharedFolder() {
-    call('clearSharedFolder').then(function (locations) {
-      state.locations = locations || {};
-      if (state.location === 'shared') {
-        state.location = 'my';
-        state.id = null;
-        newDoc(defaultHtml());
-        refreshList();
-      }
-      renderCurrentSetting();
-      renderLocationBar();
-      updateButtons();
-      setStatus('Shared location cleared', 'ok');
-    }, function (err) {
-      setStatus(message(err), 'err');
-    });
-  }
 
   // --- コピーと移動 ---------------------------------------------------------
 
