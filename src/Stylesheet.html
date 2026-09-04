@@ -714,22 +714,18 @@
     min-height: 0;
   }
 
-  .sig-simple textarea { min-height: 116px; resize: vertical; }
+  .sig-simple textarea { min-height: 96px; resize: vertical; }
 
+  /* 3行を1行にまとめた。縦を使わないほうが、窓に収まる */
   .sig-look {
     display: flex;
-    flex-direction: column;
-    gap: 7px;
-  }
-
-  .sig-look-row {
-    display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 10px;
+    gap: 6px 14px;
   }
 
   .sig-look-label {
-    flex: 0 0 68px;
+    flex: 0 0 auto;
     color: var(--faint);
     font-size: 11.5px;
   }
@@ -749,7 +745,8 @@
      原稿は白い紙なので、ここも白地で見せないと色の出方が変わる。
   */
   .sig-preview {
-    min-height: 92px;
+    min-height: 64px;
+    max-height: 132px;
     padding: 12px 14px;
     border-radius: var(--radius);
     background: #ffffff;
@@ -759,20 +756,34 @@
   .signature-form.is-raw textarea { min-height: 180px; }
 
   /*
-     縦が足りないときは、窓ごとスクロールさせる。
+     どの高さでもはみ出さないための割り当て。
 
-     途中の入れ物を縮ませてはいけない。入力欄は min-height を持っていて
-     縮まないので、枠のほうが小さくなると**枠からはみ出して下の行に重なる**。
-     画面には重なった文字だけが見え、何が起きたのか分からない。
+     題と操作ボタンは窓に固定し、**中身だけをスクロールさせる**。
+     以前は操作ボタンも中身と一緒にスクロール領域へ入っていたので、
+     縦が足りないと画面の外に出て押せなくなっていた。左の一覧も同じ。
 
      フルHDで表示倍率150%にすると、CSS上の高さは約620pxになる。
-     そこで実際に起きていた（枠 66px に対して入力欄 116px）。
+     そのくらいで起きる。珍しい環境ではない。
   */
-  #signature-modal .signature-body,
-  #signature-modal .signature-form,
-  #signature-modal .sig-simple { min-height: auto; }
+  .sig-dialog .dialog-head,
+  .sig-dialog .dialog-actions { flex: 0 0 auto; }
 
-  #signature-modal .sig-simple .field-grow { flex: 0 0 auto; }
+  .sig-dialog .signature-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .sig-dialog .signature-list { min-height: 0; }
+
+  .sig-dialog .signature-form {
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  /* 操作ボタンの左に、いま何を編集しているかを出す */
+  .sig-dialog .dialog-actions .hint { margin-right: auto; }
 
   /*
      同じことが、入力欄を縦に伸ばす他の窓でも起きる。

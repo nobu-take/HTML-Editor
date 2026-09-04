@@ -1,7 +1,6 @@
 {
   "いま開いている内容が、そのまま自分のテンプレートになります。\n              保存先はご自身のドライブで、他の方には見えません。\n              同じ名前で登録すると中身が入れ替わります。": "Whatever you have open becomes your template. It is saved in this browser and nobody else can see it. Saving under an existing name replaces it.",
   "すでにご回答いただいている場合、行き違いでお送りしている可能性がございます。\n                      その際は本メールを破棄してください。": "If you have already replied, our messages may have crossed. Please disregard this one.",
-  "この署名は、組み立てで扱えない形（表や画像など）で登録されています。\n                中身を保つため、HTMLのまま編集します。": "This signature was saved in a shape the simple editor cannot handle (a table or an image). To keep it intact, you edit the HTML directly.",
   "- bgcolor / align / cellpadding などの属性は Outlook 対策で意図的に使っています。取り除かないでください": "- The bgcolor, align and cellpadding attributes are deliberate Outlook workarounds. Do not remove them.",
   "ログイン情報は第三者へ共有しないでください。\n                      初回ログイン後、パスワードの変更をお願いいたします。": "Please do not share your login details with anyone. Change your password after your first sign-in.",
   "先日ご案内した件について、まだご回答をいただいていない方に、\n                あらためてご連絡を差し上げております。": "We are writing again to those who have not yet replied about what we sent recently.",
@@ -10,7 +9,7 @@
   "- Outlook は border-radius と max-width を無視するため、それらに依存しない見た目にする": "- Outlook ignores border-radius and max-width, so the design must not depend on them.",
   "よく使う依頼を登録しておくと、「AIに聞く」の種類として選べるようになります。登録内容はご自身のドライブに保存されます。": "Save the requests you use often and they appear as choices under Ask AI. They are stored in this browser.",
   "など）を\n          同じ意味のCSSへ置き換え、HTML5として妥当な形にします。元のファイルは変更しません。": " and so on) are replaced with equivalent CSS, producing valid HTML5. Your original file is left alone.",
-  "よく使う署名を登録しておくと、ここから選んで本文の末尾に挿入できます。登録内容はご自身のドライブに保存されます。": "Save the signatures you use often and insert them at the end of the body from here. They are stored in this browser.",
+  "この署名は、組み立てで扱えない形（表や画像など）で登録されています。中身を保つため、HTMLのまま編集します。": "This signature was saved in a shape the simple editor cannot handle (a table or an image). To keep it intact, you edit the HTML directly.",
   "保存で内容が変わるたびに1版を残します（最大30版）。復元しても直前の内容は履歴に残るため、取り消せます。": "Every save that changes the content keeps a version (up to 30). Restoring keeps the previous content in the history, so you can undo it.",
   "- ボタンは a タグではなく、table と bgcolor で作る（Outlook で色が出ないため）": "- Build buttons from a table with bgcolor, not an a tag. Outlook drops the colour otherwise.",
   "- レイアウトは table で組む（div の flex や grid は Outlook で崩れます）": "- Lay it out with tables. Flex and grid break in Outlook.",

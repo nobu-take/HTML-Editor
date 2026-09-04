@@ -764,22 +764,18 @@ window.addEventListener('DOMContentLoaded', function () {
     min-height: 0;
   }
 
-  .sig-simple textarea { min-height: 116px; resize: vertical; }
+  .sig-simple textarea { min-height: 96px; resize: vertical; }
 
+  /* 3行を1行にまとめた。縦を使わないほうが、窓に収まる */
   .sig-look {
     display: flex;
-    flex-direction: column;
-    gap: 7px;
-  }
-
-  .sig-look-row {
-    display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 10px;
+    gap: 6px 14px;
   }
 
   .sig-look-label {
-    flex: 0 0 68px;
+    flex: 0 0 auto;
     color: var(--faint);
     font-size: 11.5px;
   }
@@ -799,7 +795,8 @@ window.addEventListener('DOMContentLoaded', function () {
      原稿は白い紙なので、ここも白地で見せないと色の出方が変わる。
   */
   .sig-preview {
-    min-height: 92px;
+    min-height: 64px;
+    max-height: 132px;
     padding: 12px 14px;
     border-radius: var(--radius);
     background: #ffffff;
@@ -809,20 +806,34 @@ window.addEventListener('DOMContentLoaded', function () {
   .signature-form.is-raw textarea { min-height: 180px; }
 
   /*
-     縦が足りないときは、窓ごとスクロールさせる。
+     どの高さでもはみ出さないための割り当て。
 
-     途中の入れ物を縮ませてはいけない。入力欄は min-height を持っていて
-     縮まないので、枠のほうが小さくなると**枠からはみ出して下の行に重なる**。
-     画面には重なった文字だけが見え、何が起きたのか分からない。
+     題と操作ボタンは窓に固定し、**中身だけをスクロールさせる**。
+     以前は操作ボタンも中身と一緒にスクロール領域へ入っていたので、
+     縦が足りないと画面の外に出て押せなくなっていた。左の一覧も同じ。
 
      フルHDで表示倍率150%にすると、CSS上の高さは約620pxになる。
-     そこで実際に起きていた（枠 66px に対して入力欄 116px）。
+     そのくらいで起きる。珍しい環境ではない。
   */
-  #signature-modal .signature-body,
-  #signature-modal .signature-form,
-  #signature-modal .sig-simple { min-height: auto; }
+  .sig-dialog .dialog-head,
+  .sig-dialog .dialog-actions { flex: 0 0 auto; }
 
-  #signature-modal .sig-simple .field-grow { flex: 0 0 auto; }
+  .sig-dialog .signature-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .sig-dialog .signature-list { min-height: 0; }
+
+  .sig-dialog .signature-form {
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  /* 操作ボタンの左に、いま何を編集しているかを出す */
+  .sig-dialog .dialog-actions .hint { margin-right: auto; }
 
   /*
      同じことが、入力欄を縦に伸ばす他の窓でも起きる。
@@ -2851,12 +2862,11 @@ window.addEventListener('DOMContentLoaded', function () {
     <!-- 保存場所の設定 -->
     <!-- 署名 -->
     <div id="signature-modal" class="backdrop" hidden>
-      <div class="dialog dialog-wide" role="dialog" aria-modal="true" aria-labelledby="signature-title">
+      <div class="dialog dialog-wide sig-dialog" role="dialog" aria-modal="true" aria-labelledby="signature-title">
         <div class="dialog-head">
           <h2 id="signature-title">Signature</h2>
           <button id="signature-close" class="icon-only" title="Close" aria-label="Close"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6"/></svg></button>
         </div>
-        <p>Save the signatures you use often and insert them at the end of the body from here. They are stored in this browser.</p>
 
         <div class="signature-body">
           <div id="signature-list" class="signature-list"></div>
@@ -2868,36 +2878,30 @@ window.addEventListener('DOMContentLoaded', function () {
             </div>
 
             <div id="signature-simple" class="sig-simple">
-              <div class="field field-grow">
+              <div class="field">
                 <label for="signature-text">Body</label>
                 <textarea id="signature-text" spellcheck="false"></textarea>
                 <span class="field-note">Line breaks stay as line breaks. No tags needed.</span>
               </div>
 
               <div class="sig-look">
-                <div class="sig-look-row">
-                  <span class="sig-look-label">Text size</span>
-                  <span class="seg">
-                    <button type="button" class="choice" data-for="size" data-value="12px">S</button>
-                    <button type="button" class="choice" data-for="size" data-value="13px">Normal</button>
-                    <button type="button" class="choice" data-for="size" data-value="15px">L</button>
-                  </span>
-                </div>
+                <span class="sig-look-label">Text size</span>
+                <span class="seg">
+                  <button type="button" class="choice" data-for="size" data-value="12px">S</button>
+                  <button type="button" class="choice" data-for="size" data-value="13px">Normal</button>
+                  <button type="button" class="choice" data-for="size" data-value="15px">L</button>
+                </span>
 
-                <div class="sig-look-row">
-                  <span class="sig-look-label">Line height</span>
-                  <span class="seg">
-                    <button type="button" class="choice" data-for="height" data-value="1.5">Tight</button>
-                    <button type="button" class="choice" data-for="height" data-value="1.8">Normal</button>
-                    <button type="button" class="choice" data-for="height" data-value="2.1">Loose</button>
-                  </span>
-                </div>
+                <span class="sig-look-label">Line height</span>
+                <span class="seg">
+                  <button type="button" class="choice" data-for="height" data-value="1.5">Tight</button>
+                  <button type="button" class="choice" data-for="height" data-value="1.8">Normal</button>
+                  <button type="button" class="choice" data-for="height" data-value="2.1">Loose</button>
+                </span>
 
-                <div class="sig-look-row">
-                  <span class="sig-look-label">Text color</span>
-                  <input id="signature-color" type="color" value="#6b7280" />
-                  <span id="signature-color-value" class="sig-color-value">#6b7280</span>
-                </div>
+                <span class="sig-look-label">Text color</span>
+                <input id="signature-color" type="color" value="#6b7280" />
+                <span id="signature-color-value" class="sig-color-value">#6b7280</span>
               </div>
 
               <div class="field">
@@ -2906,28 +2910,20 @@ window.addEventListener('DOMContentLoaded', function () {
               </div>
             </div>
 
-            <div class="field field-grow" id="signature-raw-note" hidden>
-              <span class="field-note">
-                This signature was saved in a shape the simple editor cannot handle (a table or an image). To keep it intact, you edit the HTML directly.
-              </span>
-            </div>
+            <p class="field-note" id="signature-raw-note" hidden>This signature was saved in a shape the simple editor cannot handle (a table or an image). To keep it intact, you edit the HTML directly.</p>
 
             <textarea id="signature-html" spellcheck="false" hidden></textarea>
 
             <input id="signature-size" type="hidden" value="13px" />
             <input id="signature-height" type="hidden" value="1.8" />
-
-            <div class="field-row">
-              <button id="signature-save" class="primary">Save</button>
-              <button id="signature-reset">Write as new</button>
-              <span id="signature-editing" class="hint"></span>
-            </div>
           </div>
-
         </div>
 
+        <div class="dialog-actions">
+          <span id="signature-editing" class="hint"></span>
+          <button id="signature-reset">Write as new</button>
+          <button id="signature-save" class="primary">Save</button>
         </div>
-
       </div>
     </div>
 

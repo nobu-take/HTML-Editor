@@ -1,7 +1,6 @@
 {
   "いま開いている内容が、そのまま自分のテンプレートになります。\n              保存先はご自身のドライブで、他の方には見えません。\n              同じ名前で登録すると中身が入れ替わります。": "Whatever you have open becomes your template. It is saved in this browser and nobody else can see it. Saving under an existing name replaces it.",
   "よく使う依頼を登録しておくと、「AIに聞く」の種類として選べるようになります。登録内容はご自身のドライブに保存されます。": "Save the requests you use often and they appear as choices under Ask AI. They are stored in this browser.",
-  "よく使う署名を登録しておくと、ここから選んで本文の末尾に挿入できます。登録内容はご自身のドライブに保存されます。": "Save the signatures you use often and insert them at the end of the body from here. They are stored in this browser.",
   "保存で内容が変わるたびに1版を残します（最大30版）。復元しても直前の内容は履歴に残るため、取り消せます。": "Every save that changes the content keeps a version (up to 30). Restoring keeps the previous content in the history, so you can undo it.",
   "プレビュー上の要素をクリックすると、ここで詳細を編集できます。文字を含む要素はその場で書き換えられます。": "Click anything in the preview and its settings appear here. Anything with text can be rewritten in place.",
   "まだ登録された依頼はありません。右側に名前と指示を書いて「この内容で登録」を押すと、ここに並びます。": "No requests saved yet. Write a name and an instruction on the right, then press Save.",
