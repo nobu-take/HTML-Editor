@@ -504,8 +504,29 @@ window.addEventListener('DOMContentLoaded', function () {
     font-size: 12px;
   }
 
+  /*
+     作り手を示す一行。一覧の足元に置く。
+
+     ヘッダーには伸縮の余りが無く、足すと他が押し出される。ここなら
+     一覧の高さを20px弱ぶん譲るだけで済む。控えめな色にしてあるのは、
+     作業中に目を引く場所ではないため。
+  */
+  .side-foot {
+    flex: 0 0 auto;
+    padding: 8px 12px 10px;
+    font-size: 11px;
+  }
+
+  .side-foot a {
+    color: var(--faint);
+    text-decoration: none;
+  }
+
+  .side-foot a:hover { color: var(--accent-ink); text-decoration: underline; }
+
   #list {
     flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -2537,6 +2558,10 @@ window.addEventListener('DOMContentLoaded', function () {
           <div id="tag-filter" class="tag-filter"></div>
         </div>
         <div id="list"></div>
+
+        <div class="side-foot">
+          <a href="https://karuiya.org/" target="_blank" rel="noopener">Made by Karuiya</a>
+        </div>
       </aside>
 
       <button id="sidebar-show" class="rail" title="Show list" aria-label="Show list" hidden>›</button>
