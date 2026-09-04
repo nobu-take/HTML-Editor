@@ -52,7 +52,7 @@ MIT の条件で使えます。撤回はできません。** 公開時点でフ�
 
 原稿の保存先は `localStorage` です。
 
-`src/store.js` が、保存や読み出しの関数を31個まとめて持っています。
+`src/store.js` が、保存や読み出しの関数を27個まとめて持っています。
 クライアント側（`JavaScript.html`）は `call(fnName)` を呼ぶだけで、
 **その先がどこに書いているかを知りません。** 保存の作りを変えるときに
 さわるのは、この1か所だけで済みます。
@@ -447,7 +447,7 @@ AI の依頼の種類は、横に流して折り返す形をやめました。�
 
 | もの | すること |
 | --- | --- |
-| `tools/check-api.js` | クライアントが呼ぶ31個が `store.js` に揃っているか |
+| `tools/check-api.js` | クライアントが呼ぶ27個が `store.js` に揃っているか |
 | `tools/diff-genres.js` | 19通りの配色を突き合わせる（構造の壊れ、contrast） |
 | `tools/preview-genres.js` | ジャンルごとの見本を書き出す |
 | `tools/preview-accents.js` | 差し色ごとの見本を書き出す |
