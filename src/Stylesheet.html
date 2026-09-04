@@ -759,6 +759,29 @@
   .signature-form.is-raw textarea { min-height: 180px; }
 
   /*
+     縦が足りないときは、窓ごとスクロールさせる。
+
+     途中の入れ物を縮ませてはいけない。入力欄は min-height を持っていて
+     縮まないので、枠のほうが小さくなると**枠からはみ出して下の行に重なる**。
+     画面には重なった文字だけが見え、何が起きたのか分からない。
+
+     フルHDで表示倍率150%にすると、CSS上の高さは約620pxになる。
+     そこで実際に起きていた（枠 66px に対して入力欄 116px）。
+  */
+  #signature-modal .signature-body,
+  #signature-modal .signature-form,
+  #signature-modal .sig-simple { min-height: auto; }
+
+  #signature-modal .sig-simple .field-grow { flex: 0 0 auto; }
+
+  /*
+     同じことが、入力欄を縦に伸ばす他の窓でも起きる。
+
+     .field-grow は縮むが、中の入力欄は min-height を持っていて縮まない。
+     縦が足りないと枠からはみ出す。**入力欄そのものにも下限を持たせて、
+     枠と一緒に縮むようにする。**
+  */
+  /*
      display を指定した要素は、ブラウザ既定の [hidden] { display: none }
      より強い。hidden を立てても消えないので、ここで戻す。
      ボタンで同じことが起きていた（button[hidden]）。
@@ -1867,7 +1890,14 @@
   #ai-prompt,
   #ai-answer {
     flex: 1 1 auto;
-    min-height: 140px;
+    /*
+       縦が足りないときは、枠と一緒に縮む。
+
+       ここを大きいまま固定すると、枠（.field-grow）は縮むのに入力欄は
+       縮まず、枠からはみ出して下の行に重なる。フルHDで表示倍率150%の
+       とき、CSS上の高さは約620pxになり、そこで実際に起きていた。
+    */
+    min-height: 72px;
     width: 100%;
     font-family: Consolas, "SF Mono", monospace;
     font-size: 12px;
