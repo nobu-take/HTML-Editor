@@ -7832,6 +7832,61 @@ function applyTheme(html, key, accentKey) {
     return null;
   }
 
+  /*
+     「中身を持たない前提」の入れ物かどうか。
+
+     余白は高さを作るためだけの部品で、こう書かれている。
+
+       <td style="padding:0; font-size:0; line-height:0; height:24px;">&nbsp;</td>
+
+     &nbsp; は、空のセルをメールソフトが潰すのを防ぐためのもの。
+     font-size:0 と line-height:0 は、**その &nbsp; を見えなくするため**に
+     ある。飾りではなく、余白が余白であるために要る指定。
+
+     ところがそのせいで、ここへ部品を入れると中身が潰れ、左右の余白も
+     無いので枠の縁に貼り付く。**入れた本人には「重なった」ようにしか
+     見えず、文字も潰れているので編集もできない。**
+
+     文字が入っているところは触らない。中身が空白だけのときに限る。
+  */
+  function isBlankHolder(elem) {
+    if (!elem || !elem.tagName || !wys.doc) return false;
+
+    var style = wys.doc.defaultView.getComputedStyle(elem);
+    var flat = parseFloat(style.fontSize) === 0 || parseFloat(style.lineHeight) === 0;
+    if (!flat) return false;
+
+    // 中身が空白だけか。&nbsp; は空白として数える
+    var text = (elem.textContent || '').replace(/\u00a0/g, ' ').trim();
+    if (text) return false;
+
+    return !elem.querySelector('img, table, a');
+  }
+
+  /*
+     中身を入れられる状態に開く。
+
+     **黙って作り変えない。** 何が起きたかを伝えて、意図と違えば
+     取り消してもらう。署名の編集でも同じ判断をしている。
+
+     高さの指定は残す。空けたかった高さは、そのまま下限として効く。
+  */
+  function openBlankHolder(elem) {
+    // 高さを保つための &nbsp; を外す
+    Array.prototype.slice.call(elem.childNodes).forEach(function (node) {
+      if (node.nodeType !== 3) return;
+      if ((node.textContent || '').replace(/\u00a0/g, ' ').trim()) return;
+      elem.removeChild(node);
+    });
+
+    elem.style.fontSize = '';
+    elem.style.lineHeight = '';
+
+    // 左右の余白を、ほかの段と揃える
+    var pad = wys.doc.defaultView.getComputedStyle(elem).paddingLeft;
+    if (parseFloat(pad) < 8) elem.style.padding = '8px 32px 24px 32px';
+  }
+
   function insertIntoCell(html, label) {
     var target = null;
     var node = wys.selected;
@@ -7850,6 +7905,13 @@ function applyTheme(html, key, accentKey) {
 
     pushUndo();
 
+    /*
+       余白や区切り線のように「中身を持たない前提」の入れ物へ入れるときは、
+       先に開く。開かないと、中身が潰れて編集できないものができる。
+    */
+    var opened = isBlankHolder(target);
+    if (opened) openBlankHolder(target);
+
     var block = wys.doc.createElement('div');
     block.innerHTML = partInnerHtml(html);
     target.appendChild(block);
@@ -7857,7 +7919,16 @@ function applyTheme(html, key, accentKey) {
     syncFromWys();
     block.scrollIntoView({ block: 'nearest' });
     selectElement(block);
-    setStatus('「' + label + '」を選択中の枠の中に挿入しました', 'ok');
+    if (opened) {
+      /*
+         文を分けて連結しない。日本語は語順が違っても繋がるが、英語では
+         「余白を…に変えて」＋「を入れました」の形が成り立たない。
+         入れたものの名前は、あとに添える。
+      */
+      setStatus('余白を、中身を入れられる段に変えました：' + label, 'ok');
+    } else {
+      setStatus('「' + label + '」を選択中の枠の中に挿入しました', 'ok');
+    }
   }
 
   /**

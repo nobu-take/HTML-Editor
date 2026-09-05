@@ -262,5 +262,6 @@
   "選んだ範囲にリンクはありません": "There is no link in the selected text.",
   "リンクにしました": "Added the link",
   "リンクを外しました": "Removed the link",
-  "リンク先を入力してください": "Enter the address to link to."
+  "リンク先を入力してください": "Enter the address to link to.",
+  "余白を、中身を入れられる段に変えました：": "Turned the spacer into a block that can hold content:"
 }
