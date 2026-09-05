@@ -7689,9 +7689,15 @@ function applyTheme(html, key, accentKey) {
     if (back) path.push({ el: back, lv: 'backdrop' });
     path.push({ el: section, lv: 'section' });
 
-    // 段と、選んだものの間にある枠を、外側から順に
+    /*
+       段と、選んだものの間にある枠を、外側から順に。
+
+       選んでいるものが段そのものなら、そのあいだには何も無い。
+       ここで遡ると**段より外側の枠を拾ってしまい**、余白を選んだだけで
+       「段★ › 枠 › 枠 › 枠」と、内側に何も無いのに枠が並んでいた。
+    */
     var boxes = [];
-    var node = unit.el.parentElement;
+    var node = (unit.el === section) ? null : unit.el.parentElement;
 
     while (node && node !== section) {
       if (hasSurface(node)) boxes.unshift({ el: node, lv: 'panel' });
@@ -7977,7 +7983,21 @@ function applyTheme(html, key, accentKey) {
     syncFromWys();
     if (rows.length) {
       rows[0].scrollIntoView({ block: 'nearest' });
-      selectElement(rows[0].querySelector('td') || rows[0]);
+
+      /*
+         選ぶのは、その位置が「何と判定されるか」に合わせる。
+
+         元は無条件にセルを選んでいた。ところが余白のように中身を持たない
+         部品では、セルは部品にも枠にもならず、**段そのもの**と判定される。
+         判定と選んだものが食い違うので levelOf が空を返し、
+         **選択の印が付かず、道すじも前の状態のまま残っていた**
+         （余白を入れたのに「枠 › 枠 › 枠」と出る）。
+
+         判定に従って、返ってきたものを選ぶ。
+      */
+      var cell = rows[0].querySelector('td') || rows[0];
+      var unit = unitOf(cell);
+      selectElement(unit ? unit.el : cell);
     }
     setStatus('「' + label + '」を挿入しました', 'ok');
   }
