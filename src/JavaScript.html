@@ -74,6 +74,20 @@
      外した回はずっと強いままになった（手元の計測で8回中4回）。
      UA と指の点の数は、最初から確定している。
   */
+  /*
+     狭い画面かどうか。スタイル側の @media (max-width: 600px) と同じ値。
+     片方だけ変えると、見た目と動きが食い違う。
+  */
+  function isNarrow() {
+    try {
+      return window.matchMedia
+        ? window.matchMedia('(max-width: 600px)').matches
+        : document.documentElement.clientWidth <= 600;
+    } catch (e) {
+      return false;
+    }
+  }
+
   function wantsTouchPreview() {
     try {
       var ua = navigator.userAgent || '';
@@ -607,6 +621,21 @@
     // 表示領域の調整
     el['sidebar-hide'].addEventListener('click', function () { togglePane('sidebar', false); });
     el['sidebar-show'].addEventListener('click', function () { togglePane('sidebar', true); });
+
+    /*
+       狭い画面では、一覧を畳んだ状態から始める。
+
+       ここでは一覧が画面いっぱいに出る作りにしてある。開いたまま
+       始まると、**起動した瞬間に原稿が見えない。**
+
+       畳む幅は600px。スタイル側の区切りと同じ値にしてある。
+    */
+    if (isNarrow()) togglePane('sidebar', false);
+
+    /* 全面に出ている一覧で原稿を選んだら、そのまま閉じる */
+    el.list.addEventListener('click', function () {
+      if (isNarrow() && state.panes.sidebar) togglePane('sidebar', false);
+    });
     el['inspector-hide'].addEventListener('click', function () { togglePane('inspector', false); });
     el['inspector-show'].addEventListener('click', function () { togglePane('inspector', true); });
     el['toolbar-hide'].addEventListener('click', function () { togglePane('toolbar', false); });

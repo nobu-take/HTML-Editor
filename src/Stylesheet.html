@@ -2399,33 +2399,121 @@
      区切りは600px。iPhoneは縦390〜430px、横向きは844〜932pxなので
      横向きは既存の900pxの指定に入り、ここには落ちてこない。
      ========================================================================= */
+  /* =========================================================================
+     段階2: スマホの並べ方
+
+     横に3つ並べる前提が、縦画面に合っていない。実測で一覧が190px、
+     プレビューの中身は148pxしか残らなかった。詰めても足りない。
+
+     **帯に overflow は使わない。** ヘッダーとタブの帯は「取り出す」
+     「原稿の扱い」「表示サイズ」「紙面の幅」の4つのメニューを抱えていて、
+     overflow を指定すると下に開くメニューが切り落とされる。一度やった。
+     道具の帯だけはメニューを持たないので、そこは流してよい。
+     ========================================================================= */
   @media (max-width: 600px) {
     /*
-       iOSは16px未満の入力欄にフォーカスすると画面を拡大し、戻さない。
-       仕様なので回避はできず、16pxにするしか止める方法がない。
-       .mini input のような細かい指定が上書きしてくるので !important。
-       個別に並べても書けるが、欄が増えるたび書き忘れて静かに元へ戻る。
-       色の欄だけ除く（キーボードが出ないので拡大が起きない）。
+       一覧を、常設の列から**呼んだときだけ出る全面**に変える。
+       390pxのうち190pxを占め続ける理由がない。使うのは開くときだけ。
     */
-    input:not([type="color"]),
-    select,
-    textarea { font-size: 16px !important; }
+    .sidebar {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      flex-basis: auto;
+      padding: 10px 12px;
+      overflow-y: auto;
+      box-shadow: 0 0 0 100vmax rgba(0, 0, 0, .5);
+    }
+
+    /* 一覧を出す取っ手。畳んだ状態が既定なので、常に出しておく */
+    .rail {
+      position: fixed;
+      left: 0;
+      bottom: 84px;
+      z-index: 55;
+      width: 30px;
+      height: 46px;
+      border-radius: 0 8px 8px 0;
+    }
 
     /*
-       帯（ヘッダー・タブ・道具）には手を触れない。ここが段階1の線引き。
-
-       390pxではヘッダーが1196pxまで伸びるので、右側の操作は画面の外に出る。
-       ただし**ページごと横に動かせば届く**。ブラウザ本来の動きなので、
-       中のメニューが切り取られることもない。
-
-       試した二つは、どちらも取らない。
-         overflow-x: auto  → 帯が抱える4つのメニューを切り落とす（前回の事故）
-         flex-wrap: wrap   → ヘッダーが63px→273pxになり、見る場所を奪う
-
-       **並べ方そのものを変えないと、ここは良くならない。** 段階2で行う。
+       ヘッダーを1段に近づける。
+       文字の札を落として絵だけにすると、12個の操作が2段に収まる。
+       font-size:0 で札を畳み、絵には大きさを戻す。
+       :has は iOS 15.4 以降で使える（対象は iOS 18）。
     */
+    header .row { flex-wrap: wrap; gap: 6px; row-gap: 4px; }
+    header .row .spacer { display: none; }
 
-    /* 指で押す的。見た目の高さは変えず、押せる範囲だけ広げる */
+    header .row button:has(> svg) { font-size: 0; padding: 6px 6px; }
+    header .row button:has(> svg) > svg { width: 18px; height: 18px; }
+
+    /*
+       言語の選び欄を詰める。ここが十数px余るだけで、
+       絵の並びが1段に収まる（収まらないと ? だけが3段目に落ちる）。
+    */
+    header .lang-pick { max-width: 62px; padding: 4px 2px; }
+
+    /*
+       名札は畳む。狭い画面では、いま開いているアプリは分かっている。
+       状態表示も消す。出るのは一瞬で、その1行のために場所は割けない。
+    */
+    .brand { display: none; }
+    #status { display: none; }
+
+    /*
+       名前とタグを1行に収める。分けると、それだけで2段使う。
+       名前を広く、タグを狭く。どちらも残す（消すと打てなくなる）。
+    */
+    header #title { flex: 2 1 150px; min-width: 0; }
+    header #tags { flex: 1 1 95px; min-width: 0; }
+    header #btn-save { flex: 0 0 auto; }
+
+    /*
+       言語の選び欄は、絵の並びと一緒に下の行へ送る。
+       上の行に置くと、名前とタグを押し潰す（最初にそうなった）。
+    */
+    header .lang-pick { order: 2; flex: 0 0 auto; }
+    header .row button:has(> svg) { order: 2; }
+
+    /*
+       タブの帯も、ヘッダーと同じ扱い。**ここも overflow は使えない**
+       （紙面の幅のメニューを抱えている）。折り返して逃がす。
+    */
+    .tabbar { flex-wrap: wrap; gap: 6px; }
+    .tabbar .spacer { display: none; }
+    .tabbar button:has(> svg) { font-size: 0; padding: 6px 8px; }
+    .tabbar button:has(> svg) > svg { width: 18px; height: 18px; }
+
+    /*
+       「プレビュー ＋ コード」は畳む。390pxで2つ並べても、
+       どちらも読める幅にならない。札も長く、1行を余計に使う。
+    */
+    #tab-split { display: none; }
+
+    /*
+       道具の帯だけは横に流す。ここはメニューを持たないので切られない。
+       選び欄と色の欄はブラウザが画面の上に描くので、これも切られない。
+    */
+    .wys-toolbar .tool-row {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: none;
+    }
+
+    .wys-toolbar .tool-row::-webkit-scrollbar { display: none; }
+    .wys-toolbar .tool-row > * { flex-shrink: 0; }
+    .wys-toolbar .tool-row .spacer { display: none; }
+
+    /*
+       部品の縦帯（.tool-rail）はそのまま残す。
+
+       絶対配置で44px固定の作りなので、横に寝かせるには構造ごと
+       組み直すことになる。ここで足すと壊れる（一度そうなった）。
+       44pxを残しても、プレビューは148px→342pxまで広がる。
+    */
+*/
     header button,
     .tabbar button,
     .tab { min-height: 40px; }
