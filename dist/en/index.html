@@ -2482,16 +2482,51 @@ window.addEventListener('DOMContentLoaded', function () {
       box-shadow: 0 0 0 100vmax rgba(0, 0, 0, .5);
     }
 
-    /* 一覧を出す取っ手。畳んだ状態が既定なので、常に出しておく */
+    /*
+       一覧を出す取っ手。
+
+       最初は幅30pxの細い舌にしていたが、**小さすぎて気づかれなかった。**
+       浮いた丸ボタンにして、色も前に出す。指の的は52px。
+    */
     .rail {
       position: fixed;
-      left: 0;
-      bottom: 84px;
+      left: 12px;
+      bottom: 16px;
       z-index: 55;
-      width: 30px;
-      height: 46px;
-      border-radius: 0 8px 8px 0;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 0;
+      background: var(--accent);
+      color: #fff;
+      font-size: 22px;
+      line-height: 1;
+      box-shadow: var(--lift-strong);
     }
+
+    /*
+       閉じるほうも、同じ場所・同じ大きさに置く。
+
+       開くのは左下の取っ手、閉じるのは一覧の頭にある « という
+       散らばり方をしていた。**出した指を動かさずに戻せるほうがいい。**
+    */
+    #sidebar-hide {
+      position: fixed;
+      left: 12px;
+      bottom: 16px;
+      z-index: 62;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--sunken);
+      box-shadow: var(--lift-strong);
+    }
+
+    /* 一覧の頭にあった置き場所は、もう使わない */
+    .location-row .spacer { display: none; }
+
+    /* 浮きボタンに隠れないよう、一覧の足元をあける */
+    .side-foot { padding-bottom: 76px; }
 
     /*
        ヘッダーを1段に近づける。
@@ -2547,6 +2582,39 @@ window.addEventListener('DOMContentLoaded', function () {
        どちらも読める幅にならない。札も長く、1行を余計に使う。
     */
     #tab-split { display: none; }
+
+    /*
+       メニューは下から出す。
+
+       元は「ボタンの右端にそろえて幅300px」。画面の左寄りにあるボタンから
+       開くと、**左が画面の外へ出て操作できない。** 390pxの画面に300pxの
+       箱をボタン基準で置くこと自体が、そもそも成り立たない。
+
+       下から出せば、ボタンがどこにあっても必ず画面に収まる。指も届く。
+       高さが足りなければ中で送る。
+
+       ここが実機で切れていた。**祖先による切り取りだけを見て、画面の外へ
+       出ているかを見ていなかった**のが、見逃した原因。
+    */
+    .pop {
+      position: fixed;
+      top: auto;
+      right: 0;
+      left: 0;
+      bottom: 0;
+      width: auto;
+      max-height: 72vh;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      border-radius: 14px 14px 0 0;
+      padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /*
+       メニューが出ている間は、浮きボタンを引っ込める。
+       下から出すようにした結果、**最後の項目に重なって押せなくなった。**
+    */
+    body:has(.pop:not([hidden])) .rail { display: none; }
 
     /*
        道具の帯だけは横に流す。ここはメニューを持たないので切られない。
