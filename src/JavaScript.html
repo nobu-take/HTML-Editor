@@ -2672,12 +2672,34 @@
    *
    * @return {Array<Object>} [{el, lv}, ...] 外側から順に
    */
+  /** 本文テーブルの最初の段。背景から中へ降りる入口に使う */
+  function firstSection() {
+    var table = contentTable();
+    if (!table) return null;
+
+    var rows = table.rows;
+    return rows && rows.length ? rows[0] : null;
+  }
+
   function unitPath(elem) {
     var path = [];
     var unit = unitOf(elem);
     if (!unit) return path;
 
-    if (unit.lv === 'backdrop') return [unit];
+    /*
+       背景を選んだときは、**そこで行き止まりにしない。**
+
+       元は [背景] の1つだけを返していた。道すじに背景しか出ないので、
+       内側へ降りる手立てが無く、**一度この状態になると原稿の中の要素を
+       選び直せませんでした。** いちばん下の余白を押すとここに落ちるので、
+       素直に操作していて詰まります。
+
+       背景のあとに、本文の最初の段を添える。押せば中へ入れます。
+    */
+    if (unit.lv === 'backdrop') {
+      var first = firstSection();
+      return first ? [unit, { el: first, lv: 'section' }] : [unit];
+    }
 
     var section = sectionUnit(unit.el) || sectionUnit(elem);
     if (!section) return [unit];
@@ -2805,12 +2827,38 @@
    * HTMLメールではテーブルの入れ子が標準的な組み方なので、
    * カラムの中にボタンや画像を入れても仕様上の問題はない。
    */
+  /*
+     枠の実体は、多くの場合 <table> です。
+
+     メールのHTMLはテーブル組みなので、地の色や罫線を持つ箱＝枠は
+     <table> で書かれます。ところがここは TD / TH / DIV しか受け付けて
+     いなかったので、**画面で「枠」と呼んでいるものを選んでも、
+     その中に入れられませんでした。**
+
+     テーブルやその行を選んだときは、中の入れ物（td）まで降りて探します。
+  */
+  function cellInside(node) {
+    if (!node || !node.tagName) return null;
+
+    if (['TD', 'TH', 'DIV'].indexOf(node.tagName) !== -1) return node;
+
+    // テーブル・tbody・行を選んだときは、中の最後のセルへ入れる
+    if (['TABLE', 'TBODY', 'THEAD', 'TFOOT', 'TR'].indexOf(node.tagName) !== -1) {
+      var cells = node.querySelectorAll('td, th');
+      if (cells.length) return cells[cells.length - 1];
+    }
+
+    return null;
+  }
+
   function insertIntoCell(html, label) {
     var target = null;
     var node = wys.selected;
 
+    // 選んだものから内側を見て、無ければ外側へ遡る
     while (node && wys.doc && node !== wys.doc.body) {
-      if (['TD', 'TH', 'DIV'].indexOf(node.tagName) !== -1) { target = node; break; }
+      target = cellInside(node);
+      if (target) break;
       node = node.parentElement;
     }
 

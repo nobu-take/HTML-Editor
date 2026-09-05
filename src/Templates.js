@@ -2566,6 +2566,23 @@ var PART_LIST = [
     ].join('\n')
   },
   {
+    key: 'frame',
+    name: '枠',
+    html: [
+      '            <tr>',
+      '              <td style="padding:8px 32px 24px 32px;">',
+      '                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="border:1px solid #e5e7eb; border-radius:6px;">',
+      '                  <tr>',
+      '                    <td style="padding:20px 24px; font-family:{{FONT}}; font-size:14px; line-height:1.8; color:#1f2328;">',
+      '                      ここに部品を入れます',
+      '                    </td>',
+      '                  </tr>',
+      '                </table>',
+      '              </td>',
+      '            </tr>'
+    ].join('\n')
+  },
+  {
     key: 'notice-box',
     name: '注意ボックス',
     html: [
