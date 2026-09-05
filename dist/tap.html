@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>iPhoneタップ計測器</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --ground: #eef0f3;
+    --panel: #ffffff;
+    --sunken: #f5f6f8;
+    --line: #d9dde3;
+    --ink: #191d24;
+    --dim: #5b6472;
+    --faint: #8a93a1;
+    --ok: #0c6b45;
+    --ok-bg: #dff3e8;
+    --ng: #a52216;
+    --ng-bg: #fbe3e0;
+    --wait: #75600f;
+    --wait-bg: #f6edcb;
+    --mark: #1a5fb4;
+    --sans: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0f1216;
+      --panel: #191d24;
+      --sunken: #14171c;
+      --line: #2b313a;
+      --ink: #e4e8ee;
+      --dim: #9aa4b2;
+      --faint: #737d8b;
+      --ok: #62d69b;
+      --ok-bg: #122b20;
+      --ng: #ff9184;
+      --ng-bg: #2e1714;
+      --wait: #e0c368;
+      --wait-bg: #2a2413;
+      --mark: #79b3ff;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #0f1216;
+    --panel: #191d24;
+    --sunken: #14171c;
+    --line: #2b313a;
+    --ink: #e4e8ee;
+    --dim: #9aa4b2;
+    --faint: #737d8b;
+    --ok: #62d69b;
+    --ok-bg: #122b20;
+    --ng: #ff9184;
+    --ng-bg: #2e1714;
+    --wait: #e0c368;
+    --wait-bg: #2a2413;
+    --mark: #79b3ff;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.65;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .wrap { max-width: 640px; margin: 0 auto; padding: 20px 14px 40px; }
+
+  .lede { margin-bottom: 22px; }
+
+  .kicker {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .13em;
+    color: var(--faint);
+  }
+
+  h1 {
+    margin: 6px 0 10px;
+    font-size: 25px;
+    line-height: 1.25;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+  }
+
+  .lede p { margin: 0; color: var(--dim); font-size: 14px; }
+
+  .env {
+    margin-bottom: 24px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    padding: 12px 14px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    line-height: 1.75;
+    color: var(--dim);
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  .env b { color: var(--ink); font-weight: 600; }
+
+  .how {
+    margin-bottom: 26px;
+    border-left: 3px solid var(--mark);
+    padding: 2px 0 2px 14px;
+  }
+
+  .how p { margin: 0 0 6px; font-size: 14px; }
+  .how ol { margin: 0; padding-left: 20px; font-size: 14px; color: var(--dim); }
+  .how li { margin-bottom: 3px; }
+  .how b { color: var(--ink); }
+
+  .test {
+    margin-bottom: 20px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+    overflow: hidden;
+  }
+
+  .test-head { padding: 13px 15px 11px; border-bottom: 1px solid var(--line); }
+
+  .test-name {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .test-name .no {
+    flex: 0 0 auto;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--mark);
+    color: #fff;
+    font: 700 12px/22px var(--mono);
+    text-align: center;
+  }
+
+  .test-why { margin: 5px 0 0; font-size: 13px; color: var(--dim); }
+
+  .stage { padding: 12px 15px; }
+
+  .stage iframe {
+    display: block;
+    width: 100%;
+    height: 152px;
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  .verdict {
+    display: grid;
+    gap: 1px;
+    background: var(--line);
+    border-top: 1px solid var(--line);
+  }
+
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 15px;
+    background: var(--panel);
+    font-size: 13.5px;
+  }
+
+  .row .what { flex: 1 1 auto; color: var(--dim); }
+
+  .pill {
+    flex: 0 0 auto;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font: 700 11.5px/1.6 var(--mono);
+    background: var(--wait-bg);
+    color: var(--wait);
+  }
+
+  .pill.ok { background: var(--ok-bg); color: var(--ok); }
+  .pill.ng { background: var(--ng-bg); color: var(--ng); }
+
+  h2 {
+    margin: 34px 0 10px;
+    font-size: 17px;
+    letter-spacing: -.01em;
+  }
+
+  .log {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--sunken);
+    padding: 10px 12px;
+    max-height: 300px;
+    overflow: auto;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    line-height: 1.85;
+    font-variant-numeric: tabular-nums;
+    white-space: pre;
+    color: var(--dim);
+  }
+
+  .log .t { color: var(--faint); }
+  .log .a { color: var(--mark); }
+  .log .g { color: var(--ok); }
+
+  .empty { color: var(--faint); font-style: italic; white-space: normal; }
+
+  .acts { display: flex; gap: 9px; margin-top: 14px; flex-wrap: wrap; }
+
+  button {
+    flex: 1 1 auto;
+    min-height: 46px;
+    padding: 0 16px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--panel);
+    color: var(--ink);
+    font: 600 15px var(--sans);
+    cursor: pointer;
+    -webkit-appearance: none;
+    touch-action: manipulation;
+  }
+
+  button.go { border-color: transparent; background: var(--mark); color: #fff; }
+  button:active { opacity: .75; }
+
+  .said {
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--ok);
+    min-height: 20px;
+  }
+
+  .foot {
+    margin-top: 34px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    font-size: 12.5px;
+    color: var(--faint);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="lede">
+    <div class="kicker">HTML EDITOR / 実機での確認</div>
+    <h1>iPhoneで、指のどこが途切れているか</h1>
+    <p>プレビューと同じ条件（sandbox付きiframe＋contenteditable）を3通り作りました。順に触ると、どの信号が届いていないかが分かります。</p>
+  </div>
+
+  <div class="env" id="env">読み取り中…</div>
+
+  <div class="how">
+    <p><b>触りかた</b></p>
+    <ol>
+      <li>枠の中の<b>「本文のテキストです」</b>を1回たたく</li>
+      <li>もう1回、<b>同じ場所</b>をたたく</li>
+      <li>キーボードが出たら、<b>なにか1文字</b>打つ</li>
+    </ol>
+  </div>
+
+  <div class="test" data-test="A">
+    <div class="test-head">
+      <div class="test-name"><span class="no">A</span>いまのアプリと同じ</div>
+      <p class="test-why">受け口を document にまとめて置いた形。アプリの現状そのままです。</p>
+    </div>
+    <div class="stage"><iframe sandbox="allow-same-origin" title="試験A"></iframe></div>
+    <div class="verdict"></div>
+  </div>
+
+  <div class="test" data-test="B">
+    <div class="test-head">
+      <div class="test-name"><span class="no">B</span>cursor:pointer を足す</div>
+      <p class="test-why">WebKitは「押せる見た目」の要素にしか click を出さないことがあります。それだけを足した形。</p>
+    </div>
+    <div class="stage"><iframe sandbox="allow-same-origin" title="試験B"></iframe></div>
+    <div class="verdict"></div>
+  </div>
+
+  <div class="test" data-test="C">
+    <div class="test-head">
+      <div class="test-name"><span class="no">C</span>指の信号を直に使う</div>
+      <p class="test-why">click を待たず touchend で編集に入る形。ここが通れば、直し方が決まります。</p>
+    </div>
+    <div class="stage"><iframe sandbox="allow-same-origin" title="試験C"></iframe></div>
+    <div class="verdict"></div>
+  </div>
+
+  <h2>届いた信号</h2>
+  <div class="log" id="log"><span class="empty">まだ何も触っていません。上の枠を指でたたいてください。</span></div>
+
+  <div class="acts">
+    <button class="go" id="copy">結果をまとめて写す</button>
+    <button id="clear">記録を消す</button>
+  </div>
+  <div class="said" id="said"></div>
+
+  <div class="foot">
+    このページは確認専用です。HTML Editor 本体にはつながっていません。
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var log = document.getElementById('log');
+  var said = document.getElementById('said');
+  var lines = [];
+  var t0 = Date.now();
+
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function pad(s, n) {
+    s = String(s);
+    while (s.length < n) { s += ' '; }
+    return s;
+  }
+
+  function padL(s, n) {
+    s = String(s);
+    while (s.length < n) { s = ' ' + s; }
+    return s;
+  }
+
+  function add(where, kind, target, extra) {
+    lines.push({
+      ms: padL(Date.now() - t0, 6),
+      where: where,
+      kind: kind,
+      target: target,
+      extra: extra || ''
+    });
+    if (lines.length > 260) { lines.shift(); }
+    render();
+  }
+
+  function render() {
+    if (!lines.length) {
+      log.innerHTML = '<span class="empty">まだ何も触っていません。上の枠を指でたたいてください。</span>';
+      return;
+    }
+    log.innerHTML = lines.map(function (r) {
+      return '<span class="t">' + r.ms + '</span>  ' + r.where
+        + ' <span class="a">' + esc(pad(r.kind, 12)) + '</span>' + esc(r.target)
+        + (r.extra ? '  <span class="g">' + esc(r.extra) + '</span>' : '');
+    }).join('\n');
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function name(el) {
+    if (!el) { return '(なし)'; }
+    if (el.nodeType === 3) { return '#text'; }
+    var n = el.tagName ? el.tagName.toLowerCase() : String(el);
+    if (el.id) { n += '#' + el.id; }
+    return n;
+  }
+
+  var LABELS = [
+    ['touch', '指が触れたこと（touchend）が届く'],
+    ['click', 'click が届く'],
+    ['edit', '編集に入り、focus が乗る'],
+    ['kb', 'キーボードが出る'],
+    ['typed', '打った文字が入る']
+  ];
+
+  var tests = [];
+
+  function mark(t, key, val) {
+    if (t.got[key] === true && val !== true) { return; }
+    t.got[key] = val;
+    draw(t);
+  }
+
+  function draw(t) {
+    t.box.querySelector('.verdict').innerHTML = LABELS.map(function (p) {
+      var g = t.got[p[0]];
+      var cls = g === true ? 'ok' : (g === false ? 'ng' : '');
+      var word = g === true ? '来た' : (g === false ? '来ない' : '未');
+      return '<div class="row"><span class="what">' + p[1] + '</span>'
+        + '<span class="pill ' + cls + '">' + word + '</span></div>';
+    }).join('');
+  }
+
+  /* キーボードが出たかは、見える高さが縮んだかで見る */
+  var vv = window.visualViewport;
+  var baseH = vv ? vv.height : window.innerHeight;
+  var kbSeen = false;
+
+  if (vv) {
+    vv.addEventListener('resize', function () {
+      if (!kbSeen && vv.height < baseH - 120) {
+        kbSeen = true;
+        add('--', 'キーボード', '出た', Math.round(baseH - vv.height) + 'px 縮んだ');
+        tests.forEach(function (t) {
+          if (t.got.edit === true) { mark(t, 'kb', true); }
+        });
+      }
+    });
+  }
+
+  var DOC = [
+    '<!doctype html><html><head><meta charset="utf-8">',
+    '<meta name="viewport" content="width=device-width, initial-scale=1">',
+    '<style>',
+    'html,body{margin:0;padding:0;background:#fff;',
+    ' font:15px/1.7 -apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;color:#202124;}',
+    'table{width:100%;border-collapse:collapse;}',
+    'td{padding:14px 16px;}',
+    'h2{margin:0 0 8px;font-size:17px;}',
+    'p{margin:0;}',
+    '[contenteditable="true"]{outline:2px solid #1e8e3e;outline-offset:-2px;}',
+    '[data-sel]{outline:2px dashed #1a73e8;outline-offset:-2px;}',
+    'POINTER',
+    '</style></head><body>',
+    '<table><tr><td>',
+    '<h2 id="midashi">ここが見出し</h2>',
+    '<p id="honbun">本文のテキストです。ここをたたいてください。</p>',
+    '</td></tr></table>',
+    '</body></html>'
+  ].join('\n');
+
+  function clearSel(idoc) {
+    var got = idoc.querySelectorAll('[data-sel]');
+    Array.prototype.forEach.call(got, function (e) { e.removeAttribute('data-sel'); });
+  }
+
+  function wire(t) {
+    var idoc = null;
+    try { idoc = t.frame.contentDocument; } catch (e) { idoc = null; }
+
+    if (!idoc || !idoc.body) {
+      add(t.id, '★中に入れない', 'contentDocument が読めません');
+      mark(t, 'touch', false);
+      return;
+    }
+
+    t.armed = true;
+    add(t.id, '用意できた', 'たたいてください');
+
+    ['touchstart', 'touchend', 'mousedown', 'mouseup', 'click', 'dblclick', 'focusin', 'input']
+      .forEach(function (kind) {
+        idoc.addEventListener(kind, function (ev) {
+          add(t.id, kind, name(ev.target));
+          if (kind === 'touchend') { mark(t, 'touch', true); }
+          if (kind === 'click') { mark(t, 'click', true); }
+          if (kind === 'input') { mark(t, 'typed', true); }
+        }, true);
+      });
+
+    function begin(el) {
+      if (t.sel !== el) {
+        clearSel(idoc);
+        el.setAttribute('data-sel', '');
+        t.sel = el;
+        add(t.id, '→ 選んだ', name(el));
+        return;
+      }
+      el.removeAttribute('data-sel');
+      el.setAttribute('contenteditable', 'true');
+      el.focus();
+      var ok = idoc.activeElement === el;
+      add(t.id, '→ 編集開始', name(el), ok ? 'focus 通った' : '★focus が乗らない');
+      mark(t, 'edit', ok);
+    }
+
+    function pick(ev) {
+      return ev.target && ev.target.closest ? ev.target.closest('#honbun,#midashi') : null;
+    }
+
+    if (t.id === 'C') {
+      idoc.addEventListener('touchend', function (ev) {
+        var el = pick(ev);
+        if (el) { ev.preventDefault(); begin(el); }
+      }, true);
+    } else {
+      idoc.addEventListener('click', function (ev) {
+        var el = pick(ev);
+        if (el) { begin(el); }
+      }, true);
+    }
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('.test'), function (box) {
+    var id = box.getAttribute('data-test');
+    var frame = box.querySelector('iframe');
+    var t = {
+      id: id,
+      box: box,
+      frame: frame,
+      armed: false,
+      sel: null,
+      got: { touch: null, click: null, edit: null, kb: null, typed: null }
+    };
+    tests.push(t);
+    draw(t);
+    frame.addEventListener('load', function () { wire(t); });
+    frame.srcdoc = DOC.replace('POINTER', id === 'B' ? 'td,h2,p{cursor:pointer;}' : '');
+  });
+
+  var env = document.getElementById('env');
+  env.innerHTML = [
+    '<b>端末</b>  ' + esc(navigator.userAgent),
+    '<b>画面</b>  ' + window.innerWidth + '×' + window.innerHeight
+      + '   見える範囲 ' + (vv ? Math.round(vv.width) + '×' + Math.round(vv.height) : '(なし)')
+      + '   倍率 ' + (window.devicePixelRatio || 1),
+    '<b>指</b>    maxTouchPoints ' + (navigator.maxTouchPoints || 0)
+      + '   ontouchstart ' + ('ontouchstart' in window ? 'あり' : 'なし')
+  ].join('\n');
+
+  function report() {
+    var out = ['# iPhone タップ計測の結果', ''];
+    out.push('端末: ' + navigator.userAgent);
+    out.push('画面: ' + window.innerWidth + 'x' + window.innerHeight
+      + ' / 倍率 ' + (window.devicePixelRatio || 1));
+    out.push('指: maxTouchPoints ' + (navigator.maxTouchPoints || 0));
+    out.push('');
+    tests.forEach(function (t) {
+      out.push('## ' + t.id + (t.armed ? '' : '  ★中に入れなかった'));
+      LABELS.forEach(function (p) {
+        var g = t.got[p[0]];
+        out.push('  ' + (g === true ? '○' : (g === false ? '×' : '－')) + ' ' + p[1]);
+      });
+      out.push('');
+    });
+    out.push('## 届いた信号');
+    lines.forEach(function (r) {
+      out.push(r.ms + '  ' + r.where + '  ' + r.kind + '  ' + r.target
+        + (r.extra ? '  ' + r.extra : ''));
+    });
+    return out.join('\n');
+  }
+
+  document.getElementById('copy').addEventListener('click', function () {
+    var text = report();
+
+    function done() {
+      said.textContent = '写しました。そのまま貼り付けて送ってください。';
+    }
+
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.setSelectionRange(0, ta.value.length);
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      document.body.removeChild(ta);
+      said.textContent = ok
+        ? '写しました。そのまま貼り付けて送ってください。'
+        : '写せませんでした。下の記録を長押しで選んでコピーしてください。';
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else {
+      fallback();
+    }
+  });
+
+  document.getElementById('clear').addEventListener('click', function () {
+    lines = [];
+    t0 = Date.now();
+    kbSeen = false;
+    tests.forEach(function (t) {
+      t.sel = null;
+      t.got = { touch: null, click: null, edit: null, kb: null, typed: null };
+      draw(t);
+      try {
+        var d = t.frame.contentDocument;
+        Array.prototype.forEach.call(d.querySelectorAll('[contenteditable]'), function (e) {
+          e.removeAttribute('contenteditable');
+        });
+        clearSel(d);
+      } catch (e) { /* 触れないなら何もしない */ }
+    });
+    said.textContent = '';
+    render();
+  });
+})();
+</script>
+</body>
+</html>
