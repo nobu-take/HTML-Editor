@@ -3059,6 +3059,32 @@ window.addEventListener('DOMContentLoaded', function () {
     body { -webkit-text-size-adjust: 100%; }
   }
 
+
+  /*
+     メールにする窓の案内。狭い画面では、開く先を踏めるリンクで渡す。
+     こちらから window.open で開くと、iOSでは止められることがあるため。
+  */
+  .mail-step { margin: 0 0 8px; }
+
+  .mail-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 42px;
+    padding: 0 16px;
+    border-radius: 8px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .mail-why {
+    margin: 8px 0 0;
+    color: var(--faint);
+    font-size: 11.5px;
+  }
+
 </style>
 
 <style>
@@ -11470,6 +11496,9 @@ function applyTheme(html, key, accentKey) {
   var WEBMAIL = {
     gmail: {
       name: 'Gmail',
+      // 狭い画面で踏んでもらう先。新規作成のURLは受信トレイへ転送される
+      home: 'https://mail.google.com/',
+      openLabel: 'Gmailを開く',
       url: function (to, subject) {
         return 'https://mail.google.com/mail/?view=cm&fs=1'
           + '&to=' + encodeURIComponent(to)
@@ -11478,6 +11507,8 @@ function applyTheme(html, key, accentKey) {
     },
     outlook: {
       name: 'Outlook',
+      home: 'https://outlook.live.com/mail/0/',
+      openLabel: 'Outlookを開く',
       url: function (to, subject) {
         return 'https://outlook.live.com/mail/0/deeplink/compose'
           + '?to=' + encodeURIComponent(to)
@@ -11534,9 +11565,26 @@ function applyTheme(html, key, accentKey) {
 
     var html = currentSource();
     var copied = copyRich(html);
+    var to = el['gmail-to'].value;
+    var subject = el['gmail-subject'].value;
 
-    window.open(service.url(el['gmail-to'].value, el['gmail-subject'].value),
-      '_blank', 'noopener');
+    /*
+       狭い画面では、こちらから開かない。
+
+       ?view=cm はPC版の新規作成URLで、**スマホでは受信トレイへ転送される**
+       （実機で確認）。開いた先が新規作成でないなら、こちらで開く意味がない。
+       おまけに、コピーのあとに window.open を呼ぶ形は、iOSでは
+       「利用者が開いた」と見なされずに止められることがある。
+
+       押したことで確実に起きるのはコピーだけ。**それを主役にして**、
+       開くのは踏めるリンクとして渡す。自分で踏んだリンクなら止められない。
+    */
+    if (isNarrow()) {
+      showMailLink(service, to, subject, copied, html);
+      return;
+    }
+
+    window.open(service.url(to, subject), '_blank', 'noopener');
 
     /*
        案内は2文をつなげず、ひとつの文言として持つ。
@@ -11674,6 +11722,61 @@ function applyTheme(html, key, accentKey) {
     }, function (err) {
       showNote(message(err), true);
     });
+  }
+
+  /*
+     狭い画面での案内。コピーの結果を伝え、開く先はリンクで渡す。
+
+     背景色について一言添える。**Gmailのアプリに貼ると背景色が落ちる**
+     （アプリ側の貼り付けの掃除によるもので、こちらからは変えられない）。
+     ブラウザのGmailなら残る。どちらで開くかで結果が変わるので、
+     ここで言っておかないと、送ったあとに気づくことになる。
+  */
+  function showMailLink(service, to, subject, copied, html) {
+    var note = el['gmail-note'];
+
+    function draw(ok) {
+      note.textContent = '';
+      note.classList.toggle('err', !ok);
+
+      var head = document.createElement('p');
+      head.className = 'mail-step';
+      head.textContent = ok
+        ? '本文をコピーしました。下のリンクからGmailやOutlookを開き、新規作成に貼り付けてください。'
+        : 'コピーできませんでした。「本文だけコピー」を押してから、下のリンクを開いてください。';
+      note.appendChild(head);
+
+      /*
+         「Gmail」＋「を開く」と繋げない。日本語では繋がるが、英語では
+         語順が違って「Gmailを開く」の形にならない。サービスごとに
+         全文を持たせる（署名の案内でも同じ理由で分けている）。
+      */
+      var link = document.createElement('a');
+      link.className = 'mail-link';
+      link.href = service.home;
+      link.target = '_blank';
+      link.rel = 'noopener';
+      link.textContent = service.openLabel;
+      note.appendChild(link);
+
+      var why = document.createElement('p');
+      why.className = 'mail-why';
+      why.textContent = 'ブラウザ版で開いてください。アプリに貼り付けると、背景色が落ちます。';
+      note.appendChild(why);
+
+      show(note);
+    }
+
+    if (copied) {
+      setStatus('本文をコピーしました', 'ok');
+      draw(true);
+      return;
+    }
+
+    copyRichAsync(html).then(function () {
+      setStatus('本文をコピーしました', 'ok');
+      draw(true);
+    }, function () { draw(false); });
   }
 
   function showNote(text, isError) {

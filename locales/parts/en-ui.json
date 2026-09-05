@@ -319,5 +319,9 @@
   "登録": "saved",
   "署名の保存名": "Name to save it under",
   "改行がそのまま改行になります。タグを書く必要はありません。": "Line breaks stay as line breaks. No tags needed.",
-  "この署名は、組み立てで扱えない形（表や画像など）で登録されています。中身を保つため、HTMLのまま編集します。": "This signature was saved in a shape the simple editor cannot handle (a table or an image). To keep it intact, you edit the HTML directly."
+  "この署名は、組み立てで扱えない形（表や画像など）で登録されています。中身を保つため、HTMLのまま編集します。": "This signature was saved in a shape the simple editor cannot handle (a table or an image). To keep it intact, you edit the HTML directly.",
+  "ファイル一覧": "Files",
+  "要素パネル": "Element panel",
+  "Gmailを開く": "Open Gmail",
+  "Outlookを開く": "Open Outlook"
 }

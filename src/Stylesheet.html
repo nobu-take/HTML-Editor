@@ -2951,4 +2951,30 @@
     body { -webkit-text-size-adjust: 100%; }
   }
 
+
+  /*
+     メールにする窓の案内。狭い画面では、開く先を踏めるリンクで渡す。
+     こちらから window.open で開くと、iOSでは止められることがあるため。
+  */
+  .mail-step { margin: 0 0 8px; }
+
+  .mail-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 42px;
+    padding: 0 16px;
+    border-radius: 8px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .mail-why {
+    margin: 8px 0 0;
+    color: var(--faint);
+    font-size: 11.5px;
+  }
+
 </style>

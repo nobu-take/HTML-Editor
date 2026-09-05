@@ -253,5 +253,8 @@
   "返ってきたHTMLを戻す": "Bring the HTML back",
   "AIは動かしません。": "This does not run an AI — it ",
   "この文面をAIへ": "Take this to your AI",
-  "依頼を決める": "Decide what to ask"
+  "依頼を決める": "Decide what to ask",
+  "本文をコピーしました。下のリンクからGmailやOutlookを開き、新規作成に貼り付けてください。": "The message is copied. Open Gmail or Outlook from the link below, then paste it into a new message.",
+  "コピーできませんでした。「本文だけコピー」を押してから、下のリンクを開いてください。": "Copying failed. Press \"Copy the message only\", then open the link below.",
+  "ブラウザ版で開いてください。アプリに貼り付けると、背景色が落ちます。": "Open the browser version. Pasting into the app drops background colours."
 }
