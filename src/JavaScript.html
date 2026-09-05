@@ -630,7 +630,18 @@
 
        畳む幅は600px。スタイル側の区切りと同じ値にしてある。
     */
-    if (isNarrow()) togglePane('sidebar', false);
+    if (isNarrow()) {
+      togglePane('sidebar', false);
+
+      /*
+         要素パネルも畳んでおく。狭い画面では下から出るシートなので、
+         開いたまま始まると原稿の下半分が最初から埋まる。
+
+         タブは必ず1つ開いている形にするので、既定を「文字」にそろえる。
+      */
+      togglePane('inspector', false);
+      wys.openGroups = { text: true, surface: false, layout: false };
+    }
 
     /* 全面に出ている一覧で原稿を選んだら、そのまま閉じる */
     el.list.addEventListener('click', function () {
@@ -3546,6 +3557,28 @@
     renderInspectorBody();
 
     if (panel) panel.scrollTop = keepScroll;
+
+    markInspectorBar();
+  }
+
+  /*
+     狭い画面では、要素パネルは下から出るシートになる。出しっぱなしにすると
+     原稿の下半分が埋まるので、**選んだときだけ細い帯を出し、押すと開く**。
+
+     帯の札は、いま何を選んでいるかを言葉で示す。札が無い＝何も選んでいない
+     ので、そのときは帯ごと引っ込める（スタイル側で :not([data-label]) を見る）。
+  */
+  function markInspectorBar() {
+    var bar = el['inspector-show'];
+    if (!bar) return;
+
+    if (!isNarrow() || !wys.selected) {
+      bar.removeAttribute('data-label');
+      return;
+    }
+
+    var lv = wys.selected.getAttribute('data-wys-lv');
+    bar.setAttribute('data-label', '要素：' + levelName(lv || 'part'));
   }
 
   /**
@@ -3630,6 +3663,7 @@
     var open = wys.openGroups[def.key];
 
     var inner = document.createElement('div');
+    inner.className = 'acc-body';   // 狭い画面でタブの中身として並べ替えるため
     build(inner, elem);
 
     var head = document.createElement('button');
@@ -3653,7 +3687,18 @@
     head.appendChild(caret);
 
     head.addEventListener('click', function () {
-      wys.openGroups[def.key] = !wys.openGroups[def.key];
+      /*
+         狭い画面では、3つをタブとして扱う。**必ず1つだけ開いている**
+         状態を保つ。畳めるままだと、開くたびに縦へ伸びて送る量が増え、
+         全部畳むと何も出ない帯だけが残る。
+      */
+      if (isNarrow()) {
+        PANEL_GROUPS.forEach(function (other) {
+          wys.openGroups[other.key] = (other.key === def.key);
+        });
+      } else {
+        wys.openGroups[def.key] = !wys.openGroups[def.key];
+      }
       renderInspector();
     });
 

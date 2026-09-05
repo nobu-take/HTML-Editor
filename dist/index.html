@@ -2651,6 +2651,108 @@ window.addEventListener('DOMContentLoaded', function () {
     body:has(.pop:not([hidden])) .rail { display: none; }
 
     /*
+       要素パネルも、下から出す。
+
+       900px以下で display:none にしていた（210pxの横パネルを置く場所が
+       無いため）。狭い画面ではメニューと同じシートの形にして戻す。
+
+       出しっぱなしにはしない。**選んだときだけ細い帯を出し、押すと開く。**
+       選ぶたびに下半分が埋まると、原稿が見えなくなる。
+    */
+    .inspector {
+      display: flex;
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 58;
+      flex-basis: auto;
+      max-height: 62vh;
+      border-radius: 14px 14px 0 0;
+      box-shadow: var(--lift-strong);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    .inspector[hidden] { display: none; }
+
+    /*
+       選んだときに出る帯。
+
+       札は「要素：枠」のように、いま何を選んでいるかを言葉で出す。
+       札が無い＝何も選んでいないので、そのときは帯ごと引っ込める。
+
+       左は一覧の浮きボタンをよけて空ける。重ねると、どちらも押しにくい。
+    */
+    #inspector-show {
+      position: fixed;
+      left: 76px;
+      right: 0;
+      bottom: 0;
+      z-index: 56;
+      width: auto;
+      height: 46px;
+      border-radius: 10px 0 0 0;
+      justify-content: flex-start;
+      gap: 8px;
+      padding: 0 14px calc(0px + env(safe-area-inset-bottom, 0px));
+      font-size: 0;
+      background: var(--panel);
+      box-shadow: var(--lift-strong);
+    }
+
+    #inspector-show::after {
+      content: attr(data-label);
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    #inspector-show:not([data-label]) { display: none; }
+
+    /*
+       3つのまとまりを、タブとして横に並べる。
+
+       見出しと中身は 見出し→中身→見出し→中身 の順に並んでいるので、
+       order で見出しだけを先に集める。中身は必ず1つしか作られないので、
+       その下に1枚だけ出る。
+    */
+    #inspector-body {
+      display: flex;
+      /*
+         向きを明示する。元は column で、そのまま折り返すと**次の「列」へ
+         回る**。中身が画面の右外（x380〜625）へ出ていた。
+      */
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-content: flex-start;
+      gap: 6px 4px;
+    }
+
+    #inspector-body > * { flex: 1 1 100%; order: 1; }
+
+    #inspector-body > .acc {
+      flex: 1 1 0;
+      order: 2;
+      justify-content: center;
+      min-height: 40px;
+      border-radius: 8px;
+    }
+
+    /*
+       選んでいるタブを、はっきり見せる。地の色を変えるだけだと、
+       シートの地と近くてどれが出ているのか分からない。下に線を引く。
+    */
+    #inspector-body > .acc.open {
+      background: var(--sunken);
+      color: var(--text);
+      box-shadow: inset 0 -2px 0 var(--accent);
+    }
+    #inspector-body > .acc .acc-caret { display: none; }
+    #inspector-body > .acc-body { flex: 1 1 100%; order: 3; }
+
+    /* 帯とシートに隠れないよう、原稿の足元をあける */
+    .editor-body { padding-bottom: 46px; }
+
+    /*
        道具の帯だけは横に流す。ここはメニューを持たないので切られない。
        選び欄と色の欄はブラウザが画面の上に描くので、これも切られない。
     */
@@ -5097,7 +5199,18 @@ function applyTheme(html, key, accentKey) {
 
        畳む幅は600px。スタイル側の区切りと同じ値にしてある。
     */
-    if (isNarrow()) togglePane('sidebar', false);
+    if (isNarrow()) {
+      togglePane('sidebar', false);
+
+      /*
+         要素パネルも畳んでおく。狭い画面では下から出るシートなので、
+         開いたまま始まると原稿の下半分が最初から埋まる。
+
+         タブは必ず1つ開いている形にするので、既定を「文字」にそろえる。
+      */
+      togglePane('inspector', false);
+      wys.openGroups = { text: true, surface: false, layout: false };
+    }
 
     /* 全面に出ている一覧で原稿を選んだら、そのまま閉じる */
     el.list.addEventListener('click', function () {
@@ -8013,6 +8126,28 @@ function applyTheme(html, key, accentKey) {
     renderInspectorBody();
 
     if (panel) panel.scrollTop = keepScroll;
+
+    markInspectorBar();
+  }
+
+  /*
+     狭い画面では、要素パネルは下から出るシートになる。出しっぱなしにすると
+     原稿の下半分が埋まるので、**選んだときだけ細い帯を出し、押すと開く**。
+
+     帯の札は、いま何を選んでいるかを言葉で示す。札が無い＝何も選んでいない
+     ので、そのときは帯ごと引っ込める（スタイル側で :not([data-label]) を見る）。
+  */
+  function markInspectorBar() {
+    var bar = el['inspector-show'];
+    if (!bar) return;
+
+    if (!isNarrow() || !wys.selected) {
+      bar.removeAttribute('data-label');
+      return;
+    }
+
+    var lv = wys.selected.getAttribute('data-wys-lv');
+    bar.setAttribute('data-label', '要素：' + levelName(lv || 'part'));
   }
 
   /**
@@ -8097,6 +8232,7 @@ function applyTheme(html, key, accentKey) {
     var open = wys.openGroups[def.key];
 
     var inner = document.createElement('div');
+    inner.className = 'acc-body';   // 狭い画面でタブの中身として並べ替えるため
     build(inner, elem);
 
     var head = document.createElement('button');
@@ -8120,7 +8256,18 @@ function applyTheme(html, key, accentKey) {
     head.appendChild(caret);
 
     head.addEventListener('click', function () {
-      wys.openGroups[def.key] = !wys.openGroups[def.key];
+      /*
+         狭い画面では、3つをタブとして扱う。**必ず1つだけ開いている**
+         状態を保つ。畳めるままだと、開くたびに縦へ伸びて送る量が増え、
+         全部畳むと何も出ない帯だけが残る。
+      */
+      if (isNarrow()) {
+        PANEL_GROUPS.forEach(function (other) {
+          wys.openGroups[other.key] = (other.key === def.key);
+        });
+      } else {
+        wys.openGroups[def.key] = !wys.openGroups[def.key];
+      }
       renderInspector();
     });
 
