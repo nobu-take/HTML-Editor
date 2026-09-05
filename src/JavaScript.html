@@ -1074,6 +1074,12 @@
     var style = idoc.createElement('style');
     style.setAttribute('data-wys-injected', '');
     style.textContent = [
+      /*
+         スマホでは、2回たたくと編集に入る道と、ブラウザのダブルタップ拡大が
+         ぶつかる。拡大に取られると編集が始まらない。manipulation は
+         **ダブルタップ拡大だけを止め、ピンチでの拡大は残す**。
+      */
+      'body{touch-action:manipulation;}',
       '[data-wys-hot]{outline:1px dashed rgba(26,115,232,.6) !important; outline-offset:-1px; cursor:pointer;}',
       '[data-wys-hot="backdrop"]{outline-color:rgba(124,92,191,.75) !important;}',
       '[data-wys-hot="section"]{outline-color:rgba(26,115,232,.75) !important;}',

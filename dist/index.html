@@ -76,6 +76,13 @@ window.addEventListener('DOMContentLoaded', function () {
 
     <base target="_top" />
     <meta charset="utf-8" />
+    <!--
+       これが無いと iOS Safari は幅980pxで組んでから画面幅に縮める。
+       iPhoneの390pxでは0.40倍になり、指が狙った場所に当たらない。
+       ピンチでの拡大は残す（狭いところを覗くのに要る）ので、
+       maximum-scale や user-scalable=no は書かない。
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>HTML Editor for Email</title>
 
     <link
@@ -2468,6 +2475,93 @@ window.addEventListener('DOMContentLoaded', function () {
     .history-list, .signature-list { flex-basis: 140px; }
     .history-preview { height: 220px; }
   }
+
+  /* =========================================================================
+     段階1: スマホで動くようにする
+
+     並べ方は変えない。**触れないものを触れるようにするだけ**にとどめる。
+     組み直しは段階2で行う。
+
+     区切りを600pxにしたのは、iPhoneが縦で390〜430px、横向きで844〜932px
+     だから。横向きは既存の900pxの指定に入り、ここには落ちてこない。
+     ========================================================================= */
+  @media (max-width: 600px) {
+    /*
+       iOSは「16px未満の入力欄にフォーカスすると画面を拡大し、戻さない」。
+       仕様なので回避はできない。**16pxにするしか止める方法がない。**
+       ファイル名を触るたび画面が飛んでいたのはこれ。
+    */
+    /*
+       !important を使う。効かせ方の勝負ではなく、**iOSの仕様への対処**だから。
+       .mini input や .subject-bar input のような細かい指定があとから
+       上書きしてくる。個別に並べても書けるが、**入力欄が増えるたびに
+       書き忘れて、静かに元へ戻る。**
+       色の欄だけ除く（キーボードが出ないので拡大が起きない）。
+    */
+    input:not([type="color"]),
+    select,
+    textarea { font-size: 16px !important; }
+
+    /*
+       ヘッダーの段が折り返さず、390pxの画面で1196pxまで伸びていた。
+       保存ボタン、言語の選択、状態表示が画面の外にあって押せない。
+       **「ヘッダーがはみ出る」の正体がこれだった。**
+
+       並べ方は変えない。入りきらないぶんを下の行へ送るだけにする。
+       spacer は右へ寄せるための伸び代で、折り返す場では
+       1行まるごとを食いつぶすので消す。
+    */
+    /*
+       折り返しではなく、横に流して指でなぞる形にする。
+
+       最初は flex-wrap: wrap を当てた。はみ出しは消えるが、**ヘッダーが
+       273px** になった。画面844pxの3分の1が操作の帯で埋まる。
+       届くようにしたつもりが、見る場所を奪っていた。
+
+       横に流せば、高さは設計どおりの63pxのまま。並びも順番も変わらない。
+       **届かなかったぶんだけが、なぞれば届くようになる。**
+
+       スマホの横棒は画面の上に浮くので、場所を取らない。
+       見た目がうるさいので、この2つだけ隠す。
+    */
+    /* 道具の帯（フォント・文字サイズ・本文の幅）も同じ扱い。
+       ここは16pxにしたぶん横に伸びるので、放っておくと画面の外へ出る */
+    header .row,
+    .tabbar,
+    .wys-toolbar .tool-row {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: none;
+    }
+
+    header .row::-webkit-scrollbar,
+    .tabbar::-webkit-scrollbar,
+    .wys-toolbar .tool-row::-webkit-scrollbar { display: none; }
+
+    /* 流れる帯の中では、縮ませずに元の幅を保たせる */
+    header .row > *,
+    .tabbar > *,
+    .wys-toolbar .tool-row > * { flex-shrink: 0; }
+
+    /* 右へ寄せるための伸び代。流れる場では意味を持たない */
+    header .row .spacer,
+    .tabbar .spacer,
+    .wys-toolbar .tool-row .spacer { display: none; }
+
+    /*
+       指で押す的を広げる。見た目の高さは変えず、**押せる範囲だけ**を
+       広げたいので、padding ではなく min-height を使う。
+       44px は Apple の目安。
+    */
+    header button,
+    .tabbar button,
+    .tab { min-height: 40px; }
+
+    /* 縮小表示が効いている環境で、本文だけ勝手に大きくならないように */
+    body { -webkit-text-size-adjust: 100%; }
+  }
+
 </style>
 
 <style>
@@ -5329,6 +5423,12 @@ function applyTheme(html, key, accentKey) {
     var style = idoc.createElement('style');
     style.setAttribute('data-wys-injected', '');
     style.textContent = [
+      /*
+         スマホでは、2回たたくと編集に入る道と、ブラウザのダブルタップ拡大が
+         ぶつかる。拡大に取られると編集が始まらない。manipulation は
+         **ダブルタップ拡大だけを止め、ピンチでの拡大は残す**。
+      */
+      'body{touch-action:manipulation;}',
       '[data-wys-hot]{outline:1px dashed rgba(26,115,232,.6) !important; outline-offset:-1px; cursor:pointer;}',
       '[data-wys-hot="backdrop"]{outline-color:rgba(124,92,191,.75) !important;}',
       '[data-wys-hot="section"]{outline-color:rgba(26,115,232,.75) !important;}',

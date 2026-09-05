@@ -4,6 +4,13 @@
   <head>
     <base target="_top" />
     <meta charset="utf-8" />
+    <!--
+       これが無いと iOS Safari は幅980pxで組んでから画面幅に縮める。
+       iPhoneの390pxでは0.40倍になり、指が狙った場所に当たらない。
+       ピンチでの拡大は残す（狭いところを覗くのに要る）ので、
+       maximum-scale や user-scalable=no は書かない。
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>HTML Editor for Email</title>
 
     <link
