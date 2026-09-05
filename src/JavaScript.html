@@ -51,6 +51,126 @@
     STRIKE: 1, SMALL: 1, FONT: 1, IMG: 1
   };
 
+  /*
+     プレビューの枠でスクリプトを動かすかどうか。
+
+     iOS/iPadOS の WebKit は、sandbox に allow-scripts が無い枠へ
+     **イベントを1つも配らない**。touchstart すら来ない。実機で確かめた
+     （枠の中は生きているのに、指の信号だけが入らない）。
+     この枠が編集面そのものなので、指では何も触れないことになる。
+
+     allow-scripts を足すと直る。ただし allow-same-origin と併せると
+     sandbox は防御にならない（枠の中から自分で外せる）。だから
+     **これが起きる場所に限って**足す。
+
+     見分けるのは「指かどうか」ではなく「iOS/iPadOS かどうか」。
+     これは WebKit だけの挙動で、Chrome や Edge では同じ指定でも
+     イベントが届く。**タッチ画面のWindows機は、指で触れても直す必要が
+     無いので、緩めない。** iPhoneのChromeは中身がWebKitなので入る
+     （実機で、Safariと同じ結果になることを確認済み）。
+
+     画面の幅では見ない。窓を細くしたPCまで緩んでしまうため。
+     pointer: coarse も使わない。読み込みの初期に答えが定まらず、
+     外した回はずっと強いままになった（手元の計測で8回中4回）。
+     UA と指の点の数は、最初から確定している。
+  */
+  function wantsTouchPreview() {
+    try {
+      var ua = navigator.userAgent || '';
+
+      // iPhone と iPad は UA だけで決まる。指の点の数は見ない
+      if (/iPad|iPhone|iPod/.test(ua)) return true;
+
+      /*
+         iPadOS 13以降は Macintosh を名乗るので、ここだけ指の点で
+         見分ける（本物のMacに指の点は無い）。
+      */
+      return /Macintosh/.test(ua) && (navigator.maxTouchPoints || 0) > 0;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /*
+     プレビューに流す前に、スクリプトと on* を眠らせる。
+
+     メールにスクリプトは入らない。GmailもOutlookも必ず落とすので、
+     **落としたほうがプレビューは実物に近い。** 端末を問わず行う。
+
+     ただし消しはしない。プレビューでの編集は serializeWys() を通って
+     本文へ書き戻るので、**消すと利用者の書いたものが黙って失われる。**
+     type を変え、属性の名前を変えて眠らせ、書き戻しのときに起こす。
+
+     スクリプトも on* も無い原稿には、**何もしないで元の文字列を返す**。
+     整形すら通さない。大多数の原稿にとって、この処理は存在しないのと同じ。
+  */
+  var INERT_TYPE = 'text/x-wys-inert';
+  var WAS_TYPE = 'data-wys-type';
+  var WAS_ON = 'data-wys-on-';
+
+  function calmForPreview(html) {
+    if (!/<script|\son[a-z]+\s*=/i.test(html)) return html;
+
+    var doc;
+    try { doc = new DOMParser().parseFromString(html, 'text/html'); }
+    catch (e) { return html; }
+    if (!doc || !doc.documentElement) return html;
+
+    var touched = false;
+
+    Array.prototype.slice.call(doc.getElementsByTagName('script')).forEach(function (node) {
+      touched = true;
+      node.setAttribute(WAS_TYPE, node.getAttribute('type') || '');
+      node.setAttribute('type', INERT_TYPE);
+    });
+
+    Array.prototype.slice.call(doc.querySelectorAll('*')).forEach(function (node) {
+      Array.prototype.slice.call(node.attributes).forEach(function (attr) {
+        var name = attr.name.toLowerCase();
+        if (name.indexOf('on') !== 0 || name.length < 3) return;
+
+        /*
+           名前が on で始まるだけでは足りない。one や onward のような
+           ただの属性まで巻き込む。**その要素が本当にその受け口を
+           持っているか**で見分ける（node.onclick は null で存在するが、
+           node.one は undefined）。
+        */
+        if (typeof node[name] === 'undefined') return;
+
+        touched = true;
+        node.setAttribute(WAS_ON + name, attr.value);
+        node.removeAttribute(attr.name);
+      });
+    });
+
+    if (!touched) return html;
+
+    /*
+       末尾に改行を足さない。元の改行は解析の時点で body の中に入るので、
+       ここで足すと**編集のたびに1つずつ増える**。
+    */
+    var doctype = doc.doctype ? '<!DOCTYPE ' + doc.doctype.name + '>\n' : '';
+    return doctype + doc.documentElement.outerHTML;
+  }
+
+  /** 眠らせたものを起こす。書き戻しの経路で必ず通す */
+  function wakeAfterPreview(root) {
+    Array.prototype.slice.call(root.querySelectorAll('[' + WAS_TYPE + ']')).forEach(function (node) {
+      var was = node.getAttribute(WAS_TYPE);
+      if (was) node.setAttribute('type', was);
+      else node.removeAttribute('type');
+      node.removeAttribute(WAS_TYPE);
+    });
+
+    Array.prototype.slice.call(root.querySelectorAll('*')).forEach(function (node) {
+      Array.prototype.slice.call(node.attributes).forEach(function (attr) {
+        if (attr.name.indexOf(WAS_ON) !== 0) return;
+        node.setAttribute(attr.name.slice(WAS_ON.length), attr.value);
+        node.removeAttribute(attr.name);
+      });
+    });
+  }
+
   /** 編集用に注入し、保存前に取り除く属性 */
   var EDIT_ATTRS = ['data-wys-sel', 'data-wys-hot', 'data-wys-doom', 'data-wys-move',
     'data-wys-lv', 'contenteditable', 'spellcheck'];
@@ -274,6 +394,15 @@
     ].forEach(function (id) {
       el[id] = document.getElementById(id);
     });
+
+    /*
+       最初の読み込みより前に、いちど置いておく。
+
+       描画のたびにも置き直すが、**起動時に一度も描かない道がある**
+       （保存された原稿が無いときなど）。その場合は最初に読み込まれた
+       ときの指定のまま残るので、ここで先に決めておく。
+    */
+    applyPreviewSandbox();
 
     el.sidebar = document.querySelector('.sidebar');
 
@@ -1042,7 +1171,28 @@
     wys.selected = null;
     wys.editing = null;
     wys.pendingInput = false;
-    el.preview.srcdoc = html;
+    applyPreviewSandbox();
+    el.preview.srcdoc = calmForPreview(html);
+  }
+
+  /*
+     プレビューの枠でスクリプトを許すかどうかを、**描画のたびに決める**。
+
+     起動時に1度だけ決めていたら、判定が間に合わなかった回は、その後
+     ずっと誤ったままになった（手元の計測で4回中2回外した）。
+     sandbox は枠が読み込む時点で効くので、srcdoc を入れる直前に
+     置き直せば、そのつど正しい側に寄る。
+
+     指が主な入力手段の端末だけ緩める。マウスのある機械は強いまま。
+  */
+  function applyPreviewSandbox() {
+    if (!el.preview) return;
+    var want = wantsTouchPreview()
+      ? 'allow-same-origin allow-scripts'
+      : 'allow-same-origin';
+    if (el.preview.getAttribute('sandbox') !== want) {
+      el.preview.setAttribute('sandbox', want);
+    }
   }
 
   function onWysLoad() {
@@ -1732,6 +1882,9 @@
     clone.querySelectorAll('[data-wys-injected]').forEach(function (node) {
       node.parentNode.removeChild(node);
     });
+
+    // 眠らせたスクリプトと on* を、元の姿へ戻してから本文にする
+    wakeAfterPreview(clone);
     EDIT_ATTRS.forEach(function (attr) {
       clone.querySelectorAll('[' + attr + ']').forEach(function (node) {
         node.removeAttribute(attr);
