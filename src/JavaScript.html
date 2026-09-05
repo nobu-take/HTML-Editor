@@ -382,6 +382,7 @@
       'width-input', 'width-apply',
       'wys-font', 'wys-size', 'wys-bold', 'wys-italic', 'wys-underline', 'wys-strike',
       'wys-color', 'wys-color-hex', 'wys-color-apply', 'wys-clear',
+      'wys-link', 'wys-link-url', 'wys-link-apply', 'wys-link-off',
       'wys-ul', 'wys-ol', 'wys-quote', 'wys-indent', 'wys-outdent',
       'wys-up', 'wys-down',
       'width-fluid', 'width-fixed', 'body-width', 'body-min-width',
@@ -595,6 +596,36 @@
     el['wys-color-apply'].addEventListener('click', function () {
       applyStyleToSelection('color:' + el['wys-color'].value + ';');
     });
+
+    /*
+       リンク。選んだ文字を <a> で包む。
+
+       既存の <a> は要素パネルで直せたが、**新しく作る道が無かった。**
+    */
+    el['wys-link'].addEventListener('click', function () {
+      toggleLinkBar(el['wys-link-url'].hidden);
+    });
+
+    el['wys-link-apply'].addEventListener('click', function () {
+      var url = tidyLinkUrl(el['wys-link-url'].value);
+      if (!url) {
+        setStatus('リンク先を入力してください', 'err');
+        return;
+      }
+      if (applyLinkToSelection(url)) toggleLinkBar(false);
+    });
+
+    el['wys-link-url'].addEventListener('keydown', function (event) {
+      if (event.key !== 'Enter') return;
+      event.preventDefault();
+      el['wys-link-apply'].click();
+    });
+
+    el['wys-link-off'].addEventListener('click', function () {
+      removeLinkFromSelection();
+      toggleLinkBar(false);
+    });
+
 
     // 段落
     el['wys-ul'].addEventListener('click', function () { toggleList('ul'); });
@@ -2147,6 +2178,138 @@
   }
 
   /** 選択した文字列を span で包んでインラインstyleを付ける */
+// -------------------------------------------------------------------------
+  // 文字にリンクを付ける
+  // -------------------------------------------------------------------------
+
+  /*
+     選んだ文字を <a> で包む。
+
+     surroundContents は、選択が要素の境界をまたぐと落ちる。装飾を当てる
+     ときと同じ理屈なので、同じ逃がし方をする（中身を取り出して包み直す）。
+
+     target と rel は付けない。メールのHTMLでは意味を持たず、受け取った側の
+     ソフトが自分で決める。付けると、その属性を落とすソフトと落とさない
+     ソフトで見た目が割れる。
+  */
+  function applyLinkToSelection(url) {
+    var picked = selectionRange();
+    if (!picked) {
+      setStatus('リンクにしたい文字を選択してください', 'err');
+      return false;
+    }
+
+    pushUndo();
+
+    var link = wys.doc.createElement('a');
+    link.setAttribute('href', url);
+
+    try {
+      picked.range.surroundContents(link);
+    } catch (err) {
+      link.appendChild(picked.range.extractContents());
+      picked.range.insertNode(link);
+    }
+
+    picked.selection.removeAllRanges();
+    syncFromWys();
+    setStatus('リンクにしました', 'ok');
+    return true;
+  }
+
+  /*
+     リンクを外す。文字は残す。
+
+     選んだ範囲の中にある <a> を、中身で置き換える。範囲の外まで届いている
+     リンクも対象にする（一部だけ選んで外そうとしたとき、半端に切れた
+     リンクが残るほうが分かりにくい）。
+  */
+  function removeLinkFromSelection() {
+    var picked = selectionRange();
+    if (!picked) {
+      setStatus('リンクを外したい文字を選択してください', 'err');
+      return;
+    }
+
+    var links = [];
+    var node = picked.range.commonAncestorContainer;
+    var host = node.nodeType === 1 ? node : node.parentElement;
+    if (!host) return;
+
+    var top = host.closest ? host.closest('a') : null;
+    if (top) {
+      links.push(top);
+    } else {
+      Array.prototype.slice.call(host.getElementsByTagName('a')).forEach(function (a) {
+        if (picked.range.intersectsNode && picked.range.intersectsNode(a)) links.push(a);
+      });
+    }
+
+    if (!links.length) {
+      setStatus('選んだ範囲にリンクはありません', 'err');
+      return;
+    }
+
+    pushUndo();
+
+    links.forEach(function (a) {
+      var parent = a.parentNode;
+      while (a.firstChild) parent.insertBefore(a.firstChild, a);
+      parent.removeChild(a);
+    });
+
+    picked.selection.removeAllRanges();
+    syncFromWys();
+    setStatus('リンクを外しました', 'ok');
+  }
+
+  /*
+     リンクの入力欄を出し入れする。
+
+     ふだんは絵のボタンだけを出しておく。押したときに欄を開く。
+     道具の帯は横に長いので、使わないものを常に置いておくと、
+     ほかの操作が押し出される。
+  */
+  function toggleLinkBar(open) {
+    var url = el['wys-link-url'];
+    var apply = el['wys-link-apply'];
+    var off = el['wys-link-off'];
+    if (!url || !apply || !off) return;
+
+    url.hidden = !open;
+    apply.hidden = !open;
+    off.hidden = !open;
+
+    if (open) {
+      // いま選んでいるところが既にリンクなら、その行き先を初期値にする
+      var picked = selectionRange();
+      var found = '';
+      if (picked) {
+        var node = picked.range.commonAncestorContainer;
+        var host = node.nodeType === 1 ? node : node.parentElement;
+        var a = host && host.closest ? host.closest('a') : null;
+        if (a) found = a.getAttribute('href') || '';
+      }
+      url.value = found;
+      url.focus();
+    }
+  }
+
+  /*
+     打たれたURLを整える。
+
+     「example.com」のように書かれることが多い。そのまま href に入れると
+     相対パスと解釈され、メールでは開けない。前置きが無ければ https を補う。
+     mailto: と tel: はそのまま通す。
+  */
+  function tidyLinkUrl(value) {
+    var url = String(value || '').trim();
+    if (!url) return '';
+    if (/^(https?:|mailto:|tel:)/i.test(url)) return url;
+    if (/^#/.test(url)) return url;
+    return 'https://' + url;
+  }
+
   function applyStyleToSelection(styleText) {
     var picked = selectionRange();
     if (!picked) {

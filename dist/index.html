@@ -3179,6 +3179,21 @@ window.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+
+  /*
+     リンクの入力欄。色の欄と同じ並びに置く。
+
+     ふだんは絵のボタンだけを出し、押したときに欄が開く。道具の帯は
+     横に長いので、使わないものを常に置いておくとほかの操作が押し出される。
+  */
+  .link-url {
+    width: 150px;
+    min-width: 0;
+    font-size: 12px;
+  }
+
+  .link-seg [hidden] { display: none; }
+
 </style>
 
 <style>
@@ -3372,7 +3387,7 @@ window.addEventListener('DOMContentLoaded', function () {
                     <input id="wys-color" type="color" value="#1f2328" />
                     <input id="wys-color-hex" type="text" class="hex" maxlength="7" value="#1f2328" />
                     <button id="wys-color-apply" title="選択範囲にこの色を適用">適用</button>
-                  </span><button id="wys-clear" class="icon-only" title="書式クリア（選択範囲の装飾をすべて外す）" aria-label="書式クリア"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l3.6-8 2.2 5"/><path d="M4 9.6h4"/><path d="M10.5 10.5l3.5 3.5M14 10.5l-3.5 3.5"/></svg></button></span>
+                  </span><span class="seg link-seg"><button id="wys-link" class="icon-only" title="選んだ文字にリンクを付ける" aria-label="リンクを付ける"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 9.5a2.5 2.5 0 0 0 3.5 0l2.5-2.5a2.5 2.5 0 0 0-3.5-3.5l-1 1"/><path d="M9.5 6.5a2.5 2.5 0 0 0-3.5 0L3.5 9a2.5 2.5 0 0 0 3.5 3.5l1-1"/></svg></button><input id="wys-link-url" type="url" class="link-url" placeholder="https://" autocomplete="off" hidden /><button id="wys-link-apply" title="このURLでリンクにする" hidden>適用</button><button id="wys-link-off" title="リンクを外す" hidden>外す</button></span><button id="wys-clear" class="icon-only" title="書式クリア（選択範囲の装飾をすべて外す）" aria-label="書式クリア"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l3.6-8 2.2 5"/><path d="M4 9.6h4"/><path d="M10.5 10.5l3.5 3.5M14 10.5l-3.5 3.5"/></svg></button></span>
               <span class="seg"><button id="wys-ul" class="icon-only" title="箇条書きにする" aria-label="箇条書き"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4.5h7.5M6 8h7.5M6 11.5h7.5"/><circle cx="3" cy="4.5" r=".9" fill="currentColor" stroke="none"/><circle cx="3" cy="8" r=".9" fill="currentColor" stroke="none"/><circle cx="3" cy="11.5" r=".9" fill="currentColor" stroke="none"/></svg></button><button id="wys-ol" class="icon-only" title="番号付きリストにする" aria-label="番号付きリスト"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4.5h7.5M6 8h7.5M6 11.5h7.5"/><path d="M2.4 3.4l.9-.5v2.8M2.2 7.3a.9.9 0 011.5.7c0 .6-1.5 1.2-1.5 1.7h1.7M2.2 10.8h1.6l-.9 1.1a.85.85 0 11-.7 1.3"/></svg></button><button id="wys-quote" class="icon-only" title="引用として囲む" aria-label="引用"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3.2v9.6"/><path d="M6.5 5h7M6.5 8h7M6.5 11h4.5"/></svg></button><button id="wys-outdent" class="icon-only" title="インデントを減らす" aria-label="インデントを減らす"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 4.5h7M6.5 8h7M6.5 11.5h7"/><path d="M4.5 6.2L2.6 8l1.9 1.8"/></svg></button><button id="wys-indent" class="icon-only" title="インデントを増やす" aria-label="インデントを増やす"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 4.5h7M6.5 8h7M6.5 11.5h7"/><path d="M2.6 6.2L4.5 8l-1.9 1.8"/></svg></button></span>
               <span class="tool-group">
                 <span class="tool-label">本文の幅</span>
@@ -5348,6 +5363,7 @@ function applyTheme(html, key, accentKey) {
       'width-input', 'width-apply',
       'wys-font', 'wys-size', 'wys-bold', 'wys-italic', 'wys-underline', 'wys-strike',
       'wys-color', 'wys-color-hex', 'wys-color-apply', 'wys-clear',
+      'wys-link', 'wys-link-url', 'wys-link-apply', 'wys-link-off',
       'wys-ul', 'wys-ol', 'wys-quote', 'wys-indent', 'wys-outdent',
       'wys-up', 'wys-down',
       'width-fluid', 'width-fixed', 'body-width', 'body-min-width',
@@ -5561,6 +5577,36 @@ function applyTheme(html, key, accentKey) {
     el['wys-color-apply'].addEventListener('click', function () {
       applyStyleToSelection('color:' + el['wys-color'].value + ';');
     });
+
+    /*
+       リンク。選んだ文字を <a> で包む。
+
+       既存の <a> は要素パネルで直せたが、**新しく作る道が無かった。**
+    */
+    el['wys-link'].addEventListener('click', function () {
+      toggleLinkBar(el['wys-link-url'].hidden);
+    });
+
+    el['wys-link-apply'].addEventListener('click', function () {
+      var url = tidyLinkUrl(el['wys-link-url'].value);
+      if (!url) {
+        setStatus('リンク先を入力してください', 'err');
+        return;
+      }
+      if (applyLinkToSelection(url)) toggleLinkBar(false);
+    });
+
+    el['wys-link-url'].addEventListener('keydown', function (event) {
+      if (event.key !== 'Enter') return;
+      event.preventDefault();
+      el['wys-link-apply'].click();
+    });
+
+    el['wys-link-off'].addEventListener('click', function () {
+      removeLinkFromSelection();
+      toggleLinkBar(false);
+    });
+
 
     // 段落
     el['wys-ul'].addEventListener('click', function () { toggleList('ul'); });
@@ -7113,6 +7159,138 @@ function applyTheme(html, key, accentKey) {
   }
 
   /** 選択した文字列を span で包んでインラインstyleを付ける */
+// -------------------------------------------------------------------------
+  // 文字にリンクを付ける
+  // -------------------------------------------------------------------------
+
+  /*
+     選んだ文字を <a> で包む。
+
+     surroundContents は、選択が要素の境界をまたぐと落ちる。装飾を当てる
+     ときと同じ理屈なので、同じ逃がし方をする（中身を取り出して包み直す）。
+
+     target と rel は付けない。メールのHTMLでは意味を持たず、受け取った側の
+     ソフトが自分で決める。付けると、その属性を落とすソフトと落とさない
+     ソフトで見た目が割れる。
+  */
+  function applyLinkToSelection(url) {
+    var picked = selectionRange();
+    if (!picked) {
+      setStatus('リンクにしたい文字を選択してください', 'err');
+      return false;
+    }
+
+    pushUndo();
+
+    var link = wys.doc.createElement('a');
+    link.setAttribute('href', url);
+
+    try {
+      picked.range.surroundContents(link);
+    } catch (err) {
+      link.appendChild(picked.range.extractContents());
+      picked.range.insertNode(link);
+    }
+
+    picked.selection.removeAllRanges();
+    syncFromWys();
+    setStatus('リンクにしました', 'ok');
+    return true;
+  }
+
+  /*
+     リンクを外す。文字は残す。
+
+     選んだ範囲の中にある <a> を、中身で置き換える。範囲の外まで届いている
+     リンクも対象にする（一部だけ選んで外そうとしたとき、半端に切れた
+     リンクが残るほうが分かりにくい）。
+  */
+  function removeLinkFromSelection() {
+    var picked = selectionRange();
+    if (!picked) {
+      setStatus('リンクを外したい文字を選択してください', 'err');
+      return;
+    }
+
+    var links = [];
+    var node = picked.range.commonAncestorContainer;
+    var host = node.nodeType === 1 ? node : node.parentElement;
+    if (!host) return;
+
+    var top = host.closest ? host.closest('a') : null;
+    if (top) {
+      links.push(top);
+    } else {
+      Array.prototype.slice.call(host.getElementsByTagName('a')).forEach(function (a) {
+        if (picked.range.intersectsNode && picked.range.intersectsNode(a)) links.push(a);
+      });
+    }
+
+    if (!links.length) {
+      setStatus('選んだ範囲にリンクはありません', 'err');
+      return;
+    }
+
+    pushUndo();
+
+    links.forEach(function (a) {
+      var parent = a.parentNode;
+      while (a.firstChild) parent.insertBefore(a.firstChild, a);
+      parent.removeChild(a);
+    });
+
+    picked.selection.removeAllRanges();
+    syncFromWys();
+    setStatus('リンクを外しました', 'ok');
+  }
+
+  /*
+     リンクの入力欄を出し入れする。
+
+     ふだんは絵のボタンだけを出しておく。押したときに欄を開く。
+     道具の帯は横に長いので、使わないものを常に置いておくと、
+     ほかの操作が押し出される。
+  */
+  function toggleLinkBar(open) {
+    var url = el['wys-link-url'];
+    var apply = el['wys-link-apply'];
+    var off = el['wys-link-off'];
+    if (!url || !apply || !off) return;
+
+    url.hidden = !open;
+    apply.hidden = !open;
+    off.hidden = !open;
+
+    if (open) {
+      // いま選んでいるところが既にリンクなら、その行き先を初期値にする
+      var picked = selectionRange();
+      var found = '';
+      if (picked) {
+        var node = picked.range.commonAncestorContainer;
+        var host = node.nodeType === 1 ? node : node.parentElement;
+        var a = host && host.closest ? host.closest('a') : null;
+        if (a) found = a.getAttribute('href') || '';
+      }
+      url.value = found;
+      url.focus();
+    }
+  }
+
+  /*
+     打たれたURLを整える。
+
+     「example.com」のように書かれることが多い。そのまま href に入れると
+     相対パスと解釈され、メールでは開けない。前置きが無ければ https を補う。
+     mailto: と tel: はそのまま通す。
+  */
+  function tidyLinkUrl(value) {
+    var url = String(value || '').trim();
+    if (!url) return '';
+    if (/^(https?:|mailto:|tel:)/i.test(url)) return url;
+    if (/^#/.test(url)) return url;
+    return 'https://' + url;
+  }
+
   function applyStyleToSelection(styleText) {
     var picked = selectionRange();
     if (!picked) {

@@ -323,5 +323,10 @@
   "ファイル一覧": "Files",
   "要素パネル": "Element panel",
   "Gmailを開く": "Open Gmail",
-  "Outlookを開く": "Open Outlook"
+  "Outlookを開く": "Open Outlook",
+  "選んだ文字にリンクを付ける": "Add a link to the selected text",
+  "リンクを付ける": "Add a link",
+  "このURLでリンクにする": "Link to this address",
+  "リンクを外す": "Remove the link",
+  "外す": "Remove"
 }

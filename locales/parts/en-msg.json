@@ -256,5 +256,11 @@
   "依頼を決める": "Decide what to ask",
   "本文をコピーしました。下のリンクからGmailやOutlookを開き、新規作成に貼り付けてください。": "The message is copied. Open Gmail or Outlook from the link below, then paste it into a new message.",
   "コピーできませんでした。「本文だけコピー」を押してから、下のリンクを開いてください。": "Copying failed. Press \"Copy the message only\", then open the link below.",
-  "ブラウザ版で開いてください。アプリに貼り付けると、背景色が落ちます。": "Open the browser version. Pasting into the app drops background colours."
+  "ブラウザ版で開いてください。アプリに貼り付けると、背景色が落ちます。": "Open the browser version. Pasting into the app drops background colours.",
+  "リンクにしたい文字を選択してください": "Select the text you want to link.",
+  "リンクを外したい文字を選択してください": "Select the text whose link you want to remove.",
+  "選んだ範囲にリンクはありません": "There is no link in the selected text.",
+  "リンクにしました": "Added the link",
+  "リンクを外しました": "Removed the link",
+  "リンク先を入力してください": "Enter the address to link to."
 }
