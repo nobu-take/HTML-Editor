@@ -2689,6 +2689,17 @@ window.addEventListener('DOMContentLoaded', function () {
     #inspector-body .swatch { width: 18px; height: 18px; }
 
     /*
+       208pxに4つ並ぶ選び分け（小・標準・大・特大）は入りきらない。
+       折り返させる。横に押し出すより、2段になるほうが押せる。
+    */
+    #inspector-body .seg { flex-wrap: wrap; }
+    #inspector-body .seg button { flex: 1 1 auto; }
+
+    /* パネルの内側の余白も詰める。幅が効くのはここ */
+    .inspector .inspector-head,
+    #inspector-body { padding-left: 8px; padding-right: 8px; }
+
+    /*
        ✕ は畳む。開いたボタンが、そのまま閉じるボタンになる。
 
        開くのと閉じるのが別の場所にあると、閉じるほうを探すことになる。
@@ -2761,7 +2772,14 @@ window.addEventListener('DOMContentLoaded', function () {
       top: auto;
       bottom: 92px;      /* 部品の帯46px + ボタン列40px + 隙間 の上 */
       z-index: 58;
-      width: min(256px, 64vw);
+      /*
+         幅は左右の半分まで。402pxなら208px。
+
+         **面積で測っていたのが誤りだった。** 256x350 を「26%」と report して
+         いたが、目に入るのは左右の占め方で、256/402 = 64%。埋まって見えて
+         当然だった。以後は幅の割合で見る。
+      */
+      width: min(208px, 52vw);
       /*
          全高にしない。右から300px×全高で出すと画面の77%を覆い、
          下から62vhで出していたときより**広くなってしまう**。
