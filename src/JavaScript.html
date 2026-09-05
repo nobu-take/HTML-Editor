@@ -75,65 +75,6 @@
      UA と指の点の数は、最初から確定している。
   */
   /*
-     ?probe=1 のときだけ、実機での寸法を画面に出す。
-
-     プレビューが右に余りを残す件が、手元の模擬では再現しない
-     （Chromeでは全幅になる）。**実機で測るしかない。**
-     原因が分かったら消す。
-  */
-  function showProbe() {
-    if (location.search.indexOf('probe=1') < 0) return;
-
-    var box = document.createElement('pre');
-    box.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:99999;margin:0;'
-      + 'max-height:46vh;overflow:auto;padding:8px 10px;'
-      + 'background:#0b0d10;color:#cfe3ff;font:11px/1.5 ui-monospace,Menlo,monospace;'
-      + 'white-space:pre;-webkit-user-select:text;user-select:text;';
-
-    function draw() {
-      var de = document.documentElement;
-      var lines = [];
-
-      lines.push('画面 ' + de.clientWidth + 'x' + de.clientHeight
-        + '  内 ' + window.innerWidth + 'x' + window.innerHeight
-        + '  倍率 ' + (window.devicePixelRatio || 1));
-      lines.push('html zoom="' + (de.style.zoom || '(なし)') + '"'
-        + '  --ui-scale=' + (de.style.getPropertyValue('--ui-scale') || '(なし)')
-        + '  body幅 ' + Math.round(document.body.getBoundingClientRect().width));
-
-      [['.wys-body', 'wys-body'], ['.tool-rail', '部品帯'], ['.canvas-col', 'canvas-col'],
-       ['.subject-bar', '件名'], ['.preview-body', 'preview-body'], ['#preview', 'preview']]
-        .forEach(function (pair) {
-          var e = document.querySelector(pair[0]);
-          if (!e) { lines.push(pair[1] + ' 無し'); return; }
-          var r = e.getBoundingClientRect();
-          var cs = getComputedStyle(e);
-          lines.push(pair[1] + ' ' + Math.round(r.left) + '〜' + Math.round(r.right)
-            + ' 幅' + Math.round(r.width)
-            + ' 右余り' + Math.round(de.clientWidth - r.right)
-            + ' [w=' + cs.width + ' max=' + cs.maxWidth + ' dir=' + cs.flexDirection + ']');
-        });
-
-      var f = document.getElementById('preview');
-      if (f) {
-        var d = null;
-        try { d = f.contentDocument; } catch (e2) { d = null; }
-        if (d && d.documentElement) {
-          lines.push('中 clientW=' + d.documentElement.clientWidth
-            + ' scrollW=' + d.documentElement.scrollWidth);
-        }
-      }
-
-      box.textContent = lines.join('\n');
-    }
-
-    document.body.appendChild(box);
-    draw();
-    setInterval(draw, 1200);
-    box.addEventListener('click', function () { box.remove(); });
-  }
-
-  /*
      狭い画面かどうか。スタイル側の @media (max-width: 600px) と同じ値。
      片方だけ変えると、見た目と動きが食い違う。
   */
@@ -705,7 +646,6 @@
       markInspectorBar();
     }
 
-    showProbe();
 
     /* 全面に出ている一覧で原稿を選んだら、そのまま閉じる */
     el.list.addEventListener('click', function () {
@@ -1011,7 +951,15 @@
 
   function setUiScale(scale) {
     state.uiScale = scale;
-    document.documentElement.style.zoom = scale === 1 ? '' : scale;
+
+    /*
+       狭い画面では当てない。html の zoom は Safari だと**幅をそのままに
+       中身だけを縮める**ので、右に余りが残って原稿が左へ寄る。
+
+       入口（表示サイズ）は狭い画面で畳んであるが、ここでも止めておく。
+       覚える処理はそのまま通す。PCに戻れば、また効く。
+    */
+    document.documentElement.style.zoom = (scale === 1 || isNarrow()) ? '' : scale;
     // コード欄が zoom を打ち消せるように、値をCSSへ渡す
     document.documentElement.style.setProperty('--ui-scale', scale);
     markScaleOption();

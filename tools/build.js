@@ -191,7 +191,24 @@ const BOOT = `<script>
 (function () {
   try {
     var saved = JSON.parse(localStorage.getItem('html-editor:settings')) || {};
-    if (saved.uiScale) document.documentElement.style.zoom = saved.uiScale;
+
+    /*
+       狭い画面では当てない。
+
+       html に zoom を掛けると、Safari は**画面の幅をそのままに中身だけを
+       縮める**。0.85なら右に15%の黒い余りが残り、原稿が左へ寄って見える。
+       実機で確認済み（Chromeは幅も取り直すので、模擬では再現しない）。
+
+       スマホには文字サイズの設定もピンチもあるので、アプリ側で縮める
+       必要がない。覚えた値は消さない。PCに戻れば、また効く。
+    */
+    /*
+       判定に screen.width を使う。**この処理は viewport の指定より前に
+       走る**ので、matchMedia はまだ980px扱いで答える（実際に外した）。
+       screen.width は端末の値で、読み込みの時点から確定している。
+    */
+    var narrow = window.screen && screen.width <= 600;
+    if (saved.uiScale && !narrow) document.documentElement.style.zoom = saved.uiScale;
     window.SCALE_HINT_DONE = !!saved.scaleHintDone;
     window.TEMPLATE_THEME = saved.templateTheme || 'business';
     window.TEMPLATE_ACCENT = saved.templateAccent || '';
