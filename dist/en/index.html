@@ -2662,9 +2662,16 @@ window.addEventListener('DOMContentLoaded', function () {
        そのぶん中身は、札で言えるものを絵にし、余白を削る。
     */
 
-    /* 「選択中の要素」は、パネルが出ている時点で分かっている */
+    /*
+       「選択中の要素」の題は、パネルが出ている時点で分かっている。畳む。
+
+       題を畳むと、頭に残るのはごみ箱だけになり、左端へ寄る。
+       **消す操作が、開けた瞬間いちばん近くにある**のは避けたい。
+       右上へ送る。
+    */
     .inspector .inspector-head { padding: 6px 8px; }
     .inspector .inspector-title { display: none; }
+    .inspector #inspector-kill { margin-left: auto; }
 
     /* 道すじ（背景 › 段 › 部品）は残す。何を選んでいるかの手がかりはこれだけ */
     #inspector-body .unit-path { gap: 2px; font-size: 11px; }
