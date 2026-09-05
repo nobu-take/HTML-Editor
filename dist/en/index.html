@@ -2625,21 +2625,55 @@ window.addEventListener('DOMContentLoaded', function () {
        出しっぱなしにはしない。**選んだときだけ細い帯を出し、押すと開く。**
        選ぶたびに下半分が埋まると、原稿が見えなくなる。
     */
+    /*
+       **右から出す。**
+
+       一覧は左から右へ出る。要素パネルだけ下から上へ出ていて、
+       同じアプリの中で動きの向きが揃っていなかった。
+
+       画面を覆う量も減らす。下から62vhだと、原稿の下半分が丸ごと
+       消えていた。右から82%幅で出せば、原稿の左端が残って
+       「どこを直しているか」が見えたままになる。
+       入りきらない項目は、中で送る。
+    */
     .inspector {
       display: flex;
       position: fixed;
-      left: 0;
+      left: auto;
       right: 0;
-      bottom: 0;
+      top: auto;
+      bottom: 52px;
       z-index: 58;
+      width: min(292px, 78vw);
+      /*
+         全高にしない。右から300px×全高で出すと画面の77%を覆い、
+         下から62vhで出していたときより**広くなってしまう**。
+         高さを抑えて右下に寄せれば45%まで下がり、原稿の上と左が残る。
+      */
+      height: min(58vh, 470px);
+      max-height: none;
       flex-basis: auto;
-      max-height: 62vh;
-      border-radius: 14px 14px 0 0;
+      border-radius: 14px 0 0 14px;
       box-shadow: var(--lift-strong);
-      padding-bottom: env(safe-area-inset-bottom, 0px);
+      padding: 0 0 env(safe-area-inset-bottom, 0px);
+      transform: translateX(0);
+      transition: transform .18s ease, visibility .18s;
     }
 
-    .inspector[hidden] { display: none; }
+    /*
+       畳んだ状態は display:none にしない。**消すと動きが出ない。**
+       右へ寄せて隠し、押せないようにしておく。
+    */
+    .inspector[hidden] {
+      display: flex;
+      visibility: hidden;
+      transform: translateX(100%);
+      pointer-events: none;
+    }
+
+    /* 中身だけを送る。頭の閉じるボタンは止めておく */
+    .inspector > * { flex: 0 0 auto; }
+    #inspector-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
 
     /*
        選んだときに出る帯。
@@ -2658,7 +2692,7 @@ window.addEventListener('DOMContentLoaded', function () {
       width: auto;
       height: 46px;
       border-radius: 10px 0 0 0;
-      justify-content: flex-start;
+      justify-content: space-between;
       gap: 8px;
       padding: 0 14px calc(0px + env(safe-area-inset-bottom, 0px));
       font-size: 0;
@@ -2671,6 +2705,45 @@ window.addEventListener('DOMContentLoaded', function () {
       font-size: 13px;
       color: var(--text);
     }
+
+    /* 右から出ることを、帯の右端の向きで示す */
+    #inspector-show::before {
+      content: "\2039";
+      order: 2;
+      font-size: 18px;
+      color: var(--faint);
+    }
+
+    /*
+       閉じるボタンは、パネルの上部中央に置く。
+
+       元は頭の右端の » だった。**まず記号の意味が分からない。**
+       中央に大きく置いて、押す場所を迷わせない。
+    */
+    #inspector-hide {
+      position: absolute;
+      left: 50%;
+      top: 6px;
+      transform: translateX(-50%);
+      z-index: 3;
+      width: 64px;
+      height: 30px;
+      border-radius: 999px;
+      background: var(--sunken);
+      font-size: 0;
+    }
+
+    /* 元の » は絵で描かれている。font-size:0 では消えないので、隠す */
+    #inspector-hide > svg { display: none; }
+
+    #inspector-hide::after {
+      content: "\2715";
+      font-size: 15px;
+      color: var(--text);
+    }
+
+    /* 閉じるボタンのぶん、頭をあける */
+    .inspector .aside-head { padding-top: 40px; }
 
     #inspector-show:not([data-label]) { display: none; }
 
@@ -5943,6 +6016,40 @@ function applyTheme(html, key, accentKey) {
       + ' stroke="currentColor" stroke-width="1.6" stroke-linecap="round"'
       + ' stroke-linejoin="round"><path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.8 4.5l.5 8.6h5.4l.5-8.6"/></svg>';
 
+    /*
+       選んだ要素のそばに、要素パネルへの入口を3つ置く。
+
+       狭い画面では、パネルは呼ばないと出てこない。**選んだその場から、
+       直したいまとまりへ直に入れる**ほうが手数が少ない。
+       ごみ箱・複製・つまみと同じ並びに続ける。
+
+       押すと、そのまとまりを開いた状態でパネルが出る。
+    */
+    var TAB_ICONS = {
+      text: '<path d="M3.5 4V3h9v1M8 3v10M6 13h4"/>',
+      surface: '<rect x="2.5" y="3.5" width="11" height="9" rx="1.5"/><path d="M2.5 7.5h11"/>',
+      layout: '<path d="M2.5 5.5v-3h3M13.5 5.5v-3h-3M2.5 10.5v3h3M13.5 10.5v3h-3"/>'
+    };
+
+    wys.tabs = PANEL_GROUPS.map(function (def) {
+      var tab = idoc.createElement('div');
+      tab.className = 'wys-twin wys-tab';
+      tab.setAttribute('data-wys-injected', '');
+      tab.setAttribute('title', '要素：' + def.label);
+      tab.innerHTML = '<svg viewBox="0 0 16 16" width="12" height="12" fill="none"'
+        + ' stroke="currentColor" stroke-width="1.5" stroke-linecap="round"'
+        + ' stroke-linejoin="round">' + TAB_ICONS[def.key] + '</svg>';
+
+      tab.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        openInspectorAt(def.key);
+      });
+
+      idoc.body.appendChild(tab);
+      return tab;
+    });
+
     idoc.body.appendChild(handle);
     idoc.body.appendChild(badge);
     idoc.body.appendChild(grip);
@@ -6051,6 +6158,7 @@ function applyTheme(html, key, accentKey) {
       wys.kill.classList.remove('on');
       wys.twin.classList.remove('on');
       if (wys.name) wys.name.classList.remove('on');
+      if (wys.tabs) wys.tabs.forEach(function (t) { t.classList.remove('on'); });
       return;
     }
 
@@ -6092,6 +6200,21 @@ function applyTheme(html, key, accentKey) {
     wys.twin.classList.add('on');
     wys.twin.style.left = (left + 26) + 'px';
     wys.twin.style.top = (beside ? top + 2 : top) + 'px';
+
+    /*
+       要素パネルへの入口。ごみ箱・複製の右に続ける。
+
+       狭い画面のときだけ出す。PCではパネルが常に右側に出ているので、
+       同じ入口を二重に置く意味がない。
+    */
+    if (wys.tabs) {
+      wys.tabs.forEach(function (tab, i) {
+        if (!isNarrow()) { tab.classList.remove('on'); return; }
+        tab.classList.add('on');
+        tab.style.left = (left + 78 + i * 26) + 'px';   // つまみ(+52)の右へ続ける
+        tab.style.top = (beside ? top + 2 : top) + 'px';
+      });
+    }
 
     placeName(elem, rect, win, left, top, beside);
 
@@ -6185,10 +6308,17 @@ function applyTheme(html, key, accentKey) {
 
     var width = fillName(elem);
 
-    // ボタン3つ分（26px × 3）の右隣から始める
+    /*
+       ボタンの並びの右隣から始める。
+
+       狭い画面では、要素パネルへの入口を3つ足してある（+78 から 26px刻み）。
+       そのぶん送らないと、**名札がアイコンの上に乗る。**
+    */
+    var after = (isNarrow() && wys.tabs) ? 80 + 3 * 26 : 80;
+
     var at = beside
       ? { left: rect.left + win.scrollX, top: rect.top + win.scrollY - 22 }
-      : { left: left + 80, top: top };
+      : { left: left + after, top: top };
 
     // 画面からはみ出すときは、内側へ寄せる
     var limit = win.innerWidth + win.scrollX - width - 4;
@@ -8102,6 +8232,15 @@ function applyTheme(html, key, accentKey) {
      帯の札は、いま何を選んでいるかを言葉で示す。札が無い＝何も選んでいない
      ので、そのときは帯ごと引っ込める（スタイル側で :not([data-label]) を見る）。
   */
+  /** そのまとまりを開いた状態で、要素パネルを出す */
+  function openInspectorAt(key) {
+    PANEL_GROUPS.forEach(function (def) {
+      wys.openGroups[def.key] = (def.key === key);
+    });
+    togglePane('inspector', true);
+    renderInspector();
+  }
+
   function markInspectorBar() {
     var bar = el['inspector-show'];
     if (!bar) return;

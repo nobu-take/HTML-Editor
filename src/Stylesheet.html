@@ -2568,21 +2568,55 @@
        出しっぱなしにはしない。**選んだときだけ細い帯を出し、押すと開く。**
        選ぶたびに下半分が埋まると、原稿が見えなくなる。
     */
+    /*
+       **右から出す。**
+
+       一覧は左から右へ出る。要素パネルだけ下から上へ出ていて、
+       同じアプリの中で動きの向きが揃っていなかった。
+
+       画面を覆う量も減らす。下から62vhだと、原稿の下半分が丸ごと
+       消えていた。右から82%幅で出せば、原稿の左端が残って
+       「どこを直しているか」が見えたままになる。
+       入りきらない項目は、中で送る。
+    */
     .inspector {
       display: flex;
       position: fixed;
-      left: 0;
+      left: auto;
       right: 0;
-      bottom: 0;
+      top: auto;
+      bottom: 52px;
       z-index: 58;
+      width: min(292px, 78vw);
+      /*
+         全高にしない。右から300px×全高で出すと画面の77%を覆い、
+         下から62vhで出していたときより**広くなってしまう**。
+         高さを抑えて右下に寄せれば45%まで下がり、原稿の上と左が残る。
+      */
+      height: min(58vh, 470px);
+      max-height: none;
       flex-basis: auto;
-      max-height: 62vh;
-      border-radius: 14px 14px 0 0;
+      border-radius: 14px 0 0 14px;
       box-shadow: var(--lift-strong);
-      padding-bottom: env(safe-area-inset-bottom, 0px);
+      padding: 0 0 env(safe-area-inset-bottom, 0px);
+      transform: translateX(0);
+      transition: transform .18s ease, visibility .18s;
     }
 
-    .inspector[hidden] { display: none; }
+    /*
+       畳んだ状態は display:none にしない。**消すと動きが出ない。**
+       右へ寄せて隠し、押せないようにしておく。
+    */
+    .inspector[hidden] {
+      display: flex;
+      visibility: hidden;
+      transform: translateX(100%);
+      pointer-events: none;
+    }
+
+    /* 中身だけを送る。頭の閉じるボタンは止めておく */
+    .inspector > * { flex: 0 0 auto; }
+    #inspector-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
 
     /*
        選んだときに出る帯。
@@ -2601,7 +2635,7 @@
       width: auto;
       height: 46px;
       border-radius: 10px 0 0 0;
-      justify-content: flex-start;
+      justify-content: space-between;
       gap: 8px;
       padding: 0 14px calc(0px + env(safe-area-inset-bottom, 0px));
       font-size: 0;
@@ -2614,6 +2648,45 @@
       font-size: 13px;
       color: var(--text);
     }
+
+    /* 右から出ることを、帯の右端の向きで示す */
+    #inspector-show::before {
+      content: "\2039";
+      order: 2;
+      font-size: 18px;
+      color: var(--faint);
+    }
+
+    /*
+       閉じるボタンは、パネルの上部中央に置く。
+
+       元は頭の右端の » だった。**まず記号の意味が分からない。**
+       中央に大きく置いて、押す場所を迷わせない。
+    */
+    #inspector-hide {
+      position: absolute;
+      left: 50%;
+      top: 6px;
+      transform: translateX(-50%);
+      z-index: 3;
+      width: 64px;
+      height: 30px;
+      border-radius: 999px;
+      background: var(--sunken);
+      font-size: 0;
+    }
+
+    /* 元の » は絵で描かれている。font-size:0 では消えないので、隠す */
+    #inspector-hide > svg { display: none; }
+
+    #inspector-hide::after {
+      content: "\2715";
+      font-size: 15px;
+      color: var(--text);
+    }
+
+    /* 閉じるボタンのぶん、頭をあける */
+    .inspector .aside-head { padding-top: 40px; }
 
     #inspector-show:not([data-label]) { display: none; }
 
