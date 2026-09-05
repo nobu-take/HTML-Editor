@@ -2432,44 +2432,71 @@
        浮いた丸ボタンにして、色も前に出す。指の的は52px。
     */
     /*
+       部品の帯の直上に、左右へ振り分ける。
+
+         左  › ファイル一覧
+         右  要素パネル ‹
+
+       前は左下の丸い › だけだった。**何のボタンか想像がつかない**、との
+       指摘を受けた。名前を付ければ、押す前に何が起きるか分かる。
+       向きの記号も添える。一覧は左から、要素パネルは右から出るので、
+       記号がそのまま出てくる方向を指す。
+
+       札は data-label で受け取る（スタイル側に文字を書くと訳に載らない）。
+
        画面の下は、下から順に積む。
-
-         部品の帯（流れの中）        いちばん下
-         要素の帯（選んだときだけ）  その上
-         浮きボタン                  さらに上
-
-       部品の帯を下へ寝かせた結果、3つが同じ高さに重なった。
-       浮きボタンが「新しい行として」の上に乗って、どちらも押しにくい。
-
-       浮きボタンの高さは変数で持つ。要素の帯が出ているかで変わるので、
-       開くボタンと閉じるボタンの両方を、1か所で動かせるようにする。
+         部品の帯（流れの中）  いちばん下
+         この2つのボタン        その上
     */
-    .rail {
+    .rail,
+    #inspector-show {
       position: fixed;
-      left: 12px;
-      bottom: var(--fab-bottom, 58px);
-      z-index: 55;
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
+      bottom: 46px;
+      z-index: 56;
+      width: auto;
+      height: 40px;
+      min-height: 40px;
+      padding: 0 12px;
+      gap: 6px;
       border: 0;
-      background: var(--accent);
-      color: #fff;
-      font-size: 22px;
-      line-height: 1;
+      border-radius: 10px;
+      background: var(--panel);
       box-shadow: var(--lift-strong);
+      font-size: 0;
     }
 
-    /*
-       閉じるほうも、同じ場所・同じ大きさに置く。
+    .rail { left: 8px; }
+    #inspector-show { right: 8px; left: auto; }
 
-       開くのは左下の取っ手、閉じるのは一覧の頭にある « という
-       散らばり方をしていた。**出した指を動かさずに戻せるほうがいい。**
+    .rail::after,
+    #inspector-show::after {
+      content: attr(data-label);
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    /* 出てくる向きを、記号で指す */
+    .rail::before { content: "\203A"; font-size: 15px; color: var(--faint); }
+
+    #inspector-show::before {
+      content: "\2039";
+      order: 2;
+      font-size: 15px;
+      color: var(--faint);
+    }
+
+    /* 元の絵は畳む。文字の札に置き換えたため */
+    .rail > svg,
+    #inspector-show > svg { display: none; }
+
+    /*
+       閉じるボタンは、一覧が画面いっぱいに出ているときのもの。
+       重なる相手がいないので、左下のまま大きく置く。
     */
     #sidebar-hide {
       position: fixed;
       left: 12px;
-      bottom: var(--fab-bottom, 58px);
+      bottom: 16px;
       z-index: 62;
       width: 52px;
       height: 52px;
@@ -2598,7 +2625,7 @@
       left: auto;
       right: 0;
       top: auto;
-      bottom: 96px;      /* 部品の帯46px + 要素の帯46px の上 */
+      bottom: 92px;      /* 部品の帯46px + ボタン列40px + 隙間 の上 */
       z-index: 58;
       width: min(292px, 78vw);
       /*
@@ -2639,41 +2666,6 @@
 
        左は一覧の浮きボタンをよけて空ける。重ねると、どちらも押しにくい。
     */
-    /* 要素の帯は、部品の帯（46px）の上に置く */
-    body { --fab-bottom: 58px; }
-    body:has(#inspector-show[data-label]) { --fab-bottom: 110px; }
-
-    #inspector-show {
-      position: fixed;
-      left: 76px;
-      right: 0;
-      bottom: 46px;
-      z-index: 56;
-      width: auto;
-      height: 46px;
-      border-radius: 10px 0 0 0;
-      justify-content: space-between;
-      gap: 8px;
-      padding: 0 14px calc(0px + env(safe-area-inset-bottom, 0px));
-      font-size: 0;
-      background: var(--panel);
-      box-shadow: var(--lift-strong);
-    }
-
-    #inspector-show::after {
-      content: attr(data-label);
-      font-size: 13px;
-      color: var(--text);
-    }
-
-    /* 右から出ることを、帯の右端の向きで示す */
-    #inspector-show::before {
-      content: "\2039";
-      order: 2;
-      font-size: 18px;
-      color: var(--faint);
-    }
-
     /*
        閉じるボタンは、パネルの上部中央に置く。
 
@@ -2704,8 +2696,6 @@
 
     /* 閉じるボタンのぶん、頭をあける */
     .inspector .aside-head { padding-top: 40px; }
-
-    #inspector-show:not([data-label]) { display: none; }
 
     /*
        3つのまとまりを、タブとして横に並べる。
