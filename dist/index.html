@@ -3051,7 +3051,8 @@ window.addEventListener('DOMContentLoaded', function () {
     }
 
     .tool-rail #part-buttons > button > svg { width: 18px; height: 18px; }
-*/
+
+    /* 指で押す的。見た目の高さは変えず、押せる範囲だけ広げる */
     header button,
     .tabbar button,
     .tab { min-height: 40px; }
@@ -3083,6 +3084,99 @@ window.addEventListener('DOMContentLoaded', function () {
     margin: 8px 0 0;
     color: var(--faint);
     font-size: 11.5px;
+  }
+
+
+  /* =========================================================================
+     窓を狭めたときに、順に畳んでいく
+
+     ヘッダーの中身は1196pxで縮み止まる。1180px以下では、右にあるものから
+     順に画面の外へ出ていた（実測: 1080pxで116px、880pxで316px）。
+     出たものは押せないので、幅に応じて札を落とし、絵だけにしていく。
+
+     **overflow は使わない。** この帯は「取り出す」「原稿の扱い」
+     「表示サイズ」の3つのメニューを抱えていて、指定すると下に開く
+     メニューが切り落とされる。以前それで壊した。
+
+     落とす順は、名前が無くても分かるものから。
+       1240px  新規・テンプレート・AI・取り出す（絵で分かる）
+       1040px  「for Email」と、言語の選び欄の余白
+        940px  状態表示（出るのは一瞬）
+        840px  名札（開いているアプリは分かっている）
+        760px  それでも足りないので折り返す（2段になる）
+     ========================================================================= */
+
+  @media (max-width: 1240px) {
+    /* 札を落として絵だけにする。高さは変えない */
+    header .row button:has(> svg),
+    .tabbar button:has(> svg) { font-size: 0; gap: 0; padding: 6px 8px; }
+
+    header .row button:has(> svg) > svg,
+    .tabbar button:has(> svg) > svg { width: 16px; height: 16px; }
+
+    /*
+       タブの帯も同じ扱い。「1画面に収める」「全画面」が札つきで
+       125px あり、ヘッダーだけ畳んでも、こちらが画面の外へ出ていた。
+    */
+  }
+
+  @media (max-width: 1000px) {
+    /*
+       紙面の幅の表示（600px）は、メニューを開けば分かる。
+       ここが最後まで残って画面の外に出ていた。
+    */
+    #canvas-now { display: none; }
+  }
+
+  @media (max-width: 1040px) {
+    .brand-for { display: none; }
+    header .lang-pick { max-width: 76px; padding: 5px 4px; }
+  }
+
+  @media (max-width: 940px) {
+    /* 状態表示は出るのが一瞬。その1つのために場所は割けない */
+    #status { display: none; }
+  }
+
+  @media (max-width: 840px) {
+    .brand { display: none; }
+  }
+
+  @media (max-width: 760px) and (min-width: 601px) {
+    /*
+       ここまで畳んでも足りない。折り返す。
+       縦は伸びるが、押せないものが残るよりいい。
+    */
+    header .row { flex-wrap: wrap; }
+    header .row .spacer { display: none; }
+
+    /*
+       タブの帯も折り返す。ここまで畳んでも、いちばん右にある
+       「紙面の幅」が18pxだけ外へ出ていた（620pxで実測）。
+    */
+    .tabbar { flex-wrap: wrap; }
+    .tabbar .spacer { display: none; }
+
+    /*
+       メニューが左へはみ出す。「ボタンの右端にそろえて幅300px」なので、
+       左寄りのボタンから開くと画面の外へ出る。スマホで直したのと同じ理屈で、
+       この幅でも起きる（700pxで3つ、620pxで4つとも外に出ていた）。
+
+       どのボタンから開いても収まるように、**ボタンからの相対をやめて
+       画面に貼り付ける。** 「右端に近いものだけ右そろえ」という置き方も
+       試したが、どれが右端かは畳み方で変わるので当てにならなかった
+       （実際、表示サイズと紙面の幅が外に出たまま残った）。
+    */
+    .pop {
+      position: fixed;
+      top: auto;
+      bottom: 12px;
+      right: 12px;
+      left: auto;
+      width: min(300px, calc(100vw - 24px));
+      max-height: calc(100vh - 160px);
+      overflow-y: auto;
+    }
   }
 
 </style>
