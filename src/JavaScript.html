@@ -652,7 +652,10 @@
       if (isNarrow() && state.panes.sidebar) togglePane('sidebar', false);
     });
     el['inspector-hide'].addEventListener('click', function () { togglePane('inspector', false); });
-    el['inspector-show'].addEventListener('click', function () { togglePane('inspector', true); });
+    el['inspector-show'].addEventListener('click', function () {
+      // 狭い画面では、同じボタンで開けて閉じる
+      togglePane('inspector', isNarrow() ? !state.panes.inspector : true);
+    });
     el['toolbar-hide'].addEventListener('click', function () { togglePane('toolbar', false); });
     el['toolbar-show'].addEventListener('click', function () { togglePane('toolbar', true); });
     el['btn-manual'].addEventListener('click', function () {
@@ -902,7 +905,22 @@
       el['toolbar-show'].hidden = visible;
     } else if (name === 'inspector') {
       el.inspector.hidden = !visible;
-      el['inspector-show'].hidden = visible;
+
+      /*
+         狭い画面では、この1つのボタンで開けて閉じる。
+
+         開くボタンと閉じる ✕ が別々の場所にあると、閉じるほうを探すことに
+         なる。**出したのと同じ場所で戻せる**ほうが迷わない。
+         向きの記号は data-open を見てスタイル側で返す。
+      */
+      if (isNarrow()) {
+        el['inspector-show'].hidden = false;
+        if (visible) el['inspector-show'].setAttribute('data-open', '');
+        else el['inspector-show'].removeAttribute('data-open');
+      } else {
+        el['inspector-show'].hidden = visible;
+        el['inspector-show'].removeAttribute('data-open');
+      }
     }
 
     // 幅が変わるので、再計測とはみ出し判定をやり直す
