@@ -2431,10 +2431,23 @@
        最初は幅30pxの細い舌にしていたが、**小さすぎて気づかれなかった。**
        浮いた丸ボタンにして、色も前に出す。指の的は52px。
     */
+    /*
+       画面の下は、下から順に積む。
+
+         部品の帯（流れの中）        いちばん下
+         要素の帯（選んだときだけ）  その上
+         浮きボタン                  さらに上
+
+       部品の帯を下へ寝かせた結果、3つが同じ高さに重なった。
+       浮きボタンが「新しい行として」の上に乗って、どちらも押しにくい。
+
+       浮きボタンの高さは変数で持つ。要素の帯が出ているかで変わるので、
+       開くボタンと閉じるボタンの両方を、1か所で動かせるようにする。
+    */
     .rail {
       position: fixed;
       left: 12px;
-      bottom: 16px;
+      bottom: var(--fab-bottom, 58px);
       z-index: 55;
       width: 52px;
       height: 52px;
@@ -2456,7 +2469,7 @@
     #sidebar-hide {
       position: fixed;
       left: 12px;
-      bottom: 16px;
+      bottom: var(--fab-bottom, 58px);
       z-index: 62;
       width: 52px;
       height: 52px;
@@ -2585,7 +2598,7 @@
       left: auto;
       right: 0;
       top: auto;
-      bottom: 52px;
+      bottom: 96px;      /* 部品の帯46px + 要素の帯46px の上 */
       z-index: 58;
       width: min(292px, 78vw);
       /*
@@ -2626,11 +2639,15 @@
 
        左は一覧の浮きボタンをよけて空ける。重ねると、どちらも押しにくい。
     */
+    /* 要素の帯は、部品の帯（46px）の上に置く */
+    body { --fab-bottom: 58px; }
+    body:has(#inspector-show[data-label]) { --fab-bottom: 110px; }
+
     #inspector-show {
       position: fixed;
       left: 76px;
       right: 0;
-      bottom: 0;
+      bottom: 46px;
       z-index: 56;
       width: auto;
       height: 46px;
@@ -2750,12 +2767,78 @@
     .wys-toolbar .tool-row .spacer { display: none; }
 
     /*
-       部品の縦帯（.tool-rail）はそのまま残す。
+       部品の縦帯を、原稿の下へ寝かせる。
 
-       絶対配置で44px固定の作りなので、横に寝かせるには構造ごと
-       組み直すことになる。ここで足すと壊れる（一度そうなった）。
-       44pxを残しても、プレビューは148px→342pxまで広がる。
+       縦に置くと、390pxのうち左44pxを取り続ける。原稿は48〜390pxに
+       押し込まれ、**画面の左に黒い帯、右端に原稿**という並びになる。
+       原稿そのものは寄っていないが、左右が釣り合わないので寄って見える。
+
+       下へ移せば原稿は0〜390pxの全幅になり、左右が揃う。
+       部品は横に流して指でなぞる（ここはメニューを持たないので切られない）。
+
+       .rail-inner は絶対配置で幅44px固定なので、位置と向きを置き直す。
+       前に一度、ここを直さずに向きだけ変えて幅0の状態を作った。
     */
+    .wys-body { flex-direction: column; }
+
+    .tool-rail {
+      order: 2;
+      flex: 0 0 46px;
+      height: 46px;
+      width: auto;
+      max-width: none;
+    }
+
+    .tool-rail .rail-inner,
+    .tool-rail:hover .rail-inner,
+    .tool-rail:focus-within .rail-inner {
+      inset: 0;
+      width: auto;
+      flex-direction: row;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: none;
+      box-shadow: none;
+    }
+
+    .tool-rail .rail-inner::-webkit-scrollbar { display: none; }
+    .tool-rail .rail-head { display: none; }
+
+    .tool-rail .rail-list,
+    .tool-rail .rail-modes {
+      display: flex;
+      flex-direction: row;
+      gap: 6px;
+    }
+
+    .tool-rail .rail-list > *,
+    .tool-rail .rail-modes > * { flex-shrink: 0; }
+
+    /*
+       縦のときは width:100% で1列に揃えていた。横に寝かせると、
+       その100%が**流れる帯の幅いっぱい**に効いて、1つ目のボタンが
+       884pxになった。中身ぶんの幅に戻す。
+    */
+    .tool-rail .rail-item { width: auto; }
+
+    /*
+       部品は絵だけにする。名前を出すと1つ100px近くなり、
+       10個並べるとなぞる距離が長くなりすぎる。
+       入れ先の2つ（新しい行として／選んだ枠の中に）は札を残す。
+       どちらに入るかは、絵では区別がつかない。
+    */
+    .tool-rail #part-buttons > button {
+      width: auto;
+      flex: 0 0 auto;
+      gap: 0;
+      padding: 0 9px;
+      font-size: 0;          /* 名前は素の文字。span が無いので畳んで消す */
+    }
+
+    .tool-rail #part-buttons > button > svg { width: 18px; height: 18px; }
 */
     header button,
     .tabbar button,
